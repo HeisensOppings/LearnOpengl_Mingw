@@ -1,0 +1,47 @@
+#include "main.h"
+int main()
+{
+    // glfw: initialize and configure
+    // ------------------------------
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
+    // glfw window creation
+    // --------------------
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "mashiro", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    // glad: load all OpenGL function pointers
+    // ---------------------------------------
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    // 设置视口大小和位置
+    // render loop
+    // -----------
+    while (!glfwWindowShouldClose(window))
+    {
+    glViewport(100, 100, 200, 200);
+        glClearColor(0.5f, 0.1f, 0.5f, 0.5f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        // glfw: swap buffers and poll IO events (keyspressed/released, mouse moved etc.)
+        // ---------------------------------------------------
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    // glfw: terminate, clearing all previously allocated GLFWresources.
+    //---------------------------------------------------------------
+    glfwTerminate();
+    cout << count << endl;
+    return 0;
+}
