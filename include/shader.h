@@ -1,43 +1,21 @@
+#ifndef __SHADER_H__
+#define __SHADER_H__
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <unordered_map>
 #include <iostream>
-#include "link.h"
-#include <iostream>
-#define COMPILE_CHECK
+#include <fstream>
+#include <sstream>
+#include <vector>
+#include <cmath>
 using namespace std;
-const unsigned int SCR_WIDTH = 400;
-const unsigned int SCR_HEIGHT = 300;
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void processInput(GLFWwindow *window);
-
-// const char *vertexShaderSource = "#version 330 core\n"
-//                                  "layout (location = 0) in vec3 aPos;\n"
-//                                  "void main()\n"
-//                                  "{\n"
-//                                  "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-//                                  "}\0";
-
-const char *vertexShaderSource = "#version 330 core\n"
-                                 "layout (location = 0) in vec3 aPos;\n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-                                 "}\n\0";
-
-const char *fragmentShaderSource1 = "#version 330 core\n"
-                                    "out vec4 FragColor;\n"
-                                    "void main()\n"
-                                    "{\n"
-                                    "FragColor=vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-                                    "}\n\0";
-
-const char *fragmentShaderSource2 = "#version 330 core\n"
-                                    "out vec4 FragColor;\n"
-                                    "void main()\n"
-                                    "{\n"
-                                    "FragColor=vec4(1.0f, 0.2f, 1.0f, 1.0f);\n"
-                                    "}\n\0";
+enum SHADER_TYPE
+{
+    VERTEX_T = 0,
+    FRAGMENT_T,
+};
 
 #define CHECK_SHADER_PROGRAM(shaderProgram)                             \
     do                                                                  \
@@ -80,3 +58,27 @@ const char *fragmentShaderSource2 = "#version 330 core\n"
                       << infoLog << std::endl;                         \
         }                                                              \
     } while (0)
+
+class Shader
+{
+    private:
+        GLuint ProgramID;
+        std::unordered_map<std::string, int> m_UniformLoationCache;
+        static vector<string> vertexShaderSources;
+        static vector<string> fragmentShaderSources;
+
+    public:
+        static void ShaderInit(const string filepath);
+        Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID);
+        ~Shader() { glDeleteProgram(ProgramID); }
+        void Bind() const { glUseProgram(ProgramID); }
+        void Unbind() const { glUseProgram(0); }
+        GLuint &GetID() { return ProgramID; }
+
+        int GetUniformLocation(const std::string &name);
+        void SetUniform1i(const std::string &name, int value);
+        void SetUniform1f(const std::string &name, float value);
+        void SetUniform4f(const std::string &name, float f0, float f1, float f2, float f3);
+};
+
+#endif
