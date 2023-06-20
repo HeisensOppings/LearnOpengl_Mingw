@@ -84,15 +84,19 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         float timeValue = glfwGetTime();
-        float ColorValue = (sin(timeValue) / 2.0f) + 0.5f;
-        float Alpha = (sin(timeValue) / 2.0f) + 0.5;
+        float Value = sin(timeValue) / 2.0f + 0.5f;
+        float sinValue = sin(timeValue) / 2.0f;
+        float cosValue = cos(timeValue)/2.0f;
+        // float sinValue = (sin(timeValue) / 2.0f) + 0.5f;
+        // float cosValue = (cos(timeValue) / 2.0f) + 0.5f;
         Program2.Bind();
-        Program2.SetUniform4f("ourColor", 0.0f, ColorValue, 0.0f, Alpha);
+        Program2.SetUniform4f("ourColor", 0.0f, Value, 0.0f, 1.0f);
         glBindVertexArray(VAOs[1]);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
         Program1.Bind();
+        Program1.SetUniform2f("xyOffset", sinValue, cosValue);
         // glUseProgram(shaderProgram2);
         glBindVertexArray(VAOs[0]);
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
