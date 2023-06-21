@@ -61,6 +61,9 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID)
     const char *vertexShaderSource = vertexShaderSources[vertexShader_ID].c_str();
     const char *fragmentShaderSource = fragmentShaderSources[fragmentShader_ID].c_str();
 
+    cout << vertexShaderSource << endl;
+    cout << fragmentShaderSource << endl;
+
     unsigned int vertexShader, fragmentShader;
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -100,7 +103,7 @@ int Shader::GetUniformLocation(const std::string &name)
 
 void Shader::SetUniform1i(const std::string &name, int value)
 {
-    glUniform1f(GetUniformLocation(name), value);
+    glUniform1i(GetUniformLocation(name), value);
 }
 
 void Shader::SetUniform1f(const std::string &name, float value)
