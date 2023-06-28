@@ -22,10 +22,15 @@ in vec3 ourColor;
 in vec2 TexCoord;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
-uniform float alpha;
+uniform float scale;
+uniform vec2 view_position;
+uniform bool switchTexture;
 void main()
 {
-    FragColor = mix(texture(texture1, alpha *TexCoord), texture(texture2, vec2(1.0-TexCoord.x, TexCoord.y)), 0.2);
+    vec2 offset = vec2(view_position.x, view_position.y);
+    offset = vec2(0.5, 0.5) - 0.5 * scale + offset;
+    vec2 scaledTexCoord = TexCoord * scale + offset;
+    FragColor = texture(switchTexture?texture1:texture2, scaledTexCoord);
 }
 
 #shader vertex
