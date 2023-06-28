@@ -26,7 +26,7 @@ int main()
         return -1;
     }
 
-    glfwSetWindowPos(window, 300, 600);
+    glfwSetWindowPos(window, 300, 640);
 
     const string filepath = "E:/Project/OpenGL/src/shaders.glsl";
     Shader::ShaderInit(filepath);
@@ -122,6 +122,15 @@ int main()
     Program1.SetUniform1i("texture1", 0);
     Program1.SetUniform1i("texture2", 1);
 
+    // glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+    // 0.9.9
+    // glm::mat4 trans = glm::vec4(1.0f);
+    // glm::mat4 trans_rotate, trans_scale, trans;
+    // trans_rotate = glm::rotate(trans_rotate, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    // // trans_scale = glm::scale(trans_scale, glm::vec3(0.5f, 0.5f, 0.5f));
+    // unsigned int transformLocation = glGetUniformLocation(Program1.GetID(), "transform");
+    // glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans_rotate));
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -146,6 +155,31 @@ int main()
         glBindVertexArray(VAOs[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+
+        unsigned int transformLocation = glGetUniformLocation(Program1.GetID(), "transform");
+
+        glm::mat4 transform;
+        // AB != BA
+        transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f)); // Switched the order
+        transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));                   // Switched the order
+        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+
+        glBindVertexArray(VAOs[0]);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        transform = glm::mat4(1.0f); // reset it to identity matrix
+        transform = glm::translate(transform, glm::vec3(0.5f, 0.5f, 0.0f));
+        float scaleAmount = static_cast<float>(sin(glfwGetTime()));
+        transform = glm::scale(transform, glm::vec3(scaleAmount, scaleAmount, scaleAmount));
+        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, &transform[0][0]); // this time take the matrix value array's first element as its memory pointer value
+        // now with the uniform matrix being replaced with new transformations, draw it again.
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        // glm::mat4 trans_rotate;
+        // // trans_rotate = glm::rotate(trans_rotate, glm::radians(timeValue * 10), glm::vec3(0.0f, 0.0f, 1.0f));
+        // trans_rotate = glm::rotate(trans_rotate, glm::radians(timeValue * 10), glm::vec3(0.0f, 0.0f, 1.0f));
+        // // trans_scale = glm::scale(trans_scale, glm::vec3(0.5f, 0.5f, 0.5f));
+        // glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans_rotate));
 
         // glfw: swap buffers and poll IO events (keyspressed/released, mouse moved etc.)
         // ---------------------------------------------------

@@ -43,4 +43,4 @@ $(EXECUTABLE):$(SRC)/*.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 ```
 
-###### Finally open terminal in vscode run command "mingw32-make | .\main.exe" to build project and run program
+###### Finally open terminal in vscode run command "mingw32-make | .\main.exe" to build project and run program or(windows system) you can ./build.bat to build and run program

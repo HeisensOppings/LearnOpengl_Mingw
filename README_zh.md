@@ -45,4 +45,4 @@ $(EXECUTABLE):$(SRC)/*.cpp
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 ```
 
-###### 最后在vscode终端mingw32-make | .\main.exe来编译，以及运行
+###### 最后在vscode终端mingw32-make | .\main.exe来编译，以及运行，或者(windows系统下) 你可以运行 ./build.bat 脚本来编译，以及运行程序
