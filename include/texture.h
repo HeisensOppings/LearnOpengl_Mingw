@@ -13,7 +13,7 @@ private:
     unsigned int m_TextureID;
 
 public:
-    Texture(const string &path, GLenum wrapMode, GLenum mapFilter);
+    Texture(const string &path, GLenum wrapMode, GLenum mapFilter); 
     ~Texture();
     void Bind();
     void UnBind();

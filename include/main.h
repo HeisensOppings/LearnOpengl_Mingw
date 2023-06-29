@@ -22,11 +22,12 @@ float key_value = 1.0;
 float key_value_x = 0.0;
 float key_value_y = 0.0;
 int switchTexture = 0;
-GLFWwindow *window=nullptr;
+GLFWwindow *window = nullptr;
 
 int opengl_init();
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
+
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 int opengl_init()
@@ -61,7 +62,6 @@ int opengl_init()
     return 0;
 }
 
-
 void framebuffer_size_callback([[maybe_unused]] GLFWwindow *window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and height
@@ -91,11 +91,6 @@ void processInput(GLFWwindow *window)
         if (key_value >= 1.0f)
             key_value = 1.0f;
     }
-    // else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
-    // {
-    //     switchTexture = !switchTexture;
-    //     cout<<"switchTexture: "<<switchTexture<<endl;
-    // }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
         key_value_x += 0.01f;
@@ -124,6 +119,9 @@ void processInput(GLFWwindow *window)
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    (void)(window);
+    (void)(scancode);
+    (void)(mods);
     if (key == GLFW_KEY_T && action == GLFW_PRESS)
     {
         switchTexture = !switchTexture;
@@ -132,6 +130,39 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         // open 7.0.7 version int common ternimal : pwsh
         // set regedit value : Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
         // then you ternimal powershell in vscode support color display
-        cout << "\x1B[44mswitchTexture: \033[49m" << switchTexture << "\033[49m"<<endl;
+        cout << "\x1B[44mswitchTexture: \033[49m" << switchTexture << "\033[49m" << endl;
     }
 }
+
+// This is a list of ANSI Escape Codes used to set text colors and formats:
+// \033[0m: Resets all text attributes, including color and format.
+// \033[1m: Sets text to bold.
+// \033[3m: Sets text to italic.
+// \033[4m: Sets text to underline.
+// \033[30m: Sets text to black.
+// \033[31m: Sets text to red.
+// \033[32m: Sets text to green.
+// \033[33m: Sets text to yellow.
+// \033[34m: Sets text to blue.
+// \033[35m: Sets text to magenta.
+// \033[36m: Sets text to cyan.
+// \033[37m: Sets text to white.
+// \033[40m: Sets text background to black.
+// \033[41m: Sets text background to red.
+// \033[42m: Sets text background to green.
+// \033[43m: Sets text background to yellow.
+// \033[44m: Sets text background to blue.
+// \033[45m: Sets text background to magenta.
+// \033[46m: Sets text background to cyan.
+// \033[47m: Sets text background to white.
+
+// powershell file: Microsoft.PowerShell_profile.ps1
+// #function prompt{... }, this is a PowerShell function used to customize the format and color of the PowerShell command prompt
+// #In this function, the current path is obtained through $ExecutionContext.SessionState.Path.CurrentLocation,
+// #and the last folder name in the current path is obtained using the Split-Path function. Then, the Write-Host function is used to output the command prompt with the folder name, and the color is set to green and purple.
+
+// function prompt{
+//     $path = "$($ExecutionContext.SessionState.Path.CurrentLocation)" $folder = Split - Path - Leaf $path Write - Host - NoNewline "$([char]27)[35m[$folder]$([char]27)[32m$ " return ""}
+
+//     New -
+//     Alias g g++

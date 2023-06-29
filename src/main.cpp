@@ -54,17 +54,12 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        float timeValue = glfwGetTime();
-        float sinValue = sin(timeValue) / 2.0f;
-        float cosValue = cos(timeValue) / 2.0f;
-
         Program1.Bind();
         glActiveTexture(GL_TEXTURE0);
         texture1.Bind();
         glActiveTexture(GL_TEXTURE1);
         texture2.Bind();
 
-        Program1.SetUniform2f("xyOffset", sinValue, cosValue);
         Program1.SetUniform1f("scale", key_value);
         Program1.SetUniform2f("view_position", key_value_x, key_value_y);
         Program1.SetUniform1i("switchTexture", switchTexture);

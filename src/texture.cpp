@@ -15,7 +15,7 @@ Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter)
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
-        GLenum format;
+        GLenum format = 0;
         if (nrChannels == 1)
             format = GL_RED;
         else if (nrChannels == 3)

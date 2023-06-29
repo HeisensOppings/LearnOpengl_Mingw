@@ -8,7 +8,9 @@ LIB := ./lib
 LIBRARIES := -lglad -lglfw3dll
 EXECUTABLE := main.exe
 
-OBJECTS := $(patsubst $(SRC)/%.cpp, obj/%.o, $(wildcard $(SRC)/*.cpp))
+SOURCES := $(wildcard $(SRC)/*.cpp)
+HEADERS := $(wildcard $(INCLUDE)/*.h)
+OBJECTS := $(patsubst $(SRC)/%.cpp, obj/%.o, $(SOURCES))
 
 all: ./$(EXECUTABLE)
 
@@ -18,5 +20,5 @@ run: all
 ./$(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
-obj/%.o: $(SRC)/%.cpp
+obj/%.o: $(SRC)/%.cpp $(HEADERS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -c $< -o $@
