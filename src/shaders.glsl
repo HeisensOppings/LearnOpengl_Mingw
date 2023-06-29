@@ -24,13 +24,16 @@ uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform float scale;
 uniform vec2 view_position;
-uniform bool switchTexture;
+uniform int switchTexture;
 void main()
 {
     vec2 offset = vec2(view_position.x, view_position.y);
     offset = vec2(0.5, 0.5) - 0.5 * scale + offset;
     vec2 scaledTexCoord = TexCoord * scale + offset;
-    FragColor = texture(switchTexture?texture1:texture2, scaledTexCoord);
+    if(switchTexture == 1)
+    FragColor = texture(texture1, scaledTexCoord);
+    else
+    FragColor = texture(texture2, scaledTexCoord);
 }
 
 #shader vertex
