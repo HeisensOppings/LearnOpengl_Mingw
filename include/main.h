@@ -12,6 +12,9 @@
 
 #include "shader.h"
 #include "texture.h"
+#include "vertexarray.h"
+#include "vertexbuffer.h"
+#include "indexbuffer.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 using namespace std;
