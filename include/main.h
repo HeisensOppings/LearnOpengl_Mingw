@@ -21,7 +21,8 @@ using namespace std;
 const unsigned int SCR_WIDTH = 400;
 const unsigned int SCR_HEIGHT = 400;
 
-float key_value = 1.0;
+float key_value = 45.0;
+float key_value1 = -3.0;
 float key_value_x = 0.0;
 float key_value_y = 0.0;
 int switchTexture = 0;
@@ -84,39 +85,55 @@ void processInput(GLFWwindow *window)
     }
     else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        key_value -= 0.01f;
+        key_value -= 0.1f;
         if (key_value <= 0.0f)
             key_value = 0.0f;
+        cout << key_value << endl;
     }
     else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        key_value += 0.01f;
-        if (key_value >= 1.0f)
-            key_value = 1.0f;
+        key_value += 0.1f;
+        if (key_value >= 100.0f)
+            key_value = 100.0f;
+        cout << key_value << endl;
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        key_value_x += 0.01f;
+        key_value_x += 0.001f;
         if (key_value_x >= 1.0f)
             key_value_x = 1.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        key_value_x -= 0.01f;
-        if (key_value_x >= 1.0f)
-            key_value_x = 1.0f;
+        key_value_x -= 0.001f;
+        if (key_value_x <= -1.0f)
+            key_value_x = -1.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        key_value_y += 0.01f;
+        key_value_y += 0.001f;
         if (key_value_y >= 1.0f)
             key_value_y = 1.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        key_value_y -= 0.01f;
-        if (key_value_y >= 1.0f)
-            key_value_y = 1.0f;
+        key_value_y -= 0.001f;
+        if (key_value_y <= -1.0f)
+            key_value_y = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        key_value1 += 0.01f;
+        if (key_value1 >= 10.0f)
+            key_value1 = 10.0f;
+        cout << key_value1 << endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        key_value1 -= 0.01f;
+        if (key_value1 <= -10.0f)
+            key_value1 = -10.0f;
+        cout << key_value1 << endl;
     }
 }
 
