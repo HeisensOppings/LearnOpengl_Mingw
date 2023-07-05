@@ -12,13 +12,13 @@ int main()
     Shader Program1(0, 0);
     Shader Program2(1, 1);
 
-    float vertices1[] = {
-        // positions      // texture coords (note that we changed them to 2.0f!)
-        0.5f, 0.5f, 0.0f, 1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f   // top left
-    };
+    // float vertices1[] = {
+    //     // positions      // texture coords (note that we changed them to 2.0f!)
+    //     0.5f, 0.5f, 0.0f, 1.0f, 1.0f,   // top right
+    //     0.5f, -0.5f, 0.0f, 1.0f, 0.0f,  // bottom right
+    //     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
+    //     -0.5f, 0.5f, 0.0f, 0.0f, 1.0f   // top left
+    // };
 
     // float vertices1[] = {
     //     // positions          // colors           // texture coords (note that we changed them to 2.0f!)
@@ -110,6 +110,10 @@ int main()
         glm::vec3(1.5f, 0.2f, -1.5f),
         glm::vec3(-1.3f, 1.0f, -1.5f)};
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
     while (!glfwWindowShouldClose(window))
     {
         processInput(window);
@@ -118,30 +122,36 @@ int main()
         // glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         Program1.Bind();
         glActiveTexture(GL_TEXTURE0);
         texture1.Bind();
         glActiveTexture(GL_TEXTURE1);
         texture2.Bind();
 
-        Program1.SetUniform1f("scale", 1.0f);
-        Program1.SetUniform2f("view_position", key_value_x, key_value_y);
+        Program1.SetUniform1f("scale", key_value);
         Program1.SetUniform1i("switchTexture", switchTexture);
 
-        // unsigned int transformLocation = glGetUniformLocation(Program1.GetID(), "transform");
-        // glm::mat4 transform(1.0f);
-        // transform = glm::translate(transform, glm::vec3(0.5f, 0.5f, 0.0f)); // Switched the order
-        // // transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f)); // Switched the order
-        // glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(transform));
+        // float radius = 10.0f;
+        // float camX = sin(glfwGetTime()) * radius;
+        // float camZ = cos(glfwGetTime()) * radius;
+        // glm::vec3 x_ = glm::vec3(1.0f, 0.0f, 0.0f);
+        // glm::vec3 y_ = glm::vec3(0.0f, 1.0f, 0.0f);
+        // glm::vec3 z_ = glm::vec3(0.0f, 0.0f, 1.0f);
 
-        // glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
+        // cameraPos = (x_ * key_value_x) + (y_ * key_value_y) - (z_ * key_value1);
+        // cameraPos = (cameraFront * key_value_y) + (glm::cross(cameraFront, cameraUp) * key_value_x);
+
+        glm::mat4 view;
+        view = camera.GetViewMatrix();
+        // view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
         glm::mat4 projection = glm::mat4(1.0f);
-
-        // model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-        // model = glm::rotate(model, glm::radians(-30.0f), glm::vec3(1.0, 0.0f, 0.0f));
-        view = glm::translate(view, glm::vec3(key_value_x, key_value_y, key_value1));
-        projection = glm::perspective(glm::radians(key_value), 1.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera.m_Fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
 
         // unsigned int modelLocation = glGetUniformLocation(Program1.GetID(), "model");
         unsigned int viewLocation = glGetUniformLocation(Program1.GetID(), "view");
@@ -156,7 +166,7 @@ int main()
             glm::mat4 model;
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
             Program1.SetUniform4m("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);

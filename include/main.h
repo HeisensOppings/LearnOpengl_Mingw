@@ -15,24 +15,34 @@
 #include "vertexarray.h"
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
+#include "camera.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 using namespace std;
-const unsigned int SCR_WIDTH = 400;
-const unsigned int SCR_HEIGHT = 400;
+#define SCR_WIDTH_DEFAULT 400
+#define SCR_HEIGHT_DEFAULT 400
+unsigned int SCR_WIDTH = SCR_WIDTH_DEFAULT;
+unsigned int SCR_HEIGHT = SCR_HEIGHT_DEFAULT;
 
-float key_value = 45.0;
-float key_value1 = -3.0;
-float key_value_x = 0.0;
-float key_value_y = 0.0;
-int switchTexture = 0;
+float key_value = 1.0;
+int switchTexture = 1;
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+bool altPressed = false;
+bool firstMouse = true;
+
+// bool firstMouse = true;
+// float lastX = 200, lastY = 200;
+
+Camera camera;
 GLFWwindow *window = nullptr;
 
 int opengl_init();
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void processInput(GLFWwindow *window);
-
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 
 int opengl_init()
 {
@@ -52,7 +62,7 @@ int opengl_init()
         return -1;
     }
     glfwMakeContextCurrent(window);
-    // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     // glad: load all OpenGL function pointers
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -71,69 +81,63 @@ void framebuffer_size_callback([[maybe_unused]] GLFWwindow *window, int width, i
     // make sure the viewport matches the new window dimensions; note that width and height
     // will be significantly larger than specified on retina displays
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
 }
 
 void processInput(GLFWwindow *window)
 {
+    if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        altPressed = true;
+        firstMouse = true;
+    }
+    else
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        altPressed = false;
+    }
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-    {
-        int width, heigh;
-        glfwGetFramebufferSize(window, &width, &heigh);
-        framebuffer_size_callback(window, width, heigh);
-    }
     else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        key_value -= 0.1f;
+        key_value -= 1.0f * deltaTime;
         if (key_value <= 0.0f)
             key_value = 0.0f;
         cout << key_value << endl;
     }
     else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        key_value += 0.1f;
-        if (key_value >= 100.0f)
-            key_value = 100.0f;
+        key_value += 1.0f * deltaTime;
+        if (key_value >= 1.0f)
+            key_value = 1.0f;
         cout << key_value << endl;
     }
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        key_value_x += 0.001f;
-        if (key_value_x >= 1.0f)
-            key_value_x = 1.0f;
+        camera.ProcessKeyBoard(MOVE_RIGHT, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        key_value_x -= 0.001f;
-        if (key_value_x <= -1.0f)
-            key_value_x = -1.0f;
+        camera.ProcessKeyBoard(MOVE_LEFT, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        key_value_y += 0.001f;
-        if (key_value_y >= 1.0f)
-            key_value_y = 1.0f;
+        camera.ProcessKeyBoard(MOVE_FORWARD, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        key_value_y -= 0.001f;
-        if (key_value_y <= -1.0f)
-            key_value_y = -1.0f;
+        camera.ProcessKeyBoard(MOVE_BACKWARD, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        key_value1 += 0.01f;
-        if (key_value1 >= 10.0f)
-            key_value1 = 10.0f;
-        cout << key_value1 << endl;
+        camera.ProcessKeyBoard(MOVE_UP, deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        key_value1 -= 0.01f;
-        if (key_value1 <= -10.0f)
-            key_value1 = -10.0f;
-        cout << key_value1 << endl;
+        camera.ProcessKeyBoard(MOVE_DOWN, deltaTime);
     }
 }
 
@@ -154,35 +158,32 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
 }
 
-// This is a list of ANSI Escape Codes used to set text colors and formats:
-// \033[0m: Resets all text attributes, including color and format.
-// \033[1m: Sets text to bold.
-// \033[3m: Sets text to italic.
-// \033[4m: Sets text to underline.
-// \033[30m: Sets text to black.
-// \033[31m: Sets text to red.
-// \033[32m: Sets text to green.
-// \033[33m: Sets text to yellow.
-// \033[34m: Sets text to blue.
-// \033[35m: Sets text to magenta.
-// \033[36m: Sets text to cyan.
-// \033[37m: Sets text to white.
-// \033[40m: Sets text background to black.
-// \033[41m: Sets text background to red.
-// \033[42m: Sets text background to green.
-// \033[43m: Sets text background to yellow.
-// \033[44m: Sets text background to blue.
-// \033[45m: Sets text background to magenta.
-// \033[46m: Sets text background to cyan.
-// \033[47m: Sets text background to white.
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+    (void)window;
+    static float lastX = xpos, lastY = ypos;
 
-// powershell file: Microsoft.PowerShell_profile.ps1
-// #function prompt{... }, this is a PowerShell function used to customize the format and color of the PowerShell command prompt
-// #In this function, the current path is obtained through $ExecutionContext.SessionState.Path.CurrentLocation,
-// #and the last folder name in the current path is obtained using the Split-Path function. Then, the Write-Host function is used to output the command prompt with the folder name, and the color is set to green and purple.
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+        return;
+    }
+    if (!altPressed)
+    {
+        float xoffset = xpos - lastX;
+        float yoffset = lastY - ypos;
+        lastX = xpos;
+        lastY = ypos;
+        camera.ProcessMouseMovement(xoffset, yoffset);
+    }   
+}
 
-// function prompt{
-//     $path = "$($ExecutionContext.SessionState.Path.CurrentLocation)" $folder = Split - Path - Leaf $path Write - Host - NoNewline "$([char]27)[35m[$folder]$([char]27)[32m$ " return ""}
-
-//     New -
-//     Alias g g++
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    (void)window;
+    (void)xoffset;
+    if (!altPressed)
+        camera.ProcessMouseScroll(yoffset);
+}

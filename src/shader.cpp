@@ -61,9 +61,10 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID)
     const char *vertexShaderSource = vertexShaderSources[vertexShader_ID].c_str();
     const char *fragmentShaderSource = fragmentShaderSources[fragmentShader_ID].c_str();
 
+#ifdef GLSL_CODE_OUTPUT
     cout << vertexShaderSource << endl;
     cout << fragmentShaderSource << endl;
-
+#endif
     unsigned int vertexShader, fragmentShader;
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);

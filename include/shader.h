@@ -18,6 +18,7 @@ enum SHADER_TYPE
     FRAGMENT_T,
 };
 
+// #define GLSL_CODE_OUTPUT
 #define CHECK_SHADER(programOrShader, Type)                                                            \
     do                                                                                                 \
     {                                                                                                  \
@@ -32,6 +33,7 @@ enum SHADER_TYPE
         }                                                                                              \
     } while (0)
 
+// The contents of the glsl file must be separated by a swap symbol
 class Shader
 {
 private:
