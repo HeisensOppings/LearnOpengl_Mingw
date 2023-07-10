@@ -1,7 +1,9 @@
 @echo off
 
+SET SourceExe=main.exe
+
 rem Remove the old executable
-del main.exe
+if exist %SourceExe% del main.exe
 
 rem Run mingw32-make to compile the program
 mingw32-make -f Makefile

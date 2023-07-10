@@ -56,6 +56,7 @@ public:
     void SetUniform1f(const std::string &name, float value);
     void SetUniform2f(const std::string &name, float f0, float f1);
     void SetUniform3f(const std::string &name, float f0, float f1, float f2);
+    void SetUniform3f(const std::string &name, const glm::vec3 &value);
     void SetUniform4f(const std::string &name, float f0, float f1, float f2, float f3);
     void SetUniform2m(const std::string &name, const glm::mat2 &mat);
     void SetUniform3m(const std::string &name, const glm::mat3 &mat);

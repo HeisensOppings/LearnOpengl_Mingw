@@ -73,6 +73,13 @@ int opengl_init()
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowPos(window, 300, 640);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    glEnable(GL_DEPTH_TEST);
+
     return 0;
 }
 
@@ -101,41 +108,41 @@ void processInput(GLFWwindow *window)
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    else if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {
         key_value -= 1.0f * deltaTime;
         if (key_value <= 0.0f)
             key_value = 0.0f;
         cout << key_value << endl;
     }
-    else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
         key_value += 1.0f * deltaTime;
         if (key_value >= 1.0f)
             key_value = 1.0f;
         cout << key_value << endl;
     }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         camera.ProcessKeyBoard(MOVE_RIGHT, deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
         camera.ProcessKeyBoard(MOVE_LEFT, deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         camera.ProcessKeyBoard(MOVE_FORWARD, deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         camera.ProcessKeyBoard(MOVE_BACKWARD, deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
         camera.ProcessKeyBoard(MOVE_UP, deltaTime);
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
     {
         camera.ProcessKeyBoard(MOVE_DOWN, deltaTime);
     }
@@ -155,6 +162,14 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         // set regedit value : Set-ItemProperty HKCU:\Console VirtualTerminalLevel -Type DWORD 1
         // then you ternimal powershell in vscode support color display
         cout << "\x1B[44mswitchTexture: \033[49m" << switchTexture << "\033[49m" << endl;
+    }
+    else if(key == GLFW_KEY_LEFT_CONTROL && action == GLFW_PRESS)
+    {
+            static float speed = 1.0;
+            speed += 1.0;
+            if (speed >= 10)
+                speed = 1.0;
+            camera.SetSpeed(speed);
     }
 }
 

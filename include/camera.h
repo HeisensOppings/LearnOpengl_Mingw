@@ -22,7 +22,7 @@ enum CameraMovement
 // default camera angles
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
-const float SPEED = 2.5f;
+const float SPEED = 5.0f;
 const float SENSITIVITY = 0.1f;
 const float FOV = 45.0f;
 const float Z_VALUE = -3.0f;
@@ -48,6 +48,7 @@ public:
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
     void ProcessMouseScroll(float yoffset);
     void updateCameraVectors();
+    inline void SetSpeed(float speed) { MovementSpeed = speed; }
     glm::mat4 calculate_lookAt_matrix(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
 
     Camera(glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -Z_VALUE), glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, Z_VALUE), glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f)) : m_cameraPos(cameraPos), m_cameraDir(cameraDir), m_cameraUp(cameraUp), m_Yaw(YAW), m_Pitch(PITCH), m_Fov(FOV) { updateCameraVectors();}
