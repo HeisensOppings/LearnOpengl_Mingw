@@ -11,7 +11,7 @@ using namespace std;
 
 enum CameraMovement
 {
-    MOVE_FORWARD=0,
+    MOVE_FORWARD = 0,
     MOVE_BACKWARD,
     MOVE_LEFT,
     MOVE_RIGHT,
@@ -51,9 +51,37 @@ public:
     inline void SetSpeed(float speed) { MovementSpeed = speed; }
     glm::mat4 calculate_lookAt_matrix(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
 
-    Camera(glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -Z_VALUE), glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, Z_VALUE), glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f)) : m_cameraPos(cameraPos), m_cameraDir(cameraDir), m_cameraUp(cameraUp), m_Yaw(YAW), m_Pitch(PITCH), m_Fov(FOV) { updateCameraVectors();}
+    Camera(glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -Z_VALUE), glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, Z_VALUE), glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f))
+        : m_cameraPos(cameraPos),
+          m_cameraDir(cameraDir),
+          m_cameraUp(cameraUp),
+          m_Yaw(YAW),
+          m_Pitch(PITCH),
+          m_Fov(FOV)
+    {
+        updateCameraVectors();
+    }
 
-    Camera(float posX, float posY, float posZ, float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float yaw, float pitch, float fov) : m_cameraPos(glm::vec3(posX, posY, posZ)), m_cameraDir(glm::vec3(dirX, dirY, dirZ)),m_cameraUp(glm::vec3(upX, upY, upZ)), m_Yaw(yaw), m_Pitch(pitch), m_Fov(fov) { updateCameraVectors(); }
+    Camera(float posX, float posY, float posZ, float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float yaw, float pitch, float fov)
+        : m_cameraPos(glm::vec3(posX, posY, posZ)),
+          m_cameraDir(glm::vec3(dirX, dirY, dirZ)),
+          m_cameraUp(glm::vec3(upX, upY, upZ)),
+          m_Yaw(yaw),
+          m_Pitch(pitch),
+          m_Fov(fov)
+    {
+        updateCameraVectors();
+    }
+    void SetCameraSettings(float posX, float posY, float posZ, float dirX, float dirY, float dirZ, float upX, float upY, float upZ, float yaw, float pitch, float fov)
+    {
+        m_cameraPos = glm::vec3(posX, posY, posZ);
+        m_cameraDir = glm::vec3(dirX, dirY, dirZ);
+        m_cameraUp = glm::vec3(upX, upY, upZ);
+        m_Yaw = yaw;
+        m_Pitch = pitch;
+        m_Fov = fov;
+        updateCameraVectors();
+    }
 };
 
 #endif
