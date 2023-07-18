@@ -102,11 +102,10 @@ void Camera::ProcessMouseScroll(float yoffset)
 
 void Camera::updateCameraVectors()
 {
-    glm::vec3 direction;
-    direction.x = cos(glm::radians(m_Pitch)) * cos(glm::radians(m_Yaw));
-    direction.y = sin(glm::radians(m_Pitch));
-    direction.z = cos(glm::radians(m_Pitch)) * sin(glm::radians(m_Yaw));
-    m_cameraDir = glm::normalize(direction);
+    m_cameraDir.x = cos(glm::radians(m_Pitch)) * cos(glm::radians(m_Yaw));
+    m_cameraDir.y = sin(glm::radians(m_Pitch));
+    m_cameraDir.z = cos(glm::radians(m_Pitch)) * sin(glm::radians(m_Yaw));
+    // m_cameraDir = glm::normalize(direction);
 }
 
 // Custom implementation of the LookAt function

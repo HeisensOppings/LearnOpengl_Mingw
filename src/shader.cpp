@@ -18,6 +18,10 @@ void Shader::ShaderInit(const string filepath)
 
     while (std::getline(file, line))
     {
+        if (line.substr(0, 2) == "//")
+        {
+            continue;
+        }
         if (line.find("#shader vertex") != std::string::npos)
         {
             inVertexShader = true;

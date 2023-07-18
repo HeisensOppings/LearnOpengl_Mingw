@@ -45,6 +45,7 @@ private:
 public:
     static void ShaderInit(const string filepath);
     Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID);
+    Shader(unsigned int shader_SameID) : Shader(shader_SameID, shader_SameID) {}
     ~Shader() { glDeleteProgram(ProgramID); }
     void Bind() const { glUseProgram(ProgramID); }
     void Unbind() const { glUseProgram(0); }

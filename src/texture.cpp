@@ -1,7 +1,8 @@
 #include "texture.h"
 
-Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter)
+Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID)
 {
+    m_GL_TextureID = gl_TextureID;
     glGenTextures(1, &m_TextureID);
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
@@ -39,6 +40,7 @@ Texture::~Texture()
 
 void Texture::Bind()
 {
+    glActiveTexture(GL_TEXTURE0 + m_GL_TextureID);
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
 }
 
