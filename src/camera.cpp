@@ -15,10 +15,12 @@ void Camera::ProcessKeyBoard(CameraMovement direction, float deltaTime)
     switch (direction)
     {
     case MOVE_FORWARD:
-        move_vector = m_cameraDir;
+        move_vector = -glm::normalize(glm::cross(glm::cross(m_cameraDir, m_cameraUp), m_cameraUp));
+        // move_vector = m_cameraDir;
         break;
     case MOVE_BACKWARD:
-        move_vector = -m_cameraDir;
+        move_vector = glm::normalize(glm::cross(glm::cross(m_cameraDir, m_cameraUp), m_cameraUp));
+        // move_vector = -m_cameraDir;
         break;
     case MOVE_LEFT:
         move_vector = -glm::normalize(glm::cross(m_cameraDir, m_cameraUp));

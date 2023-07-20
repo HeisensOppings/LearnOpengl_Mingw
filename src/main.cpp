@@ -86,12 +86,10 @@ int main()
 
     Texture diffuseMap("E:/Project/OpenGL/src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
     Texture specularMap("E:/Project/OpenGL/src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
-    Texture emissionMap("E:/Project/OpenGL/src/image/matrix.png", GL_REPEAT, GL_LINEAR, 2);
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
     Program_cubes.SetUniform1i("material.specular", 1);
-    Program_cubes.SetUniform1i("material.emission", 2);
 
     glm::vec3 cubePositions[] = {
         glm::vec3(0.0f, 0.5f, -15.0f),
@@ -103,8 +101,13 @@ int main()
         glm::vec3(1.5f, 2.0f, -2.5f),
         glm::vec3(1.5f, 0.2f, -1.5f),
         glm::vec3(-1.3f, 1.0f, -1.5f),
-        glm::vec3(1.0f, -1.5f, 1.0f),
-    };
+        glm::vec3(1.0f, -1.5f, 1.0f)};
+
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3(0.7f, 0.2f, 2.0f),
+        glm::vec3(2.3f, -3.3f, -4.0f),
+        glm::vec3(-4.0f, 2.0f, -12.0f),
+        glm::vec3(0.0f, 0.0f, -3.0f)};
 
     BufferLayout layout2;
     vector<int> layout_stride2{3, 3, 2};
@@ -115,22 +118,29 @@ int main()
 
     glm::vec3 lightPos(0.0, 0.0, 1.0);
     glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
-    glm::vec3 lightColor(1.0f);
-    glm::vec3 light_am_di_sp(0.2f, 0.8f, 1.0f);
 
-    unsigned int light_distance_select = 4;
+    glm::vec3 background_color(0.1);
+
+    glm::vec3 sunlight_color(1.0f);
+    glm::vec3 sunlight_pos(10.0f, 100.0f, 0.0f);
+
+    // glm::vec3 lightColor_directional(1.0f);
+    glm::vec3 light_am_di_sp_directional(0.1f, 0.5f, 1.0f);
+    glm::vec3 lightColor_point(1.0f);
+    glm::vec3 light_am_di_sp_point(0.1f, 0.6f, 1.0f);
+    glm::vec3 lightColor_spot(1.0f);
+    glm::vec3 light_am_di_sp_spot(0.1f, 0.8f, 1.0f);
+
+    unsigned int light_distance_select_point = 2;
+    unsigned int light_distance_select_spot = 4;
     vector<vector<float>> light_distance{{0.14, 0.07}, {0.07, 0.017}, {0.027, 0.0028}, {0.014, 0.0007}, {0.007, 0.0002}};
     vector<int> light_distance_index{32, 65, 160, 325, 600};
-    float light_constant = 1.0f;
     float angle_limit = 89.0;
     float light_cutoff = 12.5;
     float light_outerCutOff = 15.5;
-    int light_mode = 0; // directionalLight pointLight soptLight 
 
     int material_shininess = 32;
-    bool material_emission = 0;
 
-    bool emission_switch = false;
     bool lighting_mode_camera = false;
     vector<string> lighting_mode_text{"Directional Light", "Point lights ----", "Spotlight -------"};
 
@@ -138,7 +148,6 @@ int main()
     {
         processInput(window);
         {
-            // Start the Dear ImGui frame
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
@@ -148,22 +157,26 @@ int main()
                 lightPos = camera.m_cameraPos;
             if (ImGui::Button("Camera Light"))
                 lighting_mode_camera = !lighting_mode_camera;
-            if (ImGui::Button(lighting_mode_text[light_mode].c_str()))
+            if (ImGui::Button(("light point distance: " + std::to_string(light_distance_index[light_distance_select_point])).c_str()))
             {
-                ++light_mode;
-                if (light_mode > 2)
-                    light_mode = 0;
+                ++light_distance_select_point;
+                if (light_distance_select_point > 4)
+                    light_distance_select_point = 0;
             }
-            ImGui::SliderInt("mode", &light_mode, 0, 2);
-            if (ImGui::Button(("light distance: " + std::to_string(light_distance_index[light_distance_select])).c_str()))
+            if (ImGui::Button(("light spot distance: " + std::to_string(light_distance_index[light_distance_select_spot])).c_str()))
             {
-                ++light_distance_select;
-                if (light_distance_select > 4)
-                    light_distance_select = 0;
+                ++light_distance_select_spot;
+                if (light_distance_select_spot > 4)
+                    light_distance_select_spot = 0;
             }
-            ImGui::ColorEdit3("light color rgb", (float *)&lightColor);
-            ImGui::SliderFloat3("light color vec", (float *)&lightColor, 0.0f, 1.0f);
-            ImGui::SliderFloat3("ambient-diffuse-specular", (float *)&light_am_di_sp, 0.0f, 1.0f);
+            ImGui::ColorEdit3(" background_color", (float *)&background_color);
+            ImGui::NewLine();
+            ImGui::ColorEdit3(" color1 directional", (float *)&sunlight_color);
+            ImGui::SliderFloat3("ambient-diffuse-specular1", (float *)&light_am_di_sp_directional, 0.0f, 1.0f);
+            ImGui::ColorEdit3(" color2 point", (float *)&lightColor_point);
+            ImGui::SliderFloat3("ambient-diffuse-specular2", (float *)&light_am_di_sp_point, 0.0f, 1.0f);
+            ImGui::ColorEdit3(" color3 spot", (float *)&lightColor_spot);
+            ImGui::SliderFloat3("ambient-diffuse-specular3", (float *)&light_am_di_sp_spot, 0.0f, 1.0f);
             ImGui::NewLine();
             if (ImGui::Button(("material shininess: " + std::to_string(material_shininess)).c_str()))
             {
@@ -171,21 +184,17 @@ int main()
                 if (material_shininess > 256)
                     material_shininess = 32;
             }
-            ImGui::Checkbox("emission", &material_emission);
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // float radius = 2.0f;
-        // float camX = sin(glfwGetTime()) * radius;
-        // float camZ = cos(glfwGetTime()) * radius;
         glm::mat4 view;
         view = camera.GetViewMatrix();
         glm::mat4 projection = glm::mat4(1.0f);
@@ -194,13 +203,11 @@ int main()
         VAO_Cubes.Bind();
         Program_light.Bind();
         diffuseMap.Bind();
-        specularMap.Bind();
-        emissionMap.Bind();
 
         // light cube
         Program_light.SetUniform4m("view", view);
         Program_light.SetUniform4m("projection", projection);
-        Program_light.SetUniform3f("lightColor", lightColor);
+        Program_light.SetUniform3f("lightColor", lightColor_spot);
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
@@ -212,33 +219,56 @@ int main()
             lightDirection = camera.m_cameraDir;
             lightPos = camera.m_cameraPos;
         }
+        Program_light.SetUniform3f("lightColor", sunlight_color);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, sunlight_pos);
+        model = glm::scale(model, glm::vec3(50.0f)); // Make it a smaller cube
+        Program_light.SetUniform4m("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        Program_light.SetUniform3f("lightColor", lightColor_point);
+        for (unsigned int i = 0; i < 4; i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+            Program_light.SetUniform4m("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // small subes
         Program_cubes.Bind();
-        Program_cubes.SetUniform3f("light.ambient", lightColor * light_am_di_sp.x);
-        Program_cubes.SetUniform3f("light.diffuse", lightColor * light_am_di_sp.y);
-        Program_cubes.SetUniform3f("light.specular", lightColor * light_am_di_sp.z);
+        // direction light
+        Program_cubes.SetUniform3f("dirLight.direction", sunlight_pos);
+        Program_cubes.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
+        Program_cubes.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
+        Program_cubes.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
+        // point light
+        for (GLuint i = 0; i < 4; i++)
+        {
+            string number = to_string(i);
+            Program_cubes.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
+            Program_cubes.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
+            Program_cubes.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
+            Program_cubes.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
+            Program_cubes.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
+            Program_cubes.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
+            Program_cubes.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
+        }
+        // spotLight
+        Program_cubes.SetUniform3f("spotLight.position", lightPos);
+        Program_cubes.SetUniform3f("spotLight.direction", lightDirection);
+        Program_cubes.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
+        Program_cubes.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
+        Program_cubes.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
+        Program_cubes.SetUniform1f("spotLight.constant", 1.0f);
+        Program_cubes.SetUniform1f("spotLight.linear", light_distance[light_distance_select_spot][0]);
+        Program_cubes.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
+        Program_cubes.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        Program_cubes.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
         Program_cubes.SetUniform1i("material.shininess", material_shininess);
-        Program_cubes.SetUniform1i("material.emission_mode", (int)material_emission);
-        Program_cubes.SetUniform1i("light_mode", light_mode);
 
-        // Program_cubes.SetUniform3f("cameraDir", light_dir_test);
-        // Program_cubes.SetUniform3f("cameraDir", camera.m_cameraPos);
-
-        // Program_cubes.SetUniform3f("light.position", lightPos);
-        // Program_cubes.SetUniform3f("light.direction", -lightPos);
-        Program_cubes.SetUniform3f("light.position", lightPos);
-        Program_cubes.SetUniform3f("light.direction", lightDirection);
-        // Program_cubes.SetUniform3f("light.direction", -camera.m_cameraPos);
-        // Program_cubes.SetUniform3f("light.position", light_dir_test);
-        // Program_cubes.SetUniform3f("light.direction", -light_dir_test);
-        Program_cubes.SetUniform1f("light.constant", 1.0f);
-        Program_cubes.SetUniform1f("light.linear", light_distance[light_distance_select][0]);
-        Program_cubes.SetUniform1f("light.quadratic", light_distance[light_distance_select][1]);
-        Program_cubes.SetUniform1f("light.cutoff", glm::cos(glm::radians(28.0f)));
-        Program_cubes.SetUniform1f("light.outerCutOff", glm::cos(glm::radians(28.0f)));
-        // Program_cubes.SetUniform3f("lightPos", light_dir_test);
-        // Program_cubes.SetUniform3f("lightPos", glm::vec3(camX, 2.0, camZ));
         Program_cubes.SetUniform4m("view", view);
         Program_cubes.SetUniform4m("projection", projection);
         model = glm::mat4(1.0f);
@@ -246,7 +276,6 @@ int main()
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
         Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-        Program_cubes.SetUniform1f("yoffset", glfwGetTime());
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         for (unsigned int i = 0; i < 10; i++)
@@ -362,14 +391,12 @@ void processInput(GLFWwindow *window)
         key_value -= 1.0f * deltaTime;
         if (key_value <= 0.0f)
             key_value = 0.0f;
-        cout << key_value << endl;
     }
     else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
     {
         key_value += 1.0f * deltaTime;
         if (key_value >= 1.0f)
             key_value = 1.0f;
-        cout << key_value << endl;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
@@ -422,11 +449,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     else if (key == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        cout << "mouse1 " << endl;
     }
     else if (key == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
-        cout << "mouse2 " << endl;
     }
 }
 
@@ -515,64 +540,3 @@ void saveCameraPosition(const Camera &camera)
         file.close();
     }
 }
-
-// #shader vertex
-// #version 330 core
-// layout(location = 0) in vec3 aPos;
-// layout(location = 1) in vec3 aNormal;
-// layout(location = 2) in vec2 aTexCoords;
-// out vec3 FragPos;
-// out vec3 Normal;
-// out vec2 TexCoords;
-// uniform mat3 normalMatrix;
-// uniform mat4 model;
-// uniform mat4 view;
-// uniform mat4 projection;
-// void main()
-// {
-//     FragPos = vec3(model * vec4(aPos, 1.0));
-//     Normal = normalize(normalMatrix * aNormal);
-//     gl_Position = projection * view * vec4(FragPos, 1.0);
-//     TexCoords = aTexCoords;
-// }
-
-// #shader fragment
-// #version 330 core
-// out vec4 FragColor;
-// struct Material
-// {
-//     sampler2D diffuse;
-//     int shininess;
-// };
-// struct Light
-// {
-//     vec3 position;
-//     vec3 direction;
-//     vec3 diffuse;
-//     vec3 specular;
-//     float constant;
-//     float linear;
-//     float quadratic;
-//     float cutoff;
-//     float outerCutOff;
-// };
-// in vec3 Normal;
-// in vec3 FragPos;
-// in vec2 TexCoords;
-// uniform Material material;
-// uniform Light light;
-// void main()
-// {
-//     // diffuse
-//     vec3 norm = normalize(Normal);
-//     vec3 lightDir = normalize(light.position - FragPos);
-//     float diff = max(dot(norm, lightDir), 0.0);
-//     vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
-//     // spotlight
-//     float theta = dot(lightDir, normalize(-light.direction));
-//     float epsilon = (light.cutoff - light.outerCutOff);
-//     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-//     diffuse *= intensity;
-//     // result
-//     FragColor = vec4((diffuse), 1.0);
-// }
