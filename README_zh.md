@@ -23,26 +23,71 @@
 - ar -rc libglad.a glad.o
 - 拷贝**libglad.a** 和 include
 
+###### Assimp
+
+- [Download](https://github.com/assimp/assimp) Assimp源码并解压缩到本地目录
+- 使用CMake对Assimp源码进行配置和生成构建文件，默认生成build目录
+- 进入build目录，使用mingw32-make命令来编译Assimp源代码并生成可执行文件或库
+- build\lib\libassimp.dll.a放到lib/目录下
+- build\bin\libassimp-5.dll放到exe同级目录下
+
+###### 加载模型
+
+- assimp使用的是obj格式的模型，如果下载的是pmx等格式的模型，可以用blender导入模型(pmx可以用mmd_tools插件导入，[Download](https://github.com/powroupi/blender_mmd_tools))，再导出为obj格式文件，记得修改mtl文件的纹理文件名
+
+```
+# example of mtl file
+newmtl model_name
+Ns xx.xxxxxx
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 3
+map_Kd diffuse_texture.png
+map_Ks specular_texture.png
+map_Bump bump_texture.png
+```
+
 ###### 确保makefile格式正确，例如tab与空格
 
 ```makefile
-CXX		:= g++
-CXX_FLAGS       := -g -std=c++17 #-Wextra -Wall
+CXX := g++
+CXX_FLAGS := -g -std=c++17 -O2 -Wextra -Wall -Wno-pragmas
 
-SRC		:= src
-INCLUDE         := ./include
-LIB		:= ./lib
+SRC := ./src
+INCLUDE := ./include
+LIB := ./lib
 
-LIBRARIES	:= -lglad -lglfw3dll
-EXECUTABLE	:= main
+LIBRARIES := -lglad -lglfw3dll -lassimp
+EXECUTABLE := main.exe
 
-all:./$(EXECUTABLE)
+SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)
+HEADERS := $(wildcard $(INCLUDE)/*.h) $(wildcard $(SRC)/**/*.h)
+OBJECTS := $(patsubst $(SRC)/%.cpp, obj/%.o, $(SOURCES))
+
+ifeq ($(wildcard obj),)
+$(shell mkdir obj)
+endif
+
+ifeq ($(wildcard obj\imgui),)
+$(shell mkdir obj\imgui)
+endif
+
+all: ./$(EXECUTABLE)
 
 run: all
 	./$(EXECUTABLE)
 
-$(EXECUTABLE):$(SRC)/*.cpp
+./$(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
+
+obj/%.o: $(SRC)/%.cpp
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(SRC) -MMD -MP -c $< -o $@
+
+-include $(OBJECTS:.o=.d)
 ```
 
 ###### 最后在vscode终端mingw32-make | .\main.exe来编译，以及运行，或者(windows系统下) 你可以运行 ./build.bat 脚本来编译，以及运行程序

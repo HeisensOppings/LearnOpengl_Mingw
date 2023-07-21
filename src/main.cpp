@@ -84,12 +84,15 @@ int main()
     Shader Program_cubes(0);
     Shader Program_light(1);
 
-    Texture diffuseMap("E:/Project/OpenGL/src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
+    Texture diffuseMap("E:/Project/OpenGL/src/image/raiden.png", GL_REPEAT, GL_LINEAR, 0);
     Texture specularMap("E:/Project/OpenGL/src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
     Program_cubes.SetUniform1i("material.specular", 1);
+
+    Model ourModel1("E:/Project/OpenGL/model/lisa/lisa.obj");
+    Model ourModel2("E:/Project/OpenGL/model/heita/heita.obj");
 
     glm::vec3 cubePositions[] = {
         glm::vec3(0.0f, 0.5f, -15.0f),
@@ -122,7 +125,7 @@ int main()
     glm::vec3 background_color(0.1);
 
     glm::vec3 sunlight_color(1.0f);
-    glm::vec3 sunlight_pos(10.0f, 100.0f, 0.0f);
+    glm::vec3 sunlight_pos(10.0f, 100.0f, 100.0f);
 
     // glm::vec3 lightColor_directional(1.0f);
     glm::vec3 light_am_di_sp_directional(0.1f, 0.5f, 1.0f);
@@ -300,6 +303,24 @@ int main()
         Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
         Program_cubes.SetUniform4m("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // view/projection transformations
+        // glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // glm::mat4 view = camera.GetViewMatrix();
+        // Program_cubes.SetUniform4m("projection", projection);
+        // Program_cubes.SetUniform4m("view", view);
+
+        // render the loaded model
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));     // it's a bit too big for our scene, so scale it down
+        Program_cubes.SetUniform4m("model", model);
+        ourModel1.Draw(Program_cubes);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-10.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));     // it's a bit too big for our scene, so scale it down
+        Program_cubes.SetUniform4m("model", model);
+        ourModel2.Draw(Program_cubes);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

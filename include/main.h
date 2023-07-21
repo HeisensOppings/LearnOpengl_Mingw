@@ -14,6 +14,7 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+#include "model.h"
 #include "shader.h"
 #include "texture.h"
 #include "vertexarray.h"
