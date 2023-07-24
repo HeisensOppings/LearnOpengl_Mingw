@@ -84,27 +84,14 @@ int main()
     Shader Program_cubes(0);
     Shader Program_light(1);
 
-    Texture diffuseMap("E:/Project/OpenGL/src/image/raiden.png", GL_REPEAT, GL_LINEAR, 0);
-    Texture specularMap("E:/Project/OpenGL/src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
+    Texture diffuseMap("./src/image/raiden.png", GL_REPEAT, GL_LINEAR, 0);
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
     Program_cubes.SetUniform1i("material.specular", 1);
 
-    Model ourModel1("E:/Project/OpenGL/model/lisa/lisa.obj");
-    Model ourModel2("E:/Project/OpenGL/model/heita/heita.obj");
-
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.5f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f),
-        glm::vec3(1.0f, -1.5f, 1.0f)};
+    Model ourModel1("./model/lisa/lisa.obj");
+    Model ourModel2("./model/heita/heita.obj");
 
     glm::vec3 pointLightPositions[] = {
         glm::vec3(0.7f, 0.2f, 2.0f),
@@ -138,9 +125,6 @@ int main()
     unsigned int light_distance_select_spot = 4;
     vector<vector<float>> light_distance{{0.14, 0.07}, {0.07, 0.017}, {0.027, 0.0028}, {0.014, 0.0007}, {0.007, 0.0002}};
     vector<int> light_distance_index{32, 65, 160, 325, 600};
-    float angle_limit = 89.0;
-    float light_cutoff = 12.5;
-    float light_outerCutOff = 15.5;
 
     int material_shininess = 32;
 
@@ -200,8 +184,13 @@ int main()
 
         glm::mat4 view;
         view = camera.GetViewMatrix();
+        float aspect = 1.0f;
+        if (SCR_HEIGHT != 0 || SCR_WIDTH != 0)
+        {
+            aspect = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+        }
         glm::mat4 projection = glm::mat4(1.0f);
-        projection = glm::perspective(glm::radians(camera.m_Fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera.m_Fov), aspect, 0.1f, 100.0f);
 
         VAO_Cubes.Bind();
         Program_light.Bind();
@@ -230,7 +219,7 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         Program_light.SetUniform3f("lightColor", lightColor_point);
-        for (unsigned int i = 0; i < 4; i++)
+        for (unsigned int i = 0; i < 1; i++)
         {
             model = glm::mat4(1.0f);
             model = glm::translate(model, pointLightPositions[i]);
@@ -247,7 +236,7 @@ int main()
         Program_cubes.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
         Program_cubes.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
         // point light
-        for (GLuint i = 0; i < 4; i++)
+        for (GLuint i = 0; i < 1; i++)
         {
             string number = to_string(i);
             Program_cubes.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
@@ -280,35 +269,6 @@ int main()
         Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
         Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        for (unsigned int i = 0; i < 10; i++)
-        {
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = (i + 1) * glfwGetTime();
-            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-            Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-            Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-            Program_cubes.SetUniform4m("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // big cube
-        model = glm::mat4(1.0);
-        model = glm::translate(model, glm::vec3(0.0, 0.0, -100.0));
-        model = glm::scale(model, glm::vec3(100.0));
-        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-        Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-        Program_cubes.SetUniform4m("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // view/projection transformations
-        // glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // glm::mat4 view = camera.GetViewMatrix();
-        // Program_cubes.SetUniform4m("projection", projection);
-        // Program_cubes.SetUniform4m("view", view);
 
         // render the loaded model
         model = glm::mat4(1.0f);

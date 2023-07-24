@@ -54,7 +54,7 @@ struct Spotlight{
     vec3 diffuse;
     vec3 specular;
 };
-#define POINT_LIGHTS 4
+#define POINT_LIGHTS 1
 in vec3 FragPos;  
 in vec3 Normal;  
 in vec2 TexCoords;
@@ -63,12 +63,18 @@ uniform Dirlight dirLight;
 uniform Pointlight pointLights[POINT_LIGHTS];
 uniform Spotlight spotLight;
 uniform Material material;
+uniform sampler2D texture_diffuse1;
+uniform sampler2D texture_specular1;
+uniform sampler2D texture_normal1;
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main()
 {
     // properties
+    texture_diffuse1;
+    texture_specular1;
+    texture_normal1;
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 result = CalcDirLight(dirLight, norm, viewDir);

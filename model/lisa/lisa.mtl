@@ -49,7 +49,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 3
-map_Kd body.png
+map_Kd hair.png
 map_Ks mc3.png
 map_Bump toon.png
 
@@ -75,7 +75,7 @@ Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 3
-map_Kd face.png
+map_Kd body.png
 map_Ks mc3.png
 map_Bump toon.png
 
