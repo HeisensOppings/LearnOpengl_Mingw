@@ -66,9 +66,13 @@ uniform Material material;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 uniform sampler2D texture_normal1;
+uniform float zbuffer_near;
+uniform float zbuffer_far;
+uniform int depth_test;
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+float LinearizeDepth(float depth);
 void main()
 {
     // properties
@@ -77,12 +81,26 @@ void main()
     texture_normal1;
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
-    for(int i = 0; i < POINT_LIGHTS; ++i)
-        result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
-    result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
-    FragColor = vec4(result, 1.0);
+    if(depth_test == 0)
+    {
+        vec3 result = CalcDirLight(dirLight, norm, viewDir);
+        for(int i = 0; i < POINT_LIGHTS; ++i)
+            result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+        result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+        FragColor = vec4(result, 1.0);
+    }
+    else
+    {
+    // FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
+        float depth = LinearizeDepth(gl_FragCoord.z) / zbuffer_far;
+        FragColor = vec4(vec3(depth), 1.0);
+    }
 } 
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; //back to NDC (Normalized Device Coordinates)
+    return (2.0 * zbuffer_far * zbuffer_near) / (zbuffer_far + zbuffer_near - z * (zbuffer_far - zbuffer_near));
+}
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(light.direction);
@@ -161,4 +179,24 @@ uniform vec3 lightColor;
 void main()
 {
     FragColor = vec4(lightColor,0.0);
+}
+
+#shader vertex
+#version 330 core
+layout (location = 0) in vec3 aPos;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+void main()
+{
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+}
+
+#shader fragment
+#version 330 core
+out vec4 FragColor;
+uniform vec3 OutlineColor;
+void main()
+{
+    FragColor = vec4(OutlineColor,0.0);
 }
