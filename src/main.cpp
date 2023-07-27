@@ -36,7 +36,7 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    float vertices_cube[] = {
+    float CubesVertices[] = {
         // positions          // normals        // texture coords
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
@@ -80,54 +80,116 @@ int main()
         -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
+    float PlaneVertices[] = {
+        // positions       // normals   // texture Coords
+        5.0f, -0.5f, 5.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+        -5.0f, -0.5f, 5.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+        5.0f, -0.5f, 5.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+        5.0f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 2.0f, 2.0f};
+
+    float GrassVertices[] = {
+        // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+        0.0f, -0.5f, 0.0f, 0.0f, 1.0f,
+        1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
+        0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+        1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
+        1.0f, 0.5f, 0.0f, 1.0f, 0.0f};
+
     Shader::ShaderInit("E:/Project/OpenGL/src/shaders.glsl");
     Shader Program_cubes(0);
-    Shader Program_cube_test(2);
+    Shader Program_plane(0);
     Shader Program_light(1);
-    Shader Program_Outline(2);
+    Shader Program_grass(2);
+    Shader Program_windo(2);
 
-    Texture diffuseMap("./src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
-    Texture specularMap("./src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
+    Texture diffuseMapCubes("./src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
+    Texture specularMapCubes("./src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
+    Texture diffuseMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_Diffuse.png", GL_REPEAT, GL_LINEAR, 2);
+    Texture specularMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_SMBE.png", GL_REPEAT, GL_LINEAR, 3);
+    Texture diffuseMapGrass("./src/image/grass_inazuma1.png", GL_CLAMP_TO_EDGE, GL_LINEAR, 4);
+    Texture diffuseMapWindo("./src/image/blending_transparent_window.png", GL_CLAMP_TO_EDGE, GL_LINEAR, 5);
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
     Program_cubes.SetUniform1i("material.specular", 1);
 
-    Model ourModel1("./model/lisa/lisa.obj");
-    Model ourModel2("./model/heita/heita.obj");
-    Model ourModel3("./model/Dq_Syabugyo/IndoorScene_Dq_Syabugyo.obj");
+    Program_plane.Bind();
+    Program_plane.SetUniform1i("material.diffuse", 2);
+    Program_plane.SetUniform1i("material.specular", 3);
 
-    glm::vec3 pointLightPositions[] = {
-        glm::vec3(0.0f, 4.0f, 2.0f),
-        glm::vec3(2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f, 2.0f, -12.0f),
-        glm::vec3(0.0f, 0.0f, -3.0f)};
+    Program_grass.Bind();
+    Program_grass.SetUniform1i("texture", 4);
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.5f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f),
-        glm::vec3(1.0f, -1.5f, 1.0f)};
+    Program_windo.Bind();
+    Program_windo.SetUniform1i("texture", 5);
 
-    BufferLayout layout2;
-    vector<int> layout_stride2{3, 3, 2};
-    layout2.AddFloat(layout_stride2);
+    // Model ourModel1("./model/lisa/lisa.obj");
+    // Model ourModel2("./model/heita/heita.obj");
+    // Model ourModel3("./model/Dq_Syabugyo/IndoorScene_Dq_Syabugyo.obj");
+
+    vector<glm::vec3>
+        pointLightPositions{
+            glm::vec3(0.0f, 4.0f, 2.0f),
+            glm::vec3(2.3f, -3.3f, -4.0f),
+            glm::vec3(-4.0f, 2.0f, -12.0f),
+            glm::vec3(0.0f, 0.0f, -3.0f)};
+
+    vector<glm::vec3> cubePositions{
+        // glm::vec3(0.0f, 0.0f, -15.0f),
+        glm::vec3(-1.0f, 0.0f, -1.0f),
+        // glm::vec3(-3.8f, 0.0f, -12.3f),
+        glm::vec3(-1.0f, 0.0f, -1.0f),
+        glm::vec3(-1.7f, 0.0f, -7.5f),
+        glm::vec3(1.3f, 0.0f, -2.5f),
+        // glm::vec3(1.5f, 0.0f, -2.5f),
+        // glm::vec3(1.5f, 0.0f, -1.5f),
+        glm::vec3(-1.3f, 0.0f, -1.5f),
+        glm::vec3(1.0f, 0.0f, 1.0f)};
+
+    vector<glm::vec3> vegetation{
+        glm::vec3(-1.5f, 0.0f, -0.48f),
+        glm::vec3(1.5f, 0.0f, 0.51f),
+        glm::vec3(0.0f, 0.0f, 0.7f),
+        glm::vec3(-0.3f, 0.0f, -2.3f),
+        glm::vec3(0.5f, 0.0f, -0.6f)};
+
+    vector<glm::vec3> windows{
+        glm::vec3(-1.5f, 0.0f, -0.4f),
+        glm::vec3(1.5f, 0.0f, 0.45f),
+        glm::vec3(0.0f, 0.0f, 0.2f),
+        glm::vec3(-0.3f, 0.0f, -1.8f),
+        glm::vec3(0.5f, 0.0f, -0.2f)};
+
+    BufferLayout layout_Cubes;
+    vector<int> layout_Cubes_Stride{3, 3, 2};
+    layout_Cubes.AddFloat(layout_Cubes_Stride);
     VertexArray VAO_Cubes;
-    VertexBuffer VBO2(vertices_cube, sizeof(vertices_cube));
-    VAO_Cubes.AddBuffer(VBO2, layout2);
+    VertexBuffer VBO_Cubes(CubesVertices, sizeof(CubesVertices));
+    VAO_Cubes.AddBuffer(VBO_Cubes, layout_Cubes);
+
+    BufferLayout layout_Plane;
+    vector<int> layout_Plane_Stride{3, 3, 2};
+    layout_Plane.AddFloat(layout_Plane_Stride);
+    VertexArray VAO_Plane;
+    VertexBuffer VBO_Plane(PlaneVertices, sizeof(PlaneVertices));
+    VAO_Plane.AddBuffer(VBO_Plane, layout_Plane);
+
+    BufferLayout layout_Grass;
+    vector<int> layout_Grass_Stride{3, 2};
+    layout_Grass.AddFloat(layout_Grass_Stride);
+    VertexArray VAO_Grass;
+    VertexBuffer VBO_Grass(GrassVertices, sizeof(GrassVertices));
+    VAO_Grass.AddBuffer(VBO_Grass, layout_Grass);
+
+    glm::vec3 background_color(0.1);
 
     float zbuffer_near = 0.1;
     float zbuffer_far = 100;
     glm::vec3 lightPos(0.0, 0.0, 1.0);
     glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
-
-    glm::vec3 background_color(0.1);
 
     glm::vec3 sunlight_color(1.0f);
     glm::vec3 sunlight_pos(10.0f, 100.0f, 100.0f);
@@ -147,7 +209,6 @@ int main()
 
     bool lighting_mode_camera = false;
     bool depth_test = false;
-    vector<string> lighting_mode_text{"Directional Light", "Point lights ----", "Spotlight -------"};
 
     while (!glfwWindowShouldClose(window))
     {
@@ -170,13 +231,13 @@ int main()
                 lightPos = camera.m_cameraPos;
             if (ImGui::Button("Camera Light"))
                 lighting_mode_camera = !lighting_mode_camera;
-            if (ImGui::Button(("light point distance: " + std::to_string(light_distance_index[light_distance_select_point])).c_str()))
+            if (ImGui::Button(("point distance: " + std::to_string(light_distance_index[light_distance_select_point])).c_str()))
             {
                 ++light_distance_select_point;
                 if (light_distance_select_point > 4)
                     light_distance_select_point = 0;
             }
-            if (ImGui::Button(("light spot distance: " + std::to_string(light_distance_index[light_distance_select_spot])).c_str()))
+            if (ImGui::Button(("spot distance: " + std::to_string(light_distance_index[light_distance_select_spot])).c_str()))
             {
                 ++light_distance_select_spot;
                 if (light_distance_select_spot > 4)
@@ -184,11 +245,11 @@ int main()
             }
             ImGui::ColorEdit3(" background_color", (float *)&background_color);
             ImGui::NewLine();
-            ImGui::ColorEdit3(" color1 directional", (float *)&sunlight_color);
+            ImGui::ColorEdit3(" directional", (float *)&sunlight_color);
             ImGui::SliderFloat3("ambient-diffuse-specular1", (float *)&light_am_di_sp_directional, 0.0f, 1.0f);
-            ImGui::ColorEdit3(" color2 point", (float *)&lightColor_point);
+            ImGui::ColorEdit3(" point", (float *)&lightColor_point);
             ImGui::SliderFloat3("ambient-diffuse-specular2", (float *)&light_am_di_sp_point, 0.0f, 1.0f);
-            ImGui::ColorEdit3(" color3 spot", (float *)&lightColor_spot);
+            ImGui::ColorEdit3(" spot", (float *)&lightColor_spot);
             ImGui::SliderFloat3("ambient-diffuse-specular3", (float *)&light_am_di_sp_spot, 0.0f, 1.0f);
             ImGui::NewLine();
             if (ImGui::Button(("material shininess: " + std::to_string(material_shininess)).c_str()))
@@ -217,18 +278,15 @@ int main()
         }
         glm::mat4 projection = glm::mat4(1.0f);
         projection = glm::perspective(glm::radians(camera.m_Fov), aspect, zbuffer_near, zbuffer_far);
+        glm::mat4 model = glm::mat4(1.0f);
 
+        // -------------------------------------------- light cubes
         VAO_Cubes.Bind();
         Program_light.Bind();
-        diffuseMap.Bind();
-        specularMap.Bind();
-
-        glm::mat4 model = glm::mat4(1.0f);
-        // light cube
+        // sopt light
         Program_light.SetUniform4m("view", view);
         Program_light.SetUniform4m("projection", projection);
         Program_light.SetUniform3f("lightColor", lightColor_spot);
-        model = glm::mat4(1.0f);
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.2f));
         Program_light.SetUniform4m("model", model);
@@ -239,6 +297,8 @@ int main()
             lightDirection = camera.m_cameraDir;
             lightPos = camera.m_cameraPos;
         }
+
+        // directional light
         Program_light.SetUniform3f("lightColor", sunlight_color);
         model = glm::mat4(1.0f);
         model = glm::translate(model, sunlight_pos);
@@ -246,6 +306,7 @@ int main()
         Program_light.SetUniform4m("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        // point light
         Program_light.SetUniform3f("lightColor", lightColor_point);
         for (unsigned int i = 0; i < 1; i++)
         {
@@ -256,8 +317,13 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
-        // small subes
+        // -------------------------------------- cubes
+        VAO_Cubes.Bind();
+        diffuseMapCubes.Bind();
+        specularMapCubes.Bind();
         Program_cubes.Bind();
+        Program_cubes.SetUniform4m("view", view);
+        Program_cubes.SetUniform4m("projection", projection);
         // direction light
         Program_cubes.SetUniform1i("depth_test", (int)depth_test);
         Program_cubes.SetUniform1f("zbuffer_near", zbuffer_near);
@@ -289,105 +355,138 @@ int main()
         Program_cubes.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
         Program_cubes.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
         Program_cubes.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
         Program_cubes.SetUniform1i("material.shininess", material_shininess);
 
-        Program_cubes.SetUniform4m("view", view);
-        Program_cubes.SetUniform4m("projection", projection);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.2f, -1.8f, -2.0f));
-        Program_cubes.SetUniform4m("model", model);
-        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-        Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // for (unsigned int i = 0; i < cubePositions.size(); i++)
+        // {
+        //     Program_cubes.Bind();
+        //     glm::mat4 model = glm::mat4(1.0f);
+        //     model = glm::translate(model, cubePositions[i]);
+        //     // float angle = (i + 1) * 0.5;
+        //     // model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+        //     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        //     Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+        //     Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
+        //     Program_cubes.SetUniform4m("model", model);
+        //     glDrawArrays(GL_TRIANGLES, 0, 36);
+        // }
 
-        // render the loaded model
-        // house
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, -0.22f, 0.0f));
-        model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
-        Program_cubes.SetUniform4m("model", model);
-        ourModel3.Draw(Program_cubes);
-        // lisa
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-        Program_cubes.SetUniform4m("model", model);
-        ourModel1.Draw(Program_cubes);
-        // heita
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.0f, -0.12f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-        Program_cubes.SetUniform4m("model", model);
-        ourModel2.Draw(Program_cubes);
+        // ---------------------------------------------- plane
+        VAO_Plane.Bind();
+        diffuseMapPlane.Bind();
+        specularMapPlane.Bind();
+        Program_plane.Bind();
+        Program_plane.SetUniform4m("view", view);
+        Program_plane.SetUniform4m("projection", projection);
 
-        VAO_Cubes.Bind();
-        Program_light.Bind();
-        diffuseMap.Bind();
-        specularMap.Bind();
-
-        Program_cubes.SetUniform4m("view", view);
-        Program_cubes.SetUniform4m("projection", projection);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.2f, -1.8f, -2.0f));
-        Program_cubes.SetUniform4m("model", model);
-        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-        Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // outline
-        Program_Outline.Bind();
-        Program_Outline.SetUniform3f("OutlineColor", glm::vec3(0.0f, 1.0f, 0.0f));
-        Program_Outline.SetUniform4m("model", model);
-        Program_Outline.SetUniform4m("view", view);
-        Program_Outline.SetUniform4m("projection", projection);
-
-        for (unsigned int i = 0; i < 10; i++)
+        // direction light
+        Program_plane.SetUniform1i("depth_test", (int)depth_test);
+        Program_plane.SetUniform1f("zbuffer_near", zbuffer_near);
+        Program_plane.SetUniform1f("zbuffer_far", zbuffer_far);
+        Program_plane.SetUniform3f("dirLight.direction", sunlight_pos);
+        Program_plane.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
+        Program_plane.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
+        Program_plane.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
+        // point light
+        for (GLuint i = 0; i < 1; i++)
         {
-            glStencilMask(0xFF);
-            glClear(GL_STENCIL_BUFFER_BIT);
-            glStencilFunc(GL_ALWAYS, 1, 0xFF);
-            Program_cubes.Bind();
+            string number = to_string(i);
+            Program_plane.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
+            Program_plane.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
+            Program_plane.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
+            Program_plane.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
+            Program_plane.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
+            Program_plane.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
+            Program_plane.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
+        }
+        // spotLight
+        Program_plane.SetUniform3f("spotLight.position", lightPos);
+        Program_plane.SetUniform3f("spotLight.direction", lightDirection);
+        Program_plane.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
+        Program_plane.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
+        Program_plane.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
+        Program_plane.SetUniform1f("spotLight.constant", 1.0f);
+        Program_plane.SetUniform1f("spotLight.linear", light_distance[light_distance_select_spot][0]);
+        Program_plane.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
+        Program_plane.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        Program_plane.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        Program_plane.SetUniform1i("material.shininess", material_shininess);
 
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = (i + 1) * 0.5;
-            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-            Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-            Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-            Program_cubes.SetUniform4m("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+        model = glm::mat4(1.0f);
+        glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        Program_plane.SetUniform3m("normalMatrix", normalMatrix);
+        Program_plane.SetUniform3f("viewPos", camera.m_cameraPos);
+        Program_plane.SetUniform4m("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-            glStencilMask(0x00);
-            glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-            Program_Outline.Bind();
-            float scales = 1.1f;
-
+        // ---------------------------------------------- grass
+        VAO_Grass.Bind();
+        diffuseMapGrass.Bind();
+        Program_grass.Bind();
+        Program_grass.SetUniform4m("view", view);
+        Program_grass.SetUniform4m("projection", projection);
+        for (unsigned int i = 0; i < vegetation.size(); i++)
+        {
             model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-            model = glm::scale(model, glm::vec3(scales, scales, scales));
-            Program_Outline.SetUniform4m("model", model);
-            glDisable(GL_DEPTH_TEST);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-            glEnable(GL_DEPTH_TEST);
+            model = glm::translate(model, vegetation[i]);
+            // glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+            // Program_grass.SetUniform3m("normalMatrix", normalMatrix);
+            // Program_grass.SetUniform3f("viewPos", camera.m_cameraPos);
+            Program_grass.SetUniform4m("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 
-        // text outline cube
-        Program_cube_test.Bind();
-        Program_cube_test.SetUniform3f("OutlineColor", glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(-1.0f, -1.5f, -1.8f));
-        Program_cube_test.SetUniform4m("model", model);
-        Program_cube_test.SetUniform4m("view", view);
-        Program_cube_test.SetUniform4m("projection", projection);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // windows
 
-        glStencilMask(0xFF);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        // distance update
+        map<float, glm::vec3> sorted;
+        for (unsigned int i = 0; i < windows.size(); ++i)
+        {
+            float distance = glm::length(camera.m_cameraPos - windows[i]);
+            sorted[distance] = windows[i];
+        }
+
+        diffuseMapWindo.Bind();
+        Program_windo.Bind();
+        Program_windo.SetUniform4m("view", view);
+        Program_windo.SetUniform4m("projection", projection);
+        for (map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, it->second);
+            Program_windo.SetUniform4m("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
+        // for (unsigned int i = 0; i < windows.size(); i++)
+        // {
+        //     model = glm::mat4(1.0f);
+        //     model = glm::translate(model, windows[i]);
+        //     // glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        //     // Program_grass.SetUniform3m("normalMatrix", normalMatrix);
+        //     // Program_grass.SetUniform3f("viewPos", camera.m_cameraPos);
+        //     Program_windo.SetUniform4m("model", model);
+        //     glDrawArrays(GL_TRIANGLES, 0, 6);
+        // }
+
+        // // render the loaded model
+        // // house
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(0.0f, -0.22f, 0.0f));
+        // model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+        // Program_cubes.SetUniform4m("model", model);
+        // ourModel3.Draw(Program_cubes);
+        // // lisa
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        // Program_cubes.SetUniform4m("model", model);
+        // ourModel1.Draw(Program_cubes);
+        // // heita
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(-1.0f, -0.12f, 0.0f));
+        // model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        // Program_cubes.SetUniform4m("model", model);
+        // ourModel2.Draw(Program_cubes);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -444,9 +543,11 @@ int opengl_init()
     glfwSetScrollCallback(window, scroll_callback);
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_STENCIL_TEST);
-    glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glDepthFunc(GL_LESS);
+    // glEnable(GL_STENCIL_TEST);
+    // glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
 
     loadCameraPosition(camera);
 
