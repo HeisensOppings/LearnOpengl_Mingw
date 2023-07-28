@@ -37,57 +37,59 @@ int main()
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     float CubesVertices[] = {
-        // positions          // normals        // texture coords
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,
-
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+        // Back face
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // Bottom-left
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,  // bottom-right
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+        -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,  // top-left
+        // Front face
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // bottom-right
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,   // top-right
+        0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,   // top-right
+        -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,  // top-left
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom-left
+        // Left face
+        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,   // top-right
+        -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,  // top-left
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+        -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-left
+        -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // bottom-right
+        -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,   // top-right
+        // Right face
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,   // top-left
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+        0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,  // top-right
+        0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom-right
+        0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,   // top-left
+        0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,  // bottom-left
+        // Bottom face
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+        0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,  // top-left
+        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,   // bottom-left
+        0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,   // bottom-left
+        -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,  // bottom-right
+        -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, // top-right
+        // Top face
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
+        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom-right
+        0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,  // top-right
+        0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom-right
+        -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top-left
+        -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f   // bottom-left
+    };
 
     float PlaneVertices[] = {
         // positions       // normals   // texture Coords
-        5.0f, -0.5f, 5.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
-        -5.0f, -0.5f, 5.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
-        5.0f, -0.5f, 5.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
-        5.0f, -0.5f, -5.0f, 0.0f, 1.0f, 0.0f, 2.0f, 2.0f};
+        10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+        -10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+        -10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
+        10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 2.0f,
+        -10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
+        };
 
     float GrassVertices[] = {
         // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -121,12 +123,12 @@ int main()
     Program_plane.SetUniform1i("material.specular", 3);
 
     Program_grass.Bind();
-    Program_grass.SetUniform1i("texture", 4);
+    Program_grass.SetUniform1i("texture1", 4);
 
     Program_windo.Bind();
-    Program_windo.SetUniform1i("texture", 5);
+    Program_windo.SetUniform1i("texture1", 5);
 
-    // Model ourModel1("./model/lisa/lisa.obj");
+    Model ourModel1("./model/lisa/lisa.obj");
     // Model ourModel2("./model/heita/heita.obj");
     // Model ourModel3("./model/Dq_Syabugyo/IndoorScene_Dq_Syabugyo.obj");
 
@@ -142,11 +144,11 @@ int main()
         glm::vec3(-1.0f, 0.0f, -1.0f),
         // glm::vec3(-3.8f, 0.0f, -12.3f),
         glm::vec3(-1.0f, 0.0f, -1.0f),
-        glm::vec3(-1.7f, 0.0f, -7.5f),
+        glm::vec3(-2.1f, 0.0f, -7.5f),
         glm::vec3(1.3f, 0.0f, -2.5f),
         // glm::vec3(1.5f, 0.0f, -2.5f),
         // glm::vec3(1.5f, 0.0f, -1.5f),
-        glm::vec3(-1.3f, 0.0f, -1.5f),
+        glm::vec3(-1.5f, 0.0f, -2.0f),
         glm::vec3(1.0f, 0.0f, 1.0f)};
 
     vector<glm::vec3> vegetation{
@@ -324,6 +326,7 @@ int main()
         Program_cubes.Bind();
         Program_cubes.SetUniform4m("view", view);
         Program_cubes.SetUniform4m("projection", projection);
+        Program_cubes.SetUniform1f("scales", 1.0f);
         // direction light
         Program_cubes.SetUniform1i("depth_test", (int)depth_test);
         Program_cubes.SetUniform1f("zbuffer_near", zbuffer_near);
@@ -357,19 +360,39 @@ int main()
         Program_cubes.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
         Program_cubes.SetUniform1i("material.shininess", material_shininess);
 
-        // for (unsigned int i = 0; i < cubePositions.size(); i++)
-        // {
-        //     Program_cubes.Bind();
-        //     glm::mat4 model = glm::mat4(1.0f);
-        //     model = glm::translate(model, cubePositions[i]);
-        //     // float angle = (i + 1) * 0.5;
-        //     // model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-        //     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        //     Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-        //     Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-        //     Program_cubes.SetUniform4m("model", model);
-        //     glDrawArrays(GL_TRIANGLES, 0, 36);
-        // }
+        for (unsigned int i = 0; i < cubePositions.size(); i++)
+        {
+            Program_cubes.Bind();
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            // float angle = (i + 1) * 0.5;
+            // model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+            Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+            Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
+            Program_cubes.SetUniform4m("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+        // render the loaded model
+        // house
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(0.0f, -0.22f, 0.0f));
+        // model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+        // Program_cubes.SetUniform4m("model", model);
+        // ourModel3.Draw(Program_cubes);
+        // lisa
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        Program_cubes.SetUniform4m("model", model);
+        ourModel1.Draw(Program_cubes);
+        // heita
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(-1.0f, -0.12f, 0.0f));
+        // model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        // Program_cubes.SetUniform4m("model", model);
+        // ourModel2.Draw(Program_cubes);
 
         // ---------------------------------------------- plane
         VAO_Plane.Bind();
@@ -378,6 +401,7 @@ int main()
         Program_plane.Bind();
         Program_plane.SetUniform4m("view", view);
         Program_plane.SetUniform4m("projection", projection);
+        Program_plane.SetUniform1f("scales", 2.0f);
 
         // direction light
         Program_plane.SetUniform1i("depth_test", (int)depth_test);
@@ -468,26 +492,6 @@ int main()
         //     glDrawArrays(GL_TRIANGLES, 0, 6);
         // }
 
-        // // render the loaded model
-        // // house
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(0.0f, -0.22f, 0.0f));
-        // model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
-        // Program_cubes.SetUniform4m("model", model);
-        // ourModel3.Draw(Program_cubes);
-        // // lisa
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
-        // model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-        // Program_cubes.SetUniform4m("model", model);
-        // ourModel1.Draw(Program_cubes);
-        // // heita
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(-1.0f, -0.12f, 0.0f));
-        // model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
-        // Program_cubes.SetUniform4m("model", model);
-        // ourModel2.Draw(Program_cubes);
-
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -545,6 +549,9 @@ int opengl_init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glFrontFace(GL_CW);
     // glDepthFunc(GL_LESS);
     // glEnable(GL_STENCIL_TEST);
     // glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
