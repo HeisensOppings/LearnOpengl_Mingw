@@ -18,6 +18,7 @@ public:
     ~Texture();
     void Bind();
     void UnBind();
+    unsigned int &GetTextureID();
 };
 
 #endif

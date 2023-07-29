@@ -1,9 +1,9 @@
 #include "main.h"
 
-#define SCR_WIDTH_DEFAULT 800
-#define SCR_HEIGHT_DEFAULT 500
-unsigned int SCR_WIDTH = SCR_WIDTH_DEFAULT;
-unsigned int SCR_HEIGHT = SCR_HEIGHT_DEFAULT;
+#define SCR_WIDTH_DEFAULT 1920
+#define SCR_HEIGHT_DEFAULT 1080
+int SCR_WIDTH = SCR_WIDTH_DEFAULT;
+int SCR_HEIGHT = SCR_HEIGHT_DEFAULT;
 
 float key_value = 1.0;
 int switchTexture = 1;
@@ -39,8 +39,8 @@ int main()
     float CubesVertices[] = {
         // Back face
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // Bottom-left
-        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
         0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,  // bottom-right
+        0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
         0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
         -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,  // top-left
@@ -88,8 +88,7 @@ int main()
         -10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
         10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
         10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 2.0f,
-        -10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
-        };
+        -10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f};
 
     float GrassVertices[] = {
         // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
@@ -100,12 +99,23 @@ int main()
         1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
         1.0f, 0.5f, 0.0f, 1.0f, 0.0f};
 
+    float FrameVertices[] = {
+        // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        // positions   // texCoords
+        -1.0f, 1.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, 1.0f, 0.0f,
+        -1.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, -1.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f, 1.0f};
+
     Shader::ShaderInit("E:/Project/OpenGL/src/shaders.glsl");
     Shader Program_cubes(0);
     Shader Program_plane(0);
     Shader Program_light(1);
     Shader Program_grass(2);
     Shader Program_windo(2);
+    Shader Program_buffe(3);
 
     Texture diffuseMapCubes("./src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
     Texture specularMapCubes("./src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
@@ -186,6 +196,13 @@ int main()
     VertexBuffer VBO_Grass(GrassVertices, sizeof(GrassVertices));
     VAO_Grass.AddBuffer(VBO_Grass, layout_Grass);
 
+    BufferLayout layout_Frame;
+    vector<int> layout_Frame_Stride{2, 2};
+    layout_Frame.AddFloat(layout_Frame_Stride);
+    VertexArray VAO_Frame;
+    VertexBuffer VBO_Frame(FrameVertices, sizeof(FrameVertices));
+    VAO_Frame.AddBuffer(VBO_Frame, layout_Frame);
+
     glm::vec3 background_color(0.1);
 
     float zbuffer_near = 0.1;
@@ -212,14 +229,50 @@ int main()
     bool lighting_mode_camera = false;
     bool depth_test = false;
 
+    Program_buffe.Bind();
+    Program_buffe.SetUniform1i("screenTexture", 5);
+
+    // framebuffer configuraion
+    unsigned int framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    // create a color attachment texture
+    // unsigned int textureColorbuffer;
+    unsigned int textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    // use a single renderbuffer object for both a depth AND stencil buffer
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    // now actually attach it
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     while (!glfwWindowShouldClose(window))
     {
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         processInput(window);
         {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
             ImGui::Begin("Lighting Settings");
+            // ImGui::Image((ImTextureID)(intptr_t)textureColorbuffer, ImVec2(500, 500), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(0, 0, 0, 0));
             ImGui::PushItemWidth(150);
             if (ImGui::Button("z depth_test"))
                 depth_test = !depth_test;
@@ -261,16 +314,21 @@ int main()
                     material_shininess = 32;
             }
             ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
+            // ImGui::End();
         }
-
+        // bind to framebuffer and draw scene as we normally would to color texture
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        // enable depth testing (is disabled for rendering screen-space quad)
+        glEnable(GL_DEPTH_TEST);
+        // make sure we clear the framebuffer's content
         glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        float currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
+        // render
+#if 1
         glm::mat4 view;
         view = camera.GetViewMatrix();
         float aspect = 1.0f;
@@ -481,16 +539,47 @@ int main()
             Program_windo.SetUniform4m("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
-        // for (unsigned int i = 0; i < windows.size(); i++)
-        // {
-        //     model = glm::mat4(1.0f);
-        //     model = glm::translate(model, windows[i]);
-        //     // glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        //     // Program_grass.SetUniform3m("normalMatrix", normalMatrix);
-        //     // Program_grass.SetUniform3f("viewPos", camera.m_cameraPos);
-        //     Program_windo.SetUniform4m("model", model);
-        //     glDrawArrays(GL_TRIANGLES, 0, 6);
-        // }
+#endif
+
+        // // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        glViewport((width - SCR_WIDTH) / 2, (height - SCR_HEIGHT) / 2, SCR_WIDTH, SCR_HEIGHT);
+        // static int i = 0;
+        // if((++i) % 50 == 1)
+        // cout<<width<<"-"<<height<<endl;
+
+        // // disable depth test so screen-space quad isn't discarded due to depth test
+        glDisable(GL_DEPTH_TEST);
+        // // clear all relevent buffers
+        // // glClear(GL_COLOR_BUFFER_BIT);
+        Program_buffe.Bind();
+        VAO_Frame.Bind();
+        glActiveTexture(GL_TEXTURE0 + 5);
+        // glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        Program_buffe.SetUniform1i("mode", 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        
+        glViewport(0, 0, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        Program_buffe.SetUniform1i("mode", 1);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glViewport(0, SCR_HEIGHT / 5, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        Program_buffe.SetUniform1i("mode", 2);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glViewport(0, SCR_HEIGHT / 5 * 2, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        Program_buffe.SetUniform1i("mode", 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glViewport(0, SCR_HEIGHT / 5 * 3, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        Program_buffe.SetUniform1i("mode", 4);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glViewport(0, SCR_HEIGHT / 5 * 4, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        Program_buffe.SetUniform1i("mode", 5);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        ImGui::Image((ImTextureID)(intptr_t)textureColorbuffer, ImVec2(SCR_WIDTH / 5, SCR_HEIGHT / 5), ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(0, 0, 0, 0));
+        ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -565,9 +654,13 @@ void framebuffer_size_callback([[maybe_unused]] GLFWwindow *window, int width, i
 {
     // make sure the viewport matches the new window dimensions; note that width and height
     // will be significantly larger than specified on retina displays
-    glViewport(0, 0, width, height);
-    SCR_WIDTH = width;
-    SCR_HEIGHT = height;
+    // glViewport(0, 0, width, height);
+    // SCR_WIDTH = width;
+    // SCR_HEIGHT = height;
+    // int x = (width - SCR_WIDTH) / 4;
+    // int y = (height - SCR_HEIGHT) / 4;
+    // cout << width << " -/2 " << SCR_WIDTH << "=" << x << " " << height << " -/2 " << SCR_HEIGHT << "=" << y << endl;
+    // glViewport(x, y, SCR_WIDTH, SCR_HEIGHT);
 }
 
 void processInput(GLFWwindow *window)
