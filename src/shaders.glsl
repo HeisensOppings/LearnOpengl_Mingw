@@ -70,6 +70,8 @@ uniform sampler2D texture_normal1;
 uniform float zbuffer_near;
 uniform float zbuffer_far;
 uniform int depth_test;
+uniform samplerCube skybox;
+uniform float refractive_rate;
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
@@ -84,17 +86,29 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
     if(depth_test == 0)
     {
-        vec3 result = CalcDirLight(dirLight, norm, viewDir);
-        for(int i = 0; i < POINT_LIGHTS; ++i)
-            result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
-        result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
-        FragColor = vec4(result, 1.0);
+        // vec3 result = CalcDirLight(dirLight, norm, viewDir);
+        // for(int i = 0; i < POINT_LIGHTS; ++i)
+        //     result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+        // result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+        // FragColor = vec4(result, 1.0);
+        vec3 I = normalize(FragPos - viewPos);
+        vec3 R = reflect(I, normalize(Normal));
+        FragColor = vec4(texture(skybox, R).rgb, 1.0);
     }
     else
     {
     // FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
-        float depth = LinearizeDepth(gl_FragCoord.z) / zbuffer_far;
-        FragColor = vec4(vec3(depth), 1.0);
+        // float depth = LinearizeDepth(gl_FragCoord.z) / zbuffer_far;
+        // FragColor = vec4(vec3(depth), 1.0);
+        //
+        // vec3 I = normalize(FragPos - viewPos);
+        // vec3 R = reflect(I, normalize(Normal));
+        // FragColor = vec4(texture(skybox, R).rgb, 1.0);
+        // 
+        float ratio = 1.00 / refractive_rate;
+        vec3 I = normalize(FragPos - viewPos);
+        vec3 R = refract(I, normalize(Normal), ratio);
+        FragColor = vec4(texture(skybox, R).rgb, 1.0);
     }
 } 
 float LinearizeDepth(float depth)
@@ -320,4 +334,27 @@ vec3 kernel_effects(int mode)
     // FragColor = vec4(col, 1.0);
     // float average = (col.r + col.g + col.b) / 3.0;
     // FragColor = vec4(average, average, average, 1.0);
+}
+
+#shader vertex
+#version 330 core
+layout (location = 0) in vec3 aPos;
+out vec3 TexCoords;
+uniform mat4 projection;
+uniform mat4 view;
+void main()
+{
+    TexCoords = aPos;
+    vec4 pos = projection * view * vec4(aPos, 1.0);
+    gl_Position = pos.xyww;
+}
+
+#shader fragment
+#version 330 core
+out vec4 FragColor;
+in vec3 TexCoords;
+uniform samplerCube skybox;
+void main()
+{    
+    FragColor = texture(skybox, TexCoords);
 }

@@ -2,6 +2,7 @@
 #define __TEXTURE_H__
 
 #include <iostream>
+#include <vector>
 #include <string>
 #include "stb_image.h"
 #include <glad/glad.h>
@@ -21,4 +22,5 @@ public:
     unsigned int &GetTextureID();
 };
 
+unsigned int loadCubemap(vector<string> faces);
 #endif

@@ -1,7 +1,7 @@
 #include "main.h"
 
-#define SCR_WIDTH_DEFAULT 1920
-#define SCR_HEIGHT_DEFAULT 1080
+#define SCR_WIDTH_DEFAULT 800
+#define SCR_HEIGHT_DEFAULT 600
 int SCR_WIDTH = SCR_WIDTH_DEFAULT;
 int SCR_HEIGHT = SCR_HEIGHT_DEFAULT;
 
@@ -39,8 +39,8 @@ int main()
     float CubesVertices[] = {
         // Back face
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // Bottom-left
-        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,  // bottom-right
         0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
+        0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,  // bottom-right
         0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,   // top-right
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
         -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,  // top-left
@@ -109,6 +109,50 @@ int main()
         1.0f, -1.0f, 1.0f, 0.0f,
         1.0f, 1.0f, 1.0f, 1.0f};
 
+    float SkyboxVertices[] = {
+        // positions
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, -1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f,
+        -1.0f, -1.0f, 1.0f,
+
+        -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, 1.0f,
+        -1.0f, 1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f};
+
     Shader::ShaderInit("E:/Project/OpenGL/src/shaders.glsl");
     Shader Program_cubes(0);
     Shader Program_plane(0);
@@ -116,6 +160,7 @@ int main()
     Shader Program_grass(2);
     Shader Program_windo(2);
     Shader Program_buffe(3);
+    Shader Program_SkyBo(4);
 
     Texture diffuseMapCubes("./src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
     Texture specularMapCubes("./src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
@@ -123,6 +168,14 @@ int main()
     Texture specularMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_SMBE.png", GL_REPEAT, GL_LINEAR, 3);
     Texture diffuseMapGrass("./src/image/grass_inazuma1.png", GL_CLAMP_TO_EDGE, GL_LINEAR, 4);
     Texture diffuseMapWindo("./src/image/blending_transparent_window.png", GL_CLAMP_TO_EDGE, GL_LINEAR, 5);
+    vector<std::string> faces{
+        "./src/image/right.jpg",
+        "./src/image/left.jpg",
+        "./src/image/top.jpg",
+        "./src/image/bottom.jpg",
+        "./src/image/front.jpg",
+        "./src/image/back.jpg"};
+    unsigned int cubemapTexture = loadCubemap(faces);
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
@@ -137,6 +190,9 @@ int main()
 
     Program_windo.Bind();
     Program_windo.SetUniform1i("texture1", 5);
+
+    Program_SkyBo.Bind();
+    Program_SkyBo.SetUniform1i("skybox", 3);
 
     Model ourModel1("./model/lisa/lisa.obj");
     // Model ourModel2("./model/heita/heita.obj");
@@ -203,6 +259,12 @@ int main()
     VertexBuffer VBO_Frame(FrameVertices, sizeof(FrameVertices));
     VAO_Frame.AddBuffer(VBO_Frame, layout_Frame);
 
+    BufferLayout layout_SkyBoxs;
+    layout_SkyBoxs.AddFloat(3);
+    VertexArray VAO_SkyBoxs;
+    VertexBuffer VBO_SkyBoxs(SkyboxVertices, sizeof(SkyboxVertices));
+    VAO_SkyBoxs.AddBuffer(VBO_SkyBoxs, layout_SkyBoxs);
+
     glm::vec3 background_color(0.1);
 
     float zbuffer_near = 0.1;
@@ -223,6 +285,9 @@ int main()
     unsigned int light_distance_select_spot = 2;
     vector<vector<float>> light_distance{{0.14, 0.07}, {0.07, 0.017}, {0.027, 0.0028}, {0.014, 0.0007}, {0.007, 0.0002}};
     vector<int> light_distance_index{32, 65, 160, 325, 600};
+    // air   water ice   glass  diamond
+    vector<float> refractive_index{1.00, 1.33, 1.309, 1.51, 2.42};
+    float refractive_rate = 1.20;
 
     int material_shininess = 32;
 
@@ -274,13 +339,20 @@ int main()
             ImGui::Begin("Lighting Settings");
             // ImGui::Image((ImTextureID)(intptr_t)textureColorbuffer, ImVec2(500, 500), ImVec2(0, 0), ImVec2(1, 1), ImVec4(1, 1, 1, 1), ImVec4(0, 0, 0, 0));
             ImGui::PushItemWidth(150);
-            if (ImGui::Button("z depth_test"))
-                depth_test = !depth_test;
-            if (depth_test)
+            if (ImGui::Button("reflect"))
             {
-                ImGui::SliderFloat("zbuffer_near", &zbuffer_near, 0.01, 100.0);
-                ImGui::SliderFloat("zbuffer_far", &zbuffer_far, zbuffer_near, 200.0);
+                depth_test = !depth_test;
+                if (depth_test)
+                {
+                    static int index = 0;
+                    if (index >= refractive_index.size())
+                        index = 0;
+                    refractive_rate = index++;
+                    // ImGui::SliderFloat("zbuffer_near", &zbuffer_near, 0.01, 100.0);
+                    // ImGui::SliderFloat("zbuffer_far", &zbuffer_far, zbuffer_near, 200.0);
+                }
             }
+            ImGui::SliderFloat("reflect rate", &refractive_rate, 1.00, 3.00);
             ImGui::NewLine();
             if (lighting_mode_camera)
                 lightPos = camera.m_cameraPos;
@@ -314,7 +386,7 @@ int main()
                     material_shininess = 32;
             }
             ImGui::Text("Average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            // ImGui::End();
+            ImGui::End();
         }
         // bind to framebuffer and draw scene as we normally would to color texture
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -389,6 +461,7 @@ int main()
         Program_cubes.SetUniform1i("depth_test", (int)depth_test);
         Program_cubes.SetUniform1f("zbuffer_near", zbuffer_near);
         Program_cubes.SetUniform1f("zbuffer_far", zbuffer_far);
+        Program_cubes.SetUniform1f("refractive_rate", refractive_rate);
         Program_cubes.SetUniform3f("dirLight.direction", sunlight_pos);
         Program_cubes.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
         Program_cubes.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
@@ -539,6 +612,20 @@ int main()
             Program_windo.SetUniform4m("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 6);
         }
+
+        // draw skybox as last
+        glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
+        Program_SkyBo.Bind();
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
+        Program_SkyBo.SetUniform4m("view", view);
+        Program_SkyBo.SetUniform4m("projection", projection);
+        // skybox cube
+        VAO_SkyBoxs.Bind();
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LESS); // set depth function back to default
 #endif
 
         // // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
@@ -546,9 +633,6 @@ int main()
         int width, height;
         glfwGetWindowSize(window, &width, &height);
         glViewport((width - SCR_WIDTH) / 2, (height - SCR_HEIGHT) / 2, SCR_WIDTH, SCR_HEIGHT);
-        // static int i = 0;
-        // if((++i) % 50 == 1)
-        // cout<<width<<"-"<<height<<endl;
 
         // // disable depth test so screen-space quad isn't discarded due to depth test
         glDisable(GL_DEPTH_TEST);
@@ -561,25 +645,25 @@ int main()
         glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
         Program_buffe.SetUniform1i("mode", 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        
-        glViewport(0, 0, SCR_WIDTH / 5, SCR_HEIGHT / 5);
-        Program_buffe.SetUniform1i("mode", 1);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glViewport(0, SCR_HEIGHT / 5, SCR_WIDTH / 5, SCR_HEIGHT / 5);
-        Program_buffe.SetUniform1i("mode", 2);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glViewport(0, SCR_HEIGHT / 5 * 2, SCR_WIDTH / 5, SCR_HEIGHT / 5);
-        Program_buffe.SetUniform1i("mode", 3);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glViewport(0, SCR_HEIGHT / 5 * 3, SCR_WIDTH / 5, SCR_HEIGHT / 5);
-        Program_buffe.SetUniform1i("mode", 4);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glViewport(0, SCR_HEIGHT / 5 * 4, SCR_WIDTH / 5, SCR_HEIGHT / 5);
-        Program_buffe.SetUniform1i("mode", 5);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        ImGui::Image((ImTextureID)(intptr_t)textureColorbuffer, ImVec2(SCR_WIDTH / 5, SCR_HEIGHT / 5), ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(0, 0, 0, 0));
-        ImGui::End();
+        // glViewport(0, 0, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        // Program_buffe.SetUniform1i("mode", 1);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glViewport(0, SCR_HEIGHT / 5, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        // Program_buffe.SetUniform1i("mode", 2);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glViewport(0, SCR_HEIGHT / 5 * 2, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        // Program_buffe.SetUniform1i("mode", 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glViewport(0, SCR_HEIGHT / 5 * 3, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        // Program_buffe.SetUniform1i("mode", 4);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glViewport(0, SCR_HEIGHT / 5 * 4, SCR_WIDTH / 5, SCR_HEIGHT / 5);
+        // Program_buffe.SetUniform1i("mode", 5);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // ImGui::Image((ImTextureID)(intptr_t)textureColorbuffer, ImVec2(SCR_WIDTH / 5, SCR_HEIGHT / 5), ImVec2(0, 1), ImVec2(1, 0), ImVec4(1, 1, 1, 1), ImVec4(0, 0, 0, 0));
+        // ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -650,7 +734,7 @@ int opengl_init()
     return 0;
 }
 
-void framebuffer_size_callback([[maybe_unused]] GLFWwindow *window, int width, int height)
+void framebuffer_size_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] int width, [[maybe_unused]] int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and height
     // will be significantly larger than specified on retina displays
