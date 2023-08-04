@@ -8,7 +8,7 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture
     setupMesh();
 }
 
-void Mesh::Draw(Shader &shader)
+void Mesh::Draw([[maybe_unused]] Shader &shader)
 {
     // bind appropriate textures
     unsigned int diffuseNr = 1;
@@ -39,6 +39,8 @@ void Mesh::Draw(Shader &shader)
     // draw mesh
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_POINTS, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+    // glDrawElements(GL_LINES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
     // glDrawArrays(GL_LINES, 0, static_cast<unsigned int>(vertices.size()));
     glBindVertexArray(0);
 

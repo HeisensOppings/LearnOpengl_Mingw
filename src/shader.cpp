@@ -2,6 +2,7 @@
 
 vector<string> Shader::vertexShaderSources;
 vector<string> Shader::fragmentShaderSources;
+vector<string> Shader::geometryShaderSources;
 
 void Shader::ShaderInit(const string filepath)
 {
@@ -15,6 +16,7 @@ void Shader::ShaderInit(const string filepath)
     std::string line;
     bool inVertexShader = false;
     bool inFragmentShader = false;
+    bool inGeometryShader = false;
 
     while (std::getline(file, line))
     {
@@ -29,6 +31,10 @@ void Shader::ShaderInit(const string filepath)
         else if (line.find("#shader fragment") != std::string::npos)
         {
             inFragmentShader = true;
+        }
+        else if (line.find("#shader geometry") != std::string::npos)
+        {
+            inGeometryShader = true;
         }
         else if (!line.empty())
         {
@@ -48,8 +54,14 @@ void Shader::ShaderInit(const string filepath)
             currentShader.clear();
             inFragmentShader = false;
         }
+        else if (inGeometryShader)
+        {
+            geometryShaderSources.push_back(currentShader.str());
+            currentShader.str("");
+            currentShader.clear();
+            inGeometryShader = false;
+        }
     }
-
     if (inVertexShader)
     {
         vertexShaderSources.push_back(currentShader.str());
@@ -57,6 +69,10 @@ void Shader::ShaderInit(const string filepath)
     if (inFragmentShader)
     {
         fragmentShaderSources.push_back(currentShader.str());
+    }
+    if (inGeometryShader)
+    {
+        geometryShaderSources.push_back(currentShader.str());
     }
 }
 
@@ -89,6 +105,46 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID)
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
+}
+
+Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, unsigned int geometryShader_ID)
+{
+    const char *vertexShaderSource = vertexShaderSources[vertexShader_ID].c_str();
+    const char *fragmentShaderSource = fragmentShaderSources[fragmentShader_ID].c_str();
+    const char *geometryShaderSource = geometryShaderSources[geometryShader_ID].c_str();
+
+#ifdef GLSL_CODE_OUTPUT
+    cout << vertexShaderSource << endl;
+    cout << fragmentShaderSource << endl;
+    cout << geometryShaderSource << endl;
+#endif
+    unsigned int vertexShader, fragmentShader, geometryShader;
+
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+    CHECK_SHADER(vertexShader, Shader);
+
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+    CHECK_SHADER(fragmentShader, Shader);
+
+    geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+    glShaderSource(geometryShader, 1, &geometryShaderSource, NULL);
+    glCompileShader(geometryShader);
+    CHECK_SHADER(geometryShader, Shader);
+
+    ProgramID = glCreateProgram();
+    glAttachShader(ProgramID, vertexShader);
+    glAttachShader(ProgramID, fragmentShader);
+    glAttachShader(ProgramID, geometryShader);
+    glLinkProgram(ProgramID);
+    CHECK_SHADER(ProgramID, Program);
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteShader(geometryShader);
 }
 
 int Shader::GetUniformLocation(const std::string &name)

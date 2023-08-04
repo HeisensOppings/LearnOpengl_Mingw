@@ -1,6 +1,6 @@
 #include "model.h"
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
+unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_unused]] bool gamma)
 {
     string filename = string(path);
     filename = directory + '/' + filename;
@@ -12,7 +12,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
+        GLenum format = 0;
         if (nrComponents == 1)
             format = GL_RED;
         else if (nrComponents == 3)
@@ -40,7 +40,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
     return textureID;
 }
 
-Model::Model(string const &path, bool gamma)
+Model::Model(string const &path, [[maybe_unused]] bool gamma)
 {
     loadModel(path);
 }

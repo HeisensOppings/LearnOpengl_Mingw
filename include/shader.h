@@ -41,10 +41,12 @@ private:
     std::unordered_map<std::string, int> m_UniformLoationCache;
     static vector<string> vertexShaderSources;
     static vector<string> fragmentShaderSources;
+    static vector<string> geometryShaderSources;
 
 public:
     static void ShaderInit(const string filepath);
     Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID);
+    Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, unsigned int geometryShader_ID);
     Shader(unsigned int shader_SameID) : Shader(shader_SameID, shader_SameID) {}
     ~Shader() { glDeleteProgram(ProgramID); }
     void Bind() const { glUseProgram(ProgramID); }
