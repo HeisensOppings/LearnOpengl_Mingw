@@ -364,71 +364,18 @@ void main()
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
-out VS_OUT {
-    vec2 texCoords;
-    vec3 fragPos;
-    vec3 normal;
-} vs_out;
-uniform mat3 normalMatrix;
-uniform mat4 projection;
-uniform mat4 view;
-uniform mat4 model;
-uniform float scales;
-void main()
-{
-    vs_out.fragPos = vec3(model * vec4(aPos, 1.0));
-    vs_out.normal = normalize(normalMatrix * aNormal);
-    vs_out.texCoords = aTexCoords * scales;
-    gl_Position = projection * view * vec4(vs_out.fragPos, 1.0); 
-}
-
-#shader geometry
-#version 330 core
-layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
-in VS_OUT {
-    vec2 texCoords;
-    vec3 fragPos;
-    vec3 normal;
-} gs_in[];
+layout (location = 3) in mat4 aInstanceMatrix;
 out vec3 FragPos;
 out vec3 Normal;
-out vec2 TexCoords; 
-uniform float time;
-vec4 explode(vec4 position, vec3 normal)
+out vec2 TexCoords;
+uniform mat4 view;
+uniform mat4 projection;
+void main()
 {
-    // float magnitude = 1.0;
-    // vec3 direction = normal * ((sin(time) + 1.0) / 10.0); 
-    // vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude; 
-    // return position + vec4(direction, 0.0);
-    return position + vec4(normal*0.001, 0.0);
-    // return position;
-}
-vec3 GetNormal()
-{
-    vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-    vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-    return normalize(cross(a, b));
-}
-void main() {    
-    vec3 normal = GetNormal();
-    // gl_Position = explode(gl_in[0].gl_Position, normal);
-    gl_Position = explode(gl_in[0].gl_Position, normal);
-    TexCoords = gs_in[0].texCoords;
-    FragPos = gs_in[0].fragPos;
-    Normal = gs_in[0].normal;
-    EmitVertex();
-    gl_Position = explode(gl_in[1].gl_Position, normal);
-    TexCoords = gs_in[1].texCoords;
-    FragPos = gs_in[1].fragPos;
-    Normal = gs_in[1].normal;
-    EmitVertex();
-    gl_Position = explode(gl_in[2].gl_Position, normal);
-    TexCoords = gs_in[2].texCoords;
-    FragPos = gs_in[2].fragPos;
-    Normal = gs_in[2].normal;
-    EmitVertex();
-    EndPrimitive();
+    FragPos = vec3(aInstanceMatrix * vec4(aPos, 1.0));
+    Normal = normalize(mat3(transpose(inverse(aInstanceMatrix))) * aNormal);
+    TexCoords = aTexCoords;
+    gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0f); 
 }
 
 #shader fragment
@@ -467,8 +414,8 @@ struct Spotlight{
     vec3 specular;
 };
 #define POINT_LIGHTS 1
-in vec3 FragPos;
-in vec3 Normal;
+in vec3 FragPos;  
+in vec3 Normal;  
 in vec2 TexCoords;
 uniform vec3 viewPos;
 uniform Dirlight dirLight;
@@ -488,17 +435,14 @@ vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 void main()
 {
-    // material.diffuse = texture_diffuse1;
-    // material.specular = texture_specular1;
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
     for(int i = 0; i < POINT_LIGHTS; ++i)
         result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
     result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
-    // vec3 result = CalcSpotLight(spotLight, norm, FragPos, viewDir);
     FragColor = vec4(result, 1.0);
-}
+} 
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
 {
     vec3 lightDir = normalize(light.direction);
@@ -562,6 +506,7 @@ vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
+layout (location = 3) in mat4 aInstanceMatrix;
 out VS_OUT {
     vec3 normal;
 } vs_out;
@@ -573,8 +518,8 @@ void main()
 {
     // mat3 normalMatrix = mat3(transpose(inverse(view * model)));
     // vs_out.normal = vec3(vec4(normalMatrix * aNormal, 0.0));
-    vs_out.normal = normalize(normalMatrix * aNormal);
-    gl_Position = projection * view * model * vec4(aPos, 1.0); 
+    vs_out.normal = normalize( mat3(transpose(inverse(aInstanceMatrix))) * aNormal);
+    gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0); 
 }
 
 #shader geometry
@@ -585,7 +530,7 @@ in VS_OUT {
     vec3 normal;
 } gs_in[];
 out vec3 fColor;
-const float MAGNITUDE = 0.02;
+const float MAGNITUDE = 0.01;
 uniform float time;
 void GenerateLine(int index)
 {
@@ -619,102 +564,72 @@ void main()
 // #shader vertex
 // #version 330 core
 // layout (location = 0) in vec3 aPos;
+// layout (location = 2) in vec2 aTexCoords;
+// layout (location = 3) in mat4 aInstanceMatrix;
+// out vec2 TexCoords;
 // uniform mat4 projection;
 // uniform mat4 view;
-// out VS_OUT {
-//     vec3 color;
-// } vs_out;
 // void main()
 // {
-//     // gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
-//     vs_out.color = vec3(0.0f, 1.0f, 0.0f);
-//     gl_Position = projection * view * vec4(aPos, 1.0);
+//     TexCoords = aTexCoords;
+//     gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0f); 
 // }
 
 // #shader fragment
 // #version 330 core
 // out vec4 FragColor;
-// in vec3 fColor;
+// in vec2 TexCoords;
+// uniform sampler2D texture_diffuse1;
 // void main()
 // {
-//     FragColor = vec4(fColor, 1.0);   
+//     FragColor = texture(texture_diffuse1, TexCoords);
 // }
 
+// #shader geometry
+// #version 330 core
 // layout (triangles) in;
 // layout (triangle_strip, max_vertices = 3) out;
 // in VS_OUT {
 //     vec2 texCoords;
+//     vec3 fragPos;
+//     vec3 normal;
 // } gs_in[];
+// out vec3 FragPos;
+// out vec3 Normal;
 // out vec2 TexCoords; 
 // uniform float time;
-// vec4 explode(vec4 position, vec3 normal);
-// vec3 GetNormal();
-// void main() {   
-//     vec3 normal = GetNormal();
-//     gl_Position = explode(gl_in[0].gl_Position, normal);
-//     TexCoords = gs_in[0].texCoords;
-//     EmitVertex();
-//     gl_Position = explode(gl_in[1].gl_Position, normal);
-//     TexCoords = gs_in[1].texCoords;
-//     EmitVertex();
-//     gl_Position = explode(gl_in[2].gl_Position, normal);
-//     TexCoords = gs_in[2].texCoords;
-//     EmitVertex();
-//     EndPrimitive();
-// }
 // vec4 explode(vec4 position, vec3 normal)
 // {
-//     float magnitude = 2.0;
-//     vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude; 
-//     return position + vec4(direction, 0.0);
+//     // float magnitude = 1.0;
+//     // vec3 direction = normal * ((sin(time) + 1.0) / 10.0); 
+//     // vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude; 
+//     // return position + vec4(direction, 0.0);
+//     return position + vec4(normal*0.001, 0.0);
+//     // return position;
 // }
 // vec3 GetNormal()
 // {
-//    vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-//    vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-//    return normalize(cross(a, b));
-// }
-
-// layout (points) in;
-// layout (triangle_strip, max_vertices = 5) out;
-// in VS_OUT {
-//     vec3 color;
-// } gs_in[];
-// out vec3 fColor;
-// void build_house(vec4 position)
-// {    
-//     fColor = gs_in[0].color; 
-//     gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1:左下
-//     EmitVertex();   
-//     gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2:右下
-//     EmitVertex();
-//     gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3:左上
-//     EmitVertex();
-//     gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4:右上
-//     EmitVertex();
-//     gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5:顶部
-//     fColor = vec3(1.0, 1.0, 1.0);
-//     EmitVertex();
-//     EndPrimitive();
+//     vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
+//     vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
+//     return normalize(cross(a, b));
 // }
 // void main() {    
-//     build_house(gl_in[0].gl_Position);
-// }
-
-// layout (points) in;
-// layout (line_strip, max_vertices = 2) out;
-// void main() {    
-//     gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0); 
+//     vec3 normal = GetNormal();
+//     // gl_Position = explode(gl_in[0].gl_Position, normal);
+//     gl_Position = explode(gl_in[0].gl_Position, normal);
+//     TexCoords = gs_in[0].texCoords;
+//     FragPos = gs_in[0].fragPos;
+//     Normal = gs_in[0].normal;
 //     EmitVertex();
-//     gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+//     gl_Position = explode(gl_in[1].gl_Position, normal);
+//     TexCoords = gs_in[1].texCoords;
+//     FragPos = gs_in[1].fragPos;
+//     Normal = gs_in[1].normal;
 //     EmitVertex();
-//     EndPrimitive();
-// }
-
-// layout (points) in;
-// layout (points, max_vertices = 1) out;
-// void main() {    
-//     gl_Position = gl_in[0].gl_Position; 
+//     gl_Position = explode(gl_in[2].gl_Position, normal);
+//     TexCoords = gs_in[2].texCoords;
+//     FragPos = gs_in[2].fragPos;
+//     Normal = gs_in[2].normal;
 //     EmitVertex();
 //     EndPrimitive();
 // }

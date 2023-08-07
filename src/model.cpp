@@ -44,11 +44,19 @@ Model::Model(string const &path, [[maybe_unused]] bool gamma)
 {
     loadModel(path);
 }
+
 void Model::Draw(Shader &shader)
 {
     for (unsigned int i = 0; i < meshes.size(); ++i)
         meshes[i].Draw(shader);
 }
+
+void Model::DrawInstance(Shader &shader)
+{
+    for (unsigned int i = 0; i < meshes.size(); ++i)
+        meshes[i].DrawInstance(shader);
+}
+
 void Model::loadModel(string const &path)
 {
     // read file via assimp
