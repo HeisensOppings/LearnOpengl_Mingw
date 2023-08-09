@@ -347,7 +347,7 @@ int main()
     float speed_move = 10.0f;
 
     float zbuffer_near = 0.1;
-    float zbuffer_far = 100;
+    // float zbuffer_far = 100;
     glm::vec3 lightPos(0.0, 0.0, 1.0);
     glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
 
@@ -371,7 +371,7 @@ int main()
     int material_shininess = 32;
 
     bool lighting_mode_camera = false;
-    bool depth_test = false;
+    // bool depth_test = false;
 
     Program_buffe.Bind();
     Program_buffe.SetUniform1i("screenTexture", 5);
@@ -380,28 +380,67 @@ int main()
     unsigned int framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    // create a multismapled color attachment texture
+    unsigned int textureColorBufferMultiSampled;
+    glGenTextures(1, &textureColorBufferMultiSampled);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
     // create a color attachment texture
     // unsigned int textureColorbuffer;
-    unsigned int textureColorbuffer;
-    glGenTextures(1, &textureColorbuffer);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    // glGenTextures(1, &textureColorbuffer);
+    // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
     // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
     unsigned int rbo;
     glGenRenderbuffers(1, &rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo);
     // use a single renderbuffer object for both a depth AND stencil buffer
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
     // now actually attach it
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
     // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // configure second post-processing framebuffer
+    unsigned int intermediateFBO;
+    glGenFramebuffers(1, &intermediateFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+    // create a color attachment texture
+    unsigned int screenTexture;
+    glGenTextures(1, &screenTexture);
+    glBindTexture(GL_TEXTURE_2D, screenTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // configure second post-processing framebuffer
+    unsigned int intermediateFBO_;
+    glGenFramebuffers(1, &intermediateFBO_);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO_);
+    // create a color attachment texture
+    unsigned int screenTexture_;
+    glGenTextures(1, &screenTexture_);
+    glBindTexture(GL_TEXTURE_2D, screenTexture_);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture_, 0);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     while (!glfwWindowShouldClose(window))
@@ -586,7 +625,7 @@ int main()
             Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
             Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
             Program_cubes.SetUniform4m("model", model);
-            // glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
             // glDrawArrays(GL_POINTS, 0, 36);
         }
 
@@ -596,51 +635,51 @@ int main()
         Program_cubes.SetUniform4m("model", model);
         glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
         Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-        // ourModel1.Draw(Program_cubes);
+        ourModel1.Draw(Program_cubes);
 
-        // draw --------------------------------------------------planet
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
-        Program_cubes.SetUniform4m("model", model);
-        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-        ourModel_planet.Draw(Program_cubes);
+        // // draw --------------------------------------------------planet
+        // model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
+        // model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+        // Program_cubes.SetUniform4m("model", model);
+        // normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        // Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+        // ourModel_planet.Draw(Program_cubes);
 
-        // draw -------------------------------------------------meteorites
-        Program_Quads.Bind();
-        Program_Quads.SetUniform4m("projection", projection);
-        Program_Quads.SetUniform4m("view", view);
-        Program_Quads.SetUniform3f("dirLight.direction", lightPos);
-        Program_Quads.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
-        Program_Quads.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
-        Program_Quads.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
-        // point light
-        for (GLuint i = 0; i < 1; i++)
-        {
-            string number = to_string(i);
-            Program_Quads.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
-            Program_Quads.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
-            Program_Quads.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
-            Program_Quads.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
-            Program_Quads.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
-            Program_Quads.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
-            Program_Quads.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
-        }
-        // spotLight
-        Program_Quads.SetUniform3f("spotLight.position", lightPos);
-        Program_Quads.SetUniform3f("spotLight.direction", lightDirection);
-        Program_Quads.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
-        Program_Quads.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
-        Program_Quads.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
-        Program_Quads.SetUniform1f("spotLight.constant", 1.0f);
-        Program_Quads.SetUniform1f("spotLight.linear", light_distance[light_distance_select_spot][0]);
-        Program_Quads.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
-        Program_Quads.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        Program_Quads.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-        Program_Quads.SetUniform1i("material.shininess", material_shininess);
-        Program_Quads.SetUniform1i("texture_diffuse1", 0);
-        ourModel_rock.DrawInstance(Program_Quads);
+        // // draw -------------------------------------------------meteorites
+        // Program_Quads.Bind();
+        // Program_Quads.SetUniform4m("projection", projection);
+        // Program_Quads.SetUniform4m("view", view);
+        // Program_Quads.SetUniform3f("dirLight.direction", lightPos);
+        // Program_Quads.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
+        // Program_Quads.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
+        // Program_Quads.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
+        // // point light
+        // for (GLuint i = 0; i < 1; i++)
+        // {
+        //     string number = to_string(i);
+        //     Program_Quads.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
+        //     Program_Quads.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
+        //     Program_Quads.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
+        //     Program_Quads.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
+        //     Program_Quads.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
+        //     Program_Quads.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
+        //     Program_Quads.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
+        // }
+        // // spotLight
+        // Program_Quads.SetUniform3f("spotLight.position", lightPos);
+        // Program_Quads.SetUniform3f("spotLight.direction", lightDirection);
+        // Program_Quads.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
+        // Program_Quads.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
+        // Program_Quads.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
+        // Program_Quads.SetUniform1f("spotLight.constant", 1.0f);
+        // Program_Quads.SetUniform1f("spotLight.linear", light_distance[light_distance_select_spot][0]);
+        // Program_Quads.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
+        // Program_Quads.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        // Program_Quads.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        // Program_Quads.SetUniform1i("material.shininess", material_shininess);
+        // Program_Quads.SetUniform1i("texture_diffuse1", 0);
+        // ourModel_rock.DrawInstance(Program_Quads);
 
         // ----------------------------- geometry test
         // VAO_Cubes.Bind();
@@ -728,54 +767,54 @@ int main()
         // // glDrawArrays(GL_POINTS, 0, 36);
 
         // ---------------------------------------------- plane
-        // VAO_Plane.Bind();
-        // diffuseMapPlane.Bind();
-        // specularMapPlane.Bind();
-        // Program_plane.Bind();
-        // Program_plane.SetUniform4m("view", view);
-        // Program_plane.SetUniform4m("projection", projection);
-        // Program_plane.SetUniform1f("scales", 2.0f);
+        VAO_Plane.Bind();
+        diffuseMapPlane.Bind();
+        specularMapPlane.Bind();
+        Program_plane.Bind();
+        Program_plane.SetUniform4m("view", view);
+        Program_plane.SetUniform4m("projection", projection);
+        Program_plane.SetUniform1f("scales", 2.0f);
 
-        // // direction light
+        // direction light
         // Program_plane.SetUniform1i("depth_test", (int)depth_test);
-        // // Program_plane.SetUniform1f("zbuffer_near", zbuffer_near);
-        // // Program_plane.SetUniform1f("zbuffer_far", zbuffer_far);
-        // Program_plane.SetUniform3f("dirLight.direction", sunlight_pos);
-        // Program_plane.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
-        // Program_plane.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
-        // Program_plane.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
-        // // point light
-        // for (GLuint i = 0; i < 1; i++)
-        // {
-        //     string number = to_string(i);
-        //     Program_plane.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
-        //     Program_plane.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
-        //     Program_plane.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
-        //     Program_plane.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
-        //     Program_plane.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
-        //     Program_plane.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
-        //     Program_plane.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
-        // }
-        // // spotLight
-        // Program_plane.SetUniform3f("spotLight.position", lightPos);
-        // Program_plane.SetUniform3f("spotLight.direction", lightDirection);
-        // Program_plane.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
-        // Program_plane.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
-        // Program_plane.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
-        // Program_plane.SetUniform1f("spotLight.constant", 1.0f);
-        // Program_plane.SetUniform1f("spotLight.linear", light_distance[light_distance_select_spot][0]);
-        // Program_plane.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
-        // Program_plane.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-        // Program_plane.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-        // Program_plane.SetUniform1i("material.shininess", material_shininess);
+        // Program_plane.SetUniform1f("zbuffer_near", zbuffer_near);
+        // Program_plane.SetUniform1f("zbuffer_far", zbuffer_far);
+        Program_plane.SetUniform3f("dirLight.direction", sunlight_pos);
+        Program_plane.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
+        Program_plane.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
+        Program_plane.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
+        // point light
+        for (GLuint i = 0; i < 1; i++)
+        {
+            string number = to_string(i);
+            Program_plane.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
+            Program_plane.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
+            Program_plane.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
+            Program_plane.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
+            Program_plane.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
+            Program_plane.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
+            Program_plane.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
+        }
+        // spotLight
+        Program_plane.SetUniform3f("spotLight.position", lightPos);
+        Program_plane.SetUniform3f("spotLight.direction", lightDirection);
+        Program_plane.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
+        Program_plane.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
+        Program_plane.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
+        Program_plane.SetUniform1f("spotLight.constant", 1.0f);
+        Program_plane.SetUniform1f("spotLight.linear", light_distance[light_distance_select_spot][0]);
+        Program_plane.SetUniform1f("spotLight.quadratic", light_distance[light_distance_select_spot][1]);
+        Program_plane.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        Program_plane.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+        Program_plane.SetUniform1i("material.shininess", material_shininess);
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(0.0f, -0.2f, 0.0));
-        // normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-        // Program_plane.SetUniform3m("normalMatrix", normalMatrix);
-        // Program_plane.SetUniform3f("viewPos", camera.m_cameraPos);
-        // Program_plane.SetUniform4m("model", model);
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, -0.2f, 0.0));
+        normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+        Program_plane.SetUniform3m("normalMatrix", normalMatrix);
+        Program_plane.SetUniform3f("viewPos", camera.m_cameraPos);
+        Program_plane.SetUniform4m("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // ---------------------------------------------- grass
         // VAO_Grass.Bind();
@@ -831,21 +870,29 @@ int main()
         // glDepthFunc(GL_LESS); // set depth function back to default
 #endif
 
-        // // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
+        // now blit multisampled buffer(s) to normal colorbuffer of intermediate FBO. Image is stored in screenTexture
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, intermediateFBO);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO_);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        // now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         int width, height;
         glfwGetWindowSize(window, &width, &height);
         glViewport((width - SCR_WIDTH) / 2, (height - SCR_HEIGHT) / 2, SCR_WIDTH, SCR_HEIGHT);
 
         // // disable depth test so screen-space quad isn't discarded due to depth test
+        glClear(GL_COLOR_BUFFER_BIT);
         glDisable(GL_DEPTH_TEST);
         // // clear all relevent buffers
-        // // glClear(GL_COLOR_BUFFER_BIT);
         Program_buffe.Bind();
         VAO_Frame.Bind();
         glActiveTexture(GL_TEXTURE0 + 5);
         // glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        glBindTexture(GL_TEXTURE_2D, screenTexture_);
         Program_buffe.SetUniform1i("mode", 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -874,6 +921,8 @@ int opengl_init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     // glfw window creation
     // --------------------
@@ -902,7 +951,9 @@ int opengl_init()
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     glfwSetScrollCallback(window, scroll_callback);
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
+    glEnable(GL_MULTISAMPLE); // Enabled by default on some drivers, but not all so always enable to make sure
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
