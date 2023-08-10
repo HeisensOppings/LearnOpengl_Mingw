@@ -168,6 +168,7 @@ int main()
     Texture diffuseMapCubes("./src/image/container.png", GL_REPEAT, GL_LINEAR, 0);
     Texture specularMapCubes("./src/image/container_specular.png", GL_REPEAT, GL_LINEAR, 1);
     Texture diffuseMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_Diffuse.png", GL_REPEAT, GL_LINEAR, 2);
+    Texture diffuseMapPlaneGamma("./src/image/Indoor_Ly_Build_Floor_03_T4_Diffuse.png", GL_REPEAT, GL_LINEAR, 2, true);
     Texture specularMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_SMBE.png", GL_REPEAT, GL_LINEAR, 3);
     // Texture diffuseMapGrass("./src/image/grass_inazuma1.png", GL_CLAMP_TO_EDGE, GL_LINEAR, 4);
     // Texture diffuseMapWindo("./src/image/blending_transparent_window.png", GL_CLAMP_TO_EDGE, GL_LINEAR, 5);
@@ -278,7 +279,7 @@ int main()
 
     vector<glm::vec3>
         pointLightPositions{
-            glm::vec3(0.0f, 4.0f, 2.0f),
+            glm::vec3(1.0f, 1.0f, 1.0f),
             glm::vec3(2.3f, -3.3f, -4.0f),
             glm::vec3(-4.0f, 2.0f, -12.0f),
             glm::vec3(0.0f, 0.0f, -3.0f)};
@@ -372,6 +373,7 @@ int main()
 
     bool lighting_mode_camera = false;
     // bool depth_test = false;
+    bool gamma = false;
 
     Program_buffe.Bind();
     Program_buffe.SetUniform1i("screenTexture", 5);
@@ -475,8 +477,8 @@ int main()
             ImGui::NewLine();
             if (lighting_mode_camera)
                 lightPos = camera.m_cameraPos;
-            if (ImGui::Button("Camera Light"))
-                lighting_mode_camera = !lighting_mode_camera;
+            ImGui::Checkbox("Camera spot light", &lighting_mode_camera);
+            ImGui::Checkbox("Gamma", &gamma);
             if (ImGui::Button(("point distance: " + std::to_string(light_distance_index[light_distance_select_point])).c_str()))
             {
                 ++light_distance_select_point;
@@ -567,6 +569,7 @@ int main()
             model = glm::mat4(1.0f);
             model = glm::translate(model, pointLightPositions[i]);
             model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+            Program_light.SetUniform4m("model", model);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
 
@@ -768,9 +771,13 @@ int main()
 
         // ---------------------------------------------- plane
         VAO_Plane.Bind();
-        diffuseMapPlane.Bind();
+        if (!gamma)
+            diffuseMapPlane.Bind();
+        else
+            diffuseMapPlaneGamma.Bind();
         specularMapPlane.Bind();
         Program_plane.Bind();
+        Program_plane.SetUniform1i("gamma", (int)gamma);
         Program_plane.SetUniform4m("view", view);
         Program_plane.SetUniform4m("projection", projection);
         Program_plane.SetUniform1f("scales", 2.0f);
@@ -957,6 +964,7 @@ int opengl_init()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // glEnable(GL_FRAMEBUFFER_SRGB);
 
     // glEnable(GL_CULL_FACE);
     // glCullFace(GL_FRONT);

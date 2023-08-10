@@ -10,6 +10,7 @@
 - Click Configure, Select MinGW Makefiles
 - After Configure, Click BUILD_SHARED_LIBS, Create a dynamic library
 - Click Generate
+- In build directory run cmd $:mingw32-make
 - Copy files in build/src/ **glfw3.dll**、**libglfw3dll.a**, and source code/include
 
 ##### Configure GLAD

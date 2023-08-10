@@ -1,6 +1,6 @@
 #include "texture.h"
 
-Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID)
+Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID, bool gammaCorrection)
 {
     m_GL_TextureID = gl_TextureID;
     glGenTextures(1, &m_TextureID);
@@ -12,14 +12,23 @@ Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
-        GLenum format = 0;
+        GLenum internalformat = 0;
+        GLenum dataformat = 0;
         if (nrChannels == 1)
-            format = GL_RED;
+        {
+            internalformat = dataformat = GL_RED;
+        }
         else if (nrChannels == 3)
-            format = GL_RGB;
+        {
+            internalformat = gammaCorrection ? GL_SRGB : GL_RGB;
+            dataformat = GL_RGB;
+        }
         else if (nrChannels == 4)
-            format = GL_RGBA;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        {
+            internalformat = gammaCorrection ? GL_SRGB : GL_RGB;
+            dataformat = GL_RGBA;
+        }
+        glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode); // set texture wrapping to GL_REPEAT (default wrapping method)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);

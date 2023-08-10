@@ -12,7 +12,7 @@
 
 - 完成后勾选 BUILD_SHARED_LIBS，创建动态库
 - 点击 Generate
-
+- 进入build目录，$ minggw32-make ../
 - 拷贝位于编译目录的src下的**glfw3.dll**、**libglfw3dll.a**
 - 拷贝 source code 的 include
 
