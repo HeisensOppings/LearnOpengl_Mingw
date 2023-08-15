@@ -15,7 +15,7 @@ private:
     unsigned int m_GL_TextureID;
 
 public:
-    Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID, bool gammaCorrection = false);
+    Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID = 0, bool gammaCorrection = false);
     ~Texture();
     void Bind();
     void UnBind();
