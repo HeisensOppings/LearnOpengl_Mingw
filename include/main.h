@@ -1,8 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <vector>
 #include <cmath>
 
@@ -14,6 +12,7 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
 
+#include "render.h"
 #include "model.h"
 #include "shader.h"
 #include "texture.h"
@@ -35,6 +34,8 @@ glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
 
 glm::vec3 sunlight_color(1.0f);
 glm::vec3 sunlight_pos(20.0f, 100.0f, 100.0f);
+
+glm::vec3 lightSpotPos(-2.0f, 4.0f, -1.0f);
 
 glm::vec3 light_am_di_sp_directional(0.3f, 0.6f, 0.2f);
 glm::vec3 lightColor_point(1.0f);
@@ -204,7 +205,5 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
-void loadCameraPosition(Camera &camera);
-void saveCameraPosition(const Camera &camera);
 void SceneLightConfig(Shader &shader, glm::mat4 view, glm::mat4 projuction);
 void renderObject(Shader &shader);

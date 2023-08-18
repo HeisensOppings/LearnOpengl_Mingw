@@ -110,6 +110,47 @@ void Camera::updateCameraVectors()
     // m_cameraDir = glm::normalize(direction);
 }
 
+void Camera::loadCameraPosition(GLFWwindow *window)
+{
+    std::ifstream file("config.ini");
+    if (file.is_open())
+    {
+        int SCR_X_POS = 0, SCR_Y_POS = 0;
+        float posX,
+            posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch, fov;
+        file >> posX >> posY >> posZ;
+        file >> dirX >> dirY >> dirZ;
+        file >> upX >> upY >> upZ;
+        file >> yaw;
+        file >> pitch;
+        file >> fov;
+        file >> SCR_X_POS;
+        file >> SCR_Y_POS;
+        glfwSetWindowPos(window, SCR_X_POS, SCR_Y_POS);
+        file.close();
+        SetCameraSettings(posX, posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch, fov);
+    }
+}
+
+void Camera::saveCameraPosition(GLFWwindow *window)
+{
+    std::ofstream file("config.ini");
+    if (file.is_open())
+    {
+        int SCR_X_POS = 0, SCR_Y_POS = 0;
+        file << m_cameraPos.x << " " << m_cameraPos.y << " " << m_cameraPos.z << "\n";
+        file << m_cameraDir.x << " " << m_cameraDir.y << " " << m_cameraDir.z << "\n";
+        file << m_cameraUp.x << " " << m_cameraUp.y << " " << m_cameraUp.z << "\n";
+        file << m_Yaw << "\n";
+        file << m_Pitch << "\n";
+        file << m_Fov << "\n";
+        glfwGetWindowPos(window, &SCR_X_POS, &SCR_Y_POS);
+        file << SCR_X_POS << "\n";
+        file << SCR_Y_POS << "\n";
+        file.close();
+    }
+}
+
 // Custom implementation of the LookAt function
 glm::mat4 Camera::calculate_lookAt_matrix(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp)
 {

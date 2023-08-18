@@ -2,11 +2,14 @@
 #define __CAMERA_H__
 
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 enum CameraMovement
@@ -50,6 +53,8 @@ public:
     void updateCameraVectors();
     inline void SetSpeed(float speed) { MovementSpeed = speed; }
     glm::mat4 calculate_lookAt_matrix(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
+    void loadCameraPosition(GLFWwindow *window);
+    void saveCameraPosition(GLFWwindow *window);
 
     Camera(glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -Z_VALUE), glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, Z_VALUE), glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f))
         : m_cameraPos(cameraPos),
