@@ -52,7 +52,7 @@ public:
     void ProcessMouseScroll(float yoffset);
     void updateCameraVectors();
     inline void SetSpeed(float speed) { MovementSpeed = speed; }
-    glm::mat4 calculate_lookAt_matrix(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
+    static glm::mat4 calculate_lookAt_matrix(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
     void loadCameraPosition(GLFWwindow *window);
     void saveCameraPosition(GLFWwindow *window);
 

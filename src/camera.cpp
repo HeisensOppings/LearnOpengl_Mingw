@@ -3,8 +3,8 @@
 glm::mat4 Camera::GetViewMatrix()
 {
 
-    // return calculate_lookAt_matrix(m_cameraPos, m_cameraPos + m_cameraDir, m_cameraUp);
-    return glm::lookAt(m_cameraPos, m_cameraPos + m_cameraDir, m_cameraUp);
+    return calculate_lookAt_matrix(m_cameraPos, m_cameraDir, m_cameraUp);
+    // return glm::lookAt(m_cameraPos, m_cameraPos + m_cameraDir, m_cameraUp);
 }
 
 void Camera::ProcessKeyBoard(CameraMovement direction, float deltaTime)
@@ -156,7 +156,7 @@ glm::mat4 Camera::calculate_lookAt_matrix(glm::vec3 position, glm::vec3 target, 
 {
     // 1. Position = known
     // 2. Calculate cameraDirection
-    glm::vec3 zaxis = glm::normalize(position - target);
+    glm::vec3 zaxis = glm::normalize(-target);
     // 3. Get positive right axis vector
     glm::vec3 xaxis = glm::normalize(glm::cross(glm::normalize(worldUp), zaxis));
     // 4. Calculate camera up vector

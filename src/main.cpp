@@ -45,6 +45,7 @@ int main()
     Shader Program_DQuad(7);
     // Shader Program_DCube(8);
     Shader Program_DCube(8, 8, 1);
+    Shader Program_DSpot(9);
 
     Texture diffuseMapCubes("./src/image/Indoor_Dq_Build_Wood_01_T4_Diffuse.png", GL_REPEAT, GL_LINEAR);
     Texture diffuseMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_Diffuse.png", GL_REPEAT, GL_LINEAR);
@@ -54,6 +55,7 @@ int main()
     // Program_cubes.SetUniform1i("material.specular", 1);
     Program_cubes.SetUniform1i("depthMapPoint", 1);
     Program_cubes.SetUniform1i("depthMapDir", 2);
+    Program_cubes.SetUniform1i("depthMapSpot", 3);
 
     Program_buffe.Bind();
     Program_buffe.SetUniform1i("screenTexture", 5);
@@ -162,7 +164,7 @@ int main()
     // attach depth texture as FBO's depth buffer
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Direcational);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap_Direcational, 0);
-    glDrawBuffer(GL_NONE);
+    glDrawBuffer(GL_NONE);  
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -184,6 +186,25 @@ int main()
     // attach depth texture as FBO's depth buffer
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Point);
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap_Point, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // ----------------------------------configure spot light depth map FBO
+    unsigned int depthMapFBO_Spot;
+    glGenFramebuffers(1, &depthMapFBO_Spot);
+    // create depth texture
+    unsigned int depthMap_Spot;
+    glGenTextures(1, &depthMap_Spot);
+    glBindTexture(GL_TEXTURE_2D, depthMap_Spot);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH * 4, SCR_HEIGHT * 4, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    // attach depth texture as FBO's depth buffer
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Spot);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap_Spot, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -241,7 +262,6 @@ int main()
 #endif
 
         glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Direcational);
-        glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, SCR_WIDTH * 4, SCR_HEIGHT * 4);
 
@@ -293,7 +313,7 @@ int main()
 
 #if 1 // ------------------------------------- depthMap rendering for point light
 
-        float near_plane = 1.0f;
+        float near_plane = 0.1f;
         float far_plane = 25.0f;
         glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
         std::vector<glm::mat4> shadowTransforms;
@@ -331,11 +351,56 @@ int main()
         Program_DCube.SetUniform4m("model", model);
         ourModel_lisa.Draw(Program_Depth);
 
-        VAO_Plane.Bind();
-        diffuseMapPlane.Bind();
-        model = glm::mat4(1.0f);
-        Program_DCube.SetUniform4m("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // VAO_Plane.Bind();
+        // diffuseMapPlane.Bind();
+        // model = glm::mat4(1.0f);
+        // Program_DCube.SetUniform4m("model", model);
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+#endif
+
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Spot);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, SCR_WIDTH * 4, SCR_HEIGHT * 4);
+
+#if 1 // --------------------------------------depthMap rendering for spot
+        glm::mat4 view_Spot;
+        // view = camera.GetViewMatrix();
+        view_Spot = Camera::calculate_lookAt_matrix(lightSpotPos, lightDirection, glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 projection_Spot = glm::mat4(1.0f);
+        projection_Spot = glm::perspective(glm::radians(camera.m_Fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, zbuffer_near, zbuffer_far);
+        glm::mat4 lightSpaceMatrix_Spot = projection_Spot * view_Spot;
+        {
+
+            VAO_Cubes.Bind();
+            diffuseMapCubes.Bind();
+            Program_DSpot.Bind();
+            Program_DSpot.SetUniform4m("view", view_Spot);
+            Program_DSpot.SetUniform4m("projection", projection_Spot);
+            for (unsigned int i = 0; i < cubePositions.size(); i++)
+            {
+                Program_DSpot.Bind();
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, cubePositions[i]);
+                float angle = (i + 1) * 0.5;
+                model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+                model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+                Program_DSpot.SetUniform4m("model", model);
+                glDrawArrays(GL_TRIANGLES, 0, 36);
+            }
+            {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(0.0f, -0.70f, 0.0f));
+                model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
+                Program_DSpot.SetUniform4m("model", model);
+                // ourModel_Syabugyo.Draw(Program_cubes);
+
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(-1.0f, -0.5f, 0.0f));
+                model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+                Program_DSpot.SetUniform4m("model", model);
+                ourModel_lisa.Draw(Program_DSpot);
+            }
+        }
 #endif
 
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -357,7 +422,6 @@ int main()
             // projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, -0.01f, 1000.0f);
             glm::mat4 model = glm::mat4(1.0f);
 #if 1 // --------------------------------------------light cubes rendering
-      // -------------------------------------------- light cubes
             VAO_Cubes.Bind();
             Program_light.Bind();
             // sopt light
@@ -402,13 +466,12 @@ int main()
             glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap_Point);
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, depthMap_Direcational);
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, depthMap_Spot);
             Program_cubes.SetUniform1f("far_plane", far_plane);
 
-            // Program_cubes.SetUniform1i("depthMapDir", 3);
-            // glActiveTexture(GL_TEXTURE3);
-            // glBindTexture(GL_TEXTURE_2D, depthMap);
-            // Program_cubes.SetUniform1i("depthMapPoint", 4);
             Program_cubes.SetUniform4m("lightSpaceMatrix", lightSpaceMatrix);
+            Program_cubes.SetUniform4m("lightSpaceMatrix_Spot", lightSpaceMatrix_Spot);
 
             for (unsigned int i = 0; i < cubePositions.size(); i++)
             // for (unsigned int i = 0; i < 1; i++)
@@ -455,7 +518,6 @@ int main()
                 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
                 Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
                 ourModel_lisa.Draw(Program_cubes);
-
             }
         }
 #endif
@@ -483,6 +545,10 @@ int main()
         // glViewport(0, 0, SCR_WIDTH / 4, SCR_HEIGHT / 4);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, depthMap_Direcational);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        glViewport(0, SCR_HEIGHT / 4, SCR_WIDTH / 4, SCR_HEIGHT / 4);
+        glBindTexture(GL_TEXTURE_2D, depthMap_Spot);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         ImGui::Render();
@@ -548,7 +614,7 @@ int opengl_init()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glEnable(GL_FRAMEBUFFER_SRGB);
 
-    glEnable(GL_CULL_FACE);
+    // glEnable(GL_CULL_FACE);
 
     return 0;
 }

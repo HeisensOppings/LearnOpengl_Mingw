@@ -27,9 +27,9 @@ using namespace std;
 glm::vec3 background_color(0.1);
 
 float zbuffer_near = 0.1;
-float zbuffer_far = 1000.0f;
+float zbuffer_far = 100.0f;
 
-glm::vec3 lightPos(-2.0f, 4.0f, -1.0f);
+glm::vec3 lightPos(-2.0f, 2.0f, -1.0f);
 glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
 
 glm::vec3 sunlight_color(1.0f);
