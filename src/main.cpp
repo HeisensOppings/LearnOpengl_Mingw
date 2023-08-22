@@ -58,34 +58,34 @@ int main()
     Program_cubes.SetUniform1i("depthMapSpot", 3);
 
     Program_buffe.Bind();
-    Program_buffe.SetUniform1i("screenTexture", 5);
+    Program_buffe.SetUniform1i("screenTexture", 0);
 
     Program_DQuad.Bind();
     Program_DQuad.SetUniform1i("depthMap", 0);
 
-    Model ourModel_lisa("./model/lisa/lisa.obj");
+    // Model ourModel_lisa("./model/lisa/lisa.obj");
+    // Model ourModel_lisa("C:/Users/R/Desktop/model/genshin/raiden_obj/raiden.obj");
+    Model Model_kafuka("./model/kafuka/kafuka.obj");
+    Model Model_raiden("./model/raiden/raiden.obj");
     // Model ourModel_planet("./model/planet/planet.obj");
     // Model ourModel_rock("./model/rock/rock.obj");
     // Model ourModel2("./model/heita/heita.obj");
     Model ourModel_Syabugyo("./model/Dq_Syabugyo/IndoorScene_Dq_Syabugyo.obj");
 
     BufferLayout layout_Cubes;
-    vector<int> layout_Cubes_Stride{3, 3, 2};
-    layout_Cubes.AddFloat(layout_Cubes_Stride);
+    layout_Cubes.AddFloat(3, 3, 2);
     VertexArray VAO_Cubes;
     VertexBuffer VBO_Cubes(CubesVertices, sizeof(CubesVertices));
     VAO_Cubes.AddBuffer(VBO_Cubes, layout_Cubes);
 
     BufferLayout layout_Plane;
-    vector<int> layout_Plane_Stride{3, 3, 2};
-    layout_Plane.AddFloat(layout_Plane_Stride);
+    layout_Plane.AddFloat(3, 3, 2);
     VertexArray VAO_Plane;
     VertexBuffer VBO_Plane(PlaneVertices, sizeof(PlaneVertices));
     VAO_Plane.AddBuffer(VBO_Plane, layout_Plane);
 
     BufferLayout layout_Frame;
-    vector<int> layout_Frame_Stride{2, 2};
-    layout_Frame.AddFloat(layout_Frame_Stride);
+    layout_Frame.AddFloat(2, 2);
     VertexArray VAO_Frame;
     VertexBuffer VBO_Frame(FrameVertices, sizeof(FrameVertices));
     VAO_Frame.AddBuffer(VBO_Frame, layout_Frame);
@@ -96,118 +96,18 @@ int main()
     VertexBuffer VBO_SkyBoxs(SkyboxVertices, sizeof(SkyboxVertices));
     VAO_SkyBoxs.AddBuffer(VBO_SkyBoxs, layout_SkyBoxs);
 
-    // framebuffer configuraion
-    unsigned int framebuffer;
-    glGenFramebuffers(1, &framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    // create a multismapled color attachment texture
-    unsigned int textureColorBufferMultiSampled;
-    glGenTextures(1, &textureColorBufferMultiSampled);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
-    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
-    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
-    // create a color attachment texture
-    // unsigned int textureColorbuffer;
-    // glGenTextures(1, &textureColorbuffer);
-    // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
-    unsigned int rbo;
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    // use a single renderbuffer object for both a depth AND stencil buffer
-    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-    // now actually attach it
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-    // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // configure second post-processing framebuffer
-    unsigned int intermediateFBO;
-    glGenFramebuffers(1, &intermediateFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
-    // create a color attachment texture
-    unsigned int screenTexture;
-    glGenTextures(1, &screenTexture);
-    glBindTexture(GL_TEXTURE_2D, screenTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << endl;
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // ----------------------------------configure multisample framebuffer
+    FrameBuffer framebuffer_multisample(SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D_MULTISAMPLE);
+    FrameBuffer framebuffer_intermediate(SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D);
 
     // ----------------------------------configure directional light depth map FBO
-    unsigned int depthMapFBO_Direcational;
-    glGenFramebuffers(1, &depthMapFBO_Direcational);
-    // create depth texture
-    unsigned int depthMap_Direcational;
-    glGenTextures(1, &depthMap_Direcational);
-    glBindTexture(GL_TEXTURE_2D, depthMap_Direcational);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH * 4, SCR_HEIGHT * 4, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    GLfloat borderColor[] = {1.0, 1.0, 1.0, 1.0};
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-    // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Direcational);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap_Direcational, 0);
-    glDrawBuffer(GL_NONE);  
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    FrameBuffer framebuffer_direcatinal(SCR_WIDTH * 4, SCR_HEIGHT * 4, GL_TEXTURE_2D, GL_TEXTURE2, true);
 
     // ----------------------------------configure point light depth map FBO
-    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    unsigned int depthMapFBO_Point;
-    glGenFramebuffers(1, &depthMapFBO_Point);
-    // create depth cubemap texture
-    unsigned int depthCubemap_Point;
-    glGenTextures(1, &depthCubemap_Point);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap_Point);
-    for (unsigned int i = 0; i < 6; ++i)
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Point);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap_Point, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    FrameBuffer framebuffer_point(1024, 1024, GL_TEXTURE_CUBE_MAP, GL_TEXTURE1, true);
 
     // ----------------------------------configure spot light depth map FBO
-    unsigned int depthMapFBO_Spot;
-    glGenFramebuffers(1, &depthMapFBO_Spot);
-    // create depth texture
-    unsigned int depthMap_Spot;
-    glGenTextures(1, &depthMap_Spot);
-    glBindTexture(GL_TEXTURE_2D, depthMap_Spot);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SCR_WIDTH * 4, SCR_HEIGHT * 4, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    // attach depth texture as FBO's depth buffer
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Spot);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap_Spot, 0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    FrameBuffer framebuffer_spot(SCR_WIDTH * 4, SCR_HEIGHT * 4, GL_TEXTURE_2D, GL_TEXTURE3, true);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -217,6 +117,7 @@ int main()
 
         processInput(window);
         glEnable(GL_DEPTH_TEST);
+        glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
 
 #if 1 // -----------------------------------imgui
         ImGui_ImplOpenGL3_NewFrame();
@@ -261,9 +162,7 @@ int main()
         ImGui::End();
 #endif
 
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Direcational);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, SCR_WIDTH * 4, SCR_HEIGHT * 4);
+        framebuffer_direcatinal.Bind();
 
 #if 1 // --------------------------------------depthMap rendering for directional
         glm::mat4 lightProjection, lightView;
@@ -280,42 +179,47 @@ int main()
             VAO_Cubes.Bind();
             diffuseMapCubes.Bind();
 
-            for (unsigned int i = 0; i < cubePositions.size(); i++)
-            {
-                Program_Depth.Bind();
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePositions[i]);
-                float angle = (i + 1) * 0.5;
-                model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-                model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-                Program_Depth.SetUniform4m("model", model);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+            // for (unsigned int i = 0; i < cubePositions.size(); i++)
+            // {
+            //     Program_Depth.Bind();
+            //     glm::mat4 model = glm::mat4(1.0f);
+            //     model = glm::translate(model, cubePositions[i]);
+            //     float angle = (i + 1) * 0.5;
+            //     model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+            //     model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+            //     Program_Depth.SetUniform4m("model", model);
+            //     glDrawArrays(GL_TRIANGLES, 0, 36);
+            // }
 
+            Program_Depth.Bind();
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(-1.0f, -0.5f, 0.0f));
             model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
             Program_Depth.SetUniform4m("model", model);
-            ourModel_lisa.Draw(Program_Depth);
+            Model_kafuka.Draw(Program_Depth);
 
-            VAO_Plane.Bind();
-            diffuseMapPlane.Bind();
             model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(1.0f, -0.5f, 0.0f));
+            model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
             Program_Depth.SetUniform4m("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
+            Model_raiden.Draw(Program_Depth);
+
+            // VAO_Plane.Bind();
+            // diffuseMapPlane.Bind();
+            // model = glm::mat4(1.0f);
+            // Program_Depth.SetUniform4m("model", model);
+            // glDrawArrays(GL_TRIANGLES, 0, 6);
         }
 #endif
 
         lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 3.0);
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Point);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        framebuffer_point.Bind();
 
 #if 1 // ------------------------------------- depthMap rendering for point light
 
         float near_plane = 0.1f;
         float far_plane = 25.0f;
-        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
+        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), 1.0f, near_plane, far_plane);
         std::vector<glm::mat4> shadowTransforms;
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -332,24 +236,30 @@ int main()
         VAO_Cubes.Bind();
         diffuseMapCubes.Bind();
 
-        for (unsigned int i = 0; i < cubePositions.size(); i++)
-        // for (unsigned int i = 0; i < 1; i++)
-        {
-            Program_DCube.Bind();
-            glm::mat4 model = glm::mat4(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = (i + 1) * 0.5;
-            model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-            model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-            Program_DCube.SetUniform4m("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        // for (unsigned int i = 0; i < cubePositions.size(); i++)
+        // // for (unsigned int i = 0; i < 1; i++)
+        // {
+        //     Program_DCube.Bind();
+        //     glm::mat4 model = glm::mat4(1.0f);
+        //     model = glm::translate(model, cubePositions[i]);
+        //     float angle = (i + 1) * 0.5;
+        //     model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+        //     model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        //     Program_DCube.SetUniform4m("model", model);
+        //     glDrawArrays(GL_TRIANGLES, 0, 36);
+        // }
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(-1.0f, -0.5f, 0.0f));
         model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
         Program_DCube.SetUniform4m("model", model);
-        ourModel_lisa.Draw(Program_Depth);
+        Model_kafuka.Draw(Program_Depth);
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(1.0f, -0.5f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        Program_DCube.SetUniform4m("model", model);
+        Model_raiden.Draw(Program_Depth);
 
         // VAO_Plane.Bind();
         // diffuseMapPlane.Bind();
@@ -358,9 +268,7 @@ int main()
         // glDrawArrays(GL_TRIANGLES, 0, 6);
 #endif
 
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO_Spot);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, SCR_WIDTH * 4, SCR_HEIGHT * 4);
+        framebuffer_spot.Bind();
 
 #if 1 // --------------------------------------depthMap rendering for spot
         glm::mat4 view_Spot;
@@ -376,20 +284,20 @@ int main()
             Program_DSpot.Bind();
             Program_DSpot.SetUniform4m("view", view_Spot);
             Program_DSpot.SetUniform4m("projection", projection_Spot);
-            for (unsigned int i = 0; i < cubePositions.size(); i++)
+            // for (unsigned int i = 0; i < cubePositions.size(); i++)
+            // {
+            //     Program_DSpot.Bind();
+            //     glm::mat4 model = glm::mat4(1.0f);
+            //     model = glm::translate(model, cubePositions[i]);
+            //     float angle = (i + 1) * 0.5;
+            //     model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+            //     model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+            //     Program_DSpot.SetUniform4m("model", model);
+            //     glDrawArrays(GL_TRIANGLES, 0, 36);
+            // }
             {
-                Program_DSpot.Bind();
                 glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePositions[i]);
-                float angle = (i + 1) * 0.5;
-                model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-                model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-                Program_DSpot.SetUniform4m("model", model);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
-            {
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(0.0f, -0.70f, 0.0f));
+                model = glm::translate(model, glm::vec3(0.0f, -0.75f, 0.0f));
                 model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
                 Program_DSpot.SetUniform4m("model", model);
                 // ourModel_Syabugyo.Draw(Program_cubes);
@@ -398,15 +306,21 @@ int main()
                 model = glm::translate(model, glm::vec3(-1.0f, -0.5f, 0.0f));
                 model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
                 Program_DSpot.SetUniform4m("model", model);
-                ourModel_lisa.Draw(Program_DSpot);
+                Model_kafuka.Draw(Program_DSpot);
+
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(1.0f, -0.5f, 0.0f));
+                model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+                Program_DSpot.SetUniform4m("model", model);
+                Model_raiden.Draw(Program_DSpot);
             }
         }
 #endif
 
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+        framebuffer_multisample.Bind();
 
 #if 1 // ------------------------------------- normal rendering
         {
@@ -428,8 +342,8 @@ int main()
             Program_light.SetUniform4m("view", view);
             Program_light.SetUniform4m("projection", projection);
             Program_light.SetUniform3f("lightColor", lightColor_spot);
-            model = glm::translate(model, lightPos);
-            model = glm::scale(model, glm::vec3(0.2f));
+            model = glm::translate(model, lightSpotPos);
+            model = glm::scale(model, glm::vec3(0.1f));
             Program_light.SetUniform4m("model", model);
             if (!lighting_mode_camera)
                 glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -462,32 +376,30 @@ int main()
             VAO_Cubes.Bind();
             diffuseMapCubes.Bind();
             SceneLightConfig(Program_cubes, view, projection);
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap_Point);
-            glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, depthMap_Direcational);
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, depthMap_Spot);
+            framebuffer_point.TextureBind();
+            framebuffer_direcatinal.TextureBind();
+            framebuffer_spot.TextureBind();
+
             Program_cubes.SetUniform1f("far_plane", far_plane);
 
             Program_cubes.SetUniform4m("lightSpaceMatrix", lightSpaceMatrix);
             Program_cubes.SetUniform4m("lightSpaceMatrix_Spot", lightSpaceMatrix_Spot);
 
-            for (unsigned int i = 0; i < cubePositions.size(); i++)
-            // for (unsigned int i = 0; i < 1; i++)
-            {
-                Program_cubes.Bind();
-                glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, cubePositions[i]);
-                float angle = (i + 1) * 0.5;
-                model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
-                model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-                glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-                Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-                Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-                Program_cubes.SetUniform4m("model", model);
-                glDrawArrays(GL_TRIANGLES, 0, 36);
-            }
+            // for (unsigned int i = 0; i < cubePositions.size(); i++)
+            // // for (unsigned int i = 0; i < 1; i++)
+            // {
+            //     Program_cubes.Bind();
+            //     glm::mat4 model = glm::mat4(1.0f);
+            //     model = glm::translate(model, cubePositions[i]);
+            //     float angle = (i + 1) * 0.5;
+            //     model = glm::rotate(model, angle, glm::vec3(1.0f, 0.5f, 0.0f));
+            //     model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+            //     glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+            //     Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+            //     Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
+            //     Program_cubes.SetUniform4m("model", model);
+            //     glDrawArrays(GL_TRIANGLES, 0, 36);
+            // }
 
             // // ------------------------------------------ plane
             // VAO_Plane.Bind();
@@ -504,7 +416,7 @@ int main()
 
             {
                 glm::mat4 model = glm::mat4(1.0f);
-                model = glm::translate(model, glm::vec3(0.0f, -0.70f, 0.0f));
+                model = glm::translate(model, glm::vec3(0.0f, -0.7f, 0.0f));
                 model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
                 Program_cubes.SetUniform4m("model", model);
                 glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
@@ -517,13 +429,21 @@ int main()
                 Program_cubes.SetUniform4m("model", model);
                 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
                 Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-                ourModel_lisa.Draw(Program_cubes);
+                Model_kafuka.Draw(Program_cubes);
+
+                model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(1.0f, -0.5f, 0.0f));
+                model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+                Program_cubes.SetUniform4m("model", model);
+                normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+                Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+                Model_raiden.Draw(Program_cubes);
             }
         }
 #endif
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer_multisample.GetFrameBufferID());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer_intermediate.GetFrameBufferID());
         glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -533,22 +453,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         Program_buffe.Bind();
-        glActiveTexture(GL_TEXTURE0 + 5);
-        glBindTexture(GL_TEXTURE_2D, screenTexture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_intermediate.GetTextureID());
         Program_buffe.SetUniform1i("mode", 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glViewport(0, 0, SCR_WIDTH / 4, SCR_HEIGHT / 4);
         Program_DQuad.Bind();
-        Program_DQuad.SetUniform1f("near_plane", near_plane);
-        Program_DQuad.SetUniform1f("far_plane", far_plane);
-        // glViewport(0, 0, SCR_WIDTH / 4, SCR_HEIGHT / 4);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, depthMap_Direcational);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_direcatinal.GetTextureID());
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glViewport(0, SCR_HEIGHT / 4, SCR_WIDTH / 4, SCR_HEIGHT / 4);
-        glBindTexture(GL_TEXTURE_2D, depthMap_Spot);
+        glBindTexture(GL_TEXTURE_2D, framebuffer_spot.GetTextureID());
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         ImGui::Render();

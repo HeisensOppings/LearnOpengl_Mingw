@@ -42,10 +42,14 @@ private:
 
 public:
     BufferLayout() : m_Stride(0) {}
-    void AddFloat(const vector<int> layout_stride)
+    template<typename... Args>
+    void AddFloat(int first, Args... args)
     {
-        for (auto &stride : layout_stride)
-            Push(GL_FLOAT, stride, GL_FALSE);
+        Push(GL_FLOAT, first, GL_FALSE);
+        if constexpr (sizeof...(args) > 0)
+        {
+            AddFloat(args...);
+        }
     }
     void AddFloat(unsigned int count) { Push(GL_FLOAT, count, GL_FALSE); }
     void AddUnsignedInt(unsigned int count) { Push(GL_UNSIGNED_INT, count, GL_FALSE); }

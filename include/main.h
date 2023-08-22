@@ -20,16 +20,23 @@
 #include "vertexbuffer.h"
 #include "indexbuffer.h"
 #include "camera.h"
+#include "framebuffer.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 using namespace std;
+
+#define TEXTURE_ID0 0
+#define TEXTURE_ID1 1
+#define TEXTURE_ID2 2
+#define TEXTURE_ID3 3
+#define TEXTURE_ID4 4
 
 glm::vec3 background_color(0.1);
 
 float zbuffer_near = 0.1;
 float zbuffer_far = 100.0f;
 
-glm::vec3 lightPos(-2.0f, 2.0f, -1.0f);
+glm::vec3 lightPos(0.0f, 2.0f, -1.0f);
 glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
 
 glm::vec3 sunlight_color(1.0f);

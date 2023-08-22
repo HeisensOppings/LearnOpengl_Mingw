@@ -99,10 +99,9 @@ void main()
     vec3 viewDir = normalize(viewPos - FragPos);
     // if(depth_test == 0)
     // {
-        // vec3 result = CalcDirLight(dirLight, norm, viewDir);
-        // for(int i = 0; i < POINT_LIGHTS; ++i)
-            // result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
-            vec3 result = CalcPointLight(pointLights[0], norm, FragPos, viewDir);
+        vec3 result = CalcDirLight(dirLight, norm, viewDir);
+        for(int i = 0; i < POINT_LIGHTS; ++i)
+            result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
         result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
         // if(gamma == 1)
             // result = pow(result, vec3(1.0/2.2));
@@ -207,8 +206,8 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
     // 执行透视除法
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // if(projCoords.z > 1.0){
-    //     return 0.0;}
+    if(projCoords.z > 1.0){
+        return 0.0;}
     // 变换到[0,1]的范围
     projCoords = projCoords * 0.5 + 0.5;
     // 取得最近点的深度(使用[0,1]范围下的fragPosLight当坐标)
@@ -283,7 +282,7 @@ float ShadowCalculation_Spot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
     float currentDepth = projCoords.z;
     // 检查当前片段是否在阴影中
     // float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
-    float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
+    float bias = max(0.004 * (1.0 - dot(normal, lightDir)), 0.0004);
     // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMapDir, 0);
