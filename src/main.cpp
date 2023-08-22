@@ -317,10 +317,8 @@ int main()
         }
 #endif
 
-        // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         framebuffer_multisample.Bind();
+        glClear(GL_COLOR_BUFFER_BIT);
 
 #if 1 // ------------------------------------- normal rendering
         {
