@@ -1,8 +1,8 @@
 #include "texture.h"
 
-Texture::Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID, bool gammaCorrection)
+Texture::Texture(const string &path, GLenum textureTarget, GLenum wrapMode, GLenum mapFilter, bool gammaCorrection)
 {
-    m_GL_TextureID = gl_TextureID;
+    m_TextureTarget = textureTarget;
     glGenTextures(1, &m_TextureID);
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
@@ -49,7 +49,7 @@ Texture::~Texture()
 
 void Texture::Bind()
 {
-    glActiveTexture(GL_TEXTURE0 + m_GL_TextureID);
+    glActiveTexture(m_TextureTarget);
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
 }
 
