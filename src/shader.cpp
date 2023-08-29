@@ -90,18 +90,18 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID)
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-    CHECK_SHADER(vertexShader, Shader);
+    CHECK_SHADER(vertexShader);
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-    CHECK_SHADER(fragmentShader, Shader);
+    CHECK_SHADER(fragmentShader);
 
     ProgramID = glCreateProgram();
     glAttachShader(ProgramID, vertexShader);
     glAttachShader(ProgramID, fragmentShader);
     glLinkProgram(ProgramID);
-    CHECK_SHADER(ProgramID, Program);
+    CHECK_PROGRAM(ProgramID);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
@@ -123,24 +123,24 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, uns
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-    CHECK_SHADER(vertexShader, Shader);
+    CHECK_SHADER(vertexShader);
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-    CHECK_SHADER(fragmentShader, Shader);
+    CHECK_SHADER(fragmentShader);
 
     geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
     glShaderSource(geometryShader, 1, &geometryShaderSource, NULL);
     glCompileShader(geometryShader);
-    CHECK_SHADER(geometryShader, Shader);
+    CHECK_SHADER(geometryShader);
 
     ProgramID = glCreateProgram();
     glAttachShader(ProgramID, vertexShader);
     glAttachShader(ProgramID, fragmentShader);
     glAttachShader(ProgramID, geometryShader);
     glLinkProgram(ProgramID);
-    CHECK_SHADER(ProgramID, Program);
+    CHECK_PROGRAM(ProgramID);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

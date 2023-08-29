@@ -34,15 +34,17 @@ using namespace std;
 glm::vec3 background_color(0.1);
 
 float zbuffer_near = 0.1;
-float zbuffer_far = 100.0f;
+float zbuffer_far = 20.0f;
 
-glm::vec3 lightPos(0.0f, 2.0f, -1.0f);
-glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
+glm::vec3 lightPos(0.0f, 1.0f, 0.0f);
+// glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
+glm::vec3 lightDirection(0.213315, -0.295711, 0.931156);
 
 glm::vec3 sunlight_color(1.0f);
-glm::vec3 sunlight_pos(20.0f, 100.0f, 100.0f);
+glm::vec3 sunlight_pos(20.0f, 3.0f, 100.0f);
 
-glm::vec3 lightSpotPos(-2.0f, 4.0f, -1.0f);
+// glm::vec3 lightSpotPos(-2.0f, 4.0f, -1.0f);
+glm::vec3 lightSpotPos(-2.62747, 3.14707, -8.38304);
 
 glm::vec3 light_am_di_sp_directional(0.3f, 0.6f, 0.2f);
 glm::vec3 lightColor_point(1.0f);
@@ -214,3 +216,4 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 void SceneLightConfig(Shader &shader, glm::mat4 view, glm::mat4 projuction);
 void renderObject(Shader &shader);
+

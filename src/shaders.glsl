@@ -4,27 +4,64 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
+layout (location = 3) in vec3 aTangent;
+// layout (location = 4) in vec3 aBitangent;
 out vec3 FragPos;
 out vec3 Normal;
 out vec2 TexCoords;
-out vec4 FragPosLightSpace;
-out vec4 FragPosLightSpace_Spot;
+out vec4 FragPosLightSpaceDir;
+out vec4 FragPosLightSpaceSpot;
+out vec3 TangentLightPos;
+out vec3 TangentSpotLightPos;
+out vec3 TangentViewPos;
+out vec3 TangentFragPos;
 uniform mat3 normalMatrix;
 uniform mat4 lightSpaceMatrix;
-uniform mat4 lightSpaceMatrix_Spot;
+uniform mat4 lightSpaceMatrixSpot;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform float scales;
+uniform vec3 lightPos;
+uniform vec3 viewPos;
+uniform int hasNormalMap;
+uniform vec3 pointLightPos;
+uniform vec3 spotLightPos;
+uniform vec3 dirLightDirecation;
+uniform vec3 spotLightDirecation;
+out vec3 DirLightDirecation;
+out vec3 SpotLightDirecation;
 void main()
 {
     FragPos = vec3(model * vec4(aPos, 1.0));
+    TexCoords = aTexCoords;
     // normalMatrix = mat3(transpose(inverse(model))) * aNormal;  
-    Normal = normalize(normalMatrix * aNormal);
-    TexCoords = aTexCoords * scales;
     gl_Position = projection * view * vec4(FragPos, 1.0);
-    FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
-    FragPosLightSpace_Spot = lightSpaceMatrix_Spot * vec4(FragPos, 1.0);
+    FragPosLightSpaceDir = lightSpaceMatrix * vec4(FragPos, 1.0);
+    FragPosLightSpaceSpot = lightSpaceMatrixSpot * vec4(FragPos, 1.0);
+    if(hasNormalMap == 1)
+    {
+        vec3 T = normalize(normalMatrix * aTangent);
+        vec3 N = normalize(normalMatrix * aNormal);
+        T = normalize(T - dot(T, N) * N);
+        vec3 B = cross(N, T);
+        mat3 TBN = transpose(mat3(T, B, N)); 
+        TangentLightPos = TBN * pointLightPos;
+        TangentSpotLightPos = TBN * spotLightPos;
+        TangentViewPos  = TBN * viewPos;
+        TangentFragPos  = TBN * FragPos;
+        DirLightDirecation = TBN * dirLightDirecation;
+        SpotLightDirecation = TBN * spotLightDirecation;
+    }
+    else 
+    {
+        TangentLightPos = pointLightPos;
+        TangentSpotLightPos = spotLightPos;
+        TangentViewPos  = viewPos;
+        TangentFragPos  = FragPos;
+        DirLightDirecation = dirLightDirecation;
+        SpotLightDirecation = spotLightDirecation;
+        Normal = normalize(normalMatrix * aNormal);
+    }
 }
 
 #shader fragment
@@ -62,78 +99,56 @@ struct Spotlight{
     vec3 diffuse;
     vec3 specular;
 };
-#define POINT_LIGHTS 1
 in vec3 FragPos;  
 in vec3 Normal;  
 in vec2 TexCoords;
-in vec4 FragPosLightSpace;
-in vec4 FragPosLightSpace_Spot;
+in vec4 FragPosLightSpaceDir;
+in vec4 FragPosLightSpaceSpot;
+in vec3 TangentSpotLightPos;
+in vec3 TangentLightPos;
+in vec3 TangentViewPos;
+in vec3 TangentFragPos;
 uniform vec3 viewPos;
+uniform vec3 spotLightPos;
 uniform Dirlight dirLight;
-uniform Pointlight pointLights[POINT_LIGHTS];
+uniform Pointlight pointLight;
 uniform Spotlight spotLight;
 uniform Material material;
-// uniform sampler2D texture_diffuse1;
-// uniform sampler2D texture_specular1;
-// uniform sampler2D texture_normal1;
 uniform sampler2D depthMapDir;
 uniform samplerCube depthMapPoint;
 uniform sampler2D depthMapSpot;
-uniform float zbuffer_near;
-uniform float zbuffer_far;
+uniform sampler2D normalMap;
 uniform float far_plane;
-// uniform int depth_test;
-// uniform samplerCube skybox;
-// uniform float refractive_rate;
-uniform int gamma;
+uniform int hasNormalMap;
+in vec3 DirLightDirecation;
+in vec3 SpotLightDirecation;
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir);
 vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
-float LinearizeDepth(float depth);
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
-float ShadowCalculation(vec3 fragPos);
-float ShadowCalculation_Spot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
+float ShadowCalculationDir(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
+float ShadowCalculationPoint();
+float ShadowCalculationSpot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
+vec3 color = vec3(texture(material.diffuse, TexCoords));
 void main()
 {
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
-    // if(depth_test == 0)
-    // {
-        vec3 result = CalcDirLight(dirLight, norm, viewDir);
-        for(int i = 0; i < POINT_LIGHTS; ++i)
-            result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
-        result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
-        // if(gamma == 1)
-            // result = pow(result, vec3(1.0/2.2));
-        FragColor = vec4(result, 1.0);
-        // vec3 I = normalize(FragPos - viewPos);
-        // vec3 R = reflect(I, normalize(Normal));
-        // FragColor = vec4(texture(skybox, R).rgb, 1.0);
-    // }
-    // else
-    // {
-    // FragColor = vec4(vec3(gl_FragCoord.z), 1.0);
-        // float depth = LinearizeDepth(gl_FragCoord.z) / zbuffer_far;
-        // FragColor = vec4(vec3(depth), 1.0);
-        //
-        // vec3 I = normalize(FragPos - viewPos);
-        // vec3 R = reflect(I, normalize(Normal));
-        // FragColor = vec4(texture(skybox, R).rgb, 1.0);
-        // 
-    //     float ratio = 1.00 / refractive_rate;
-    //     vec3 I = normalize(FragPos - viewPos);
-    //     vec3 R = refract(I, normalize(Normal), ratio);
-    //     FragColor = vec4(texture(skybox, R).rgb, 1.0);
-    // }
-} 
-float LinearizeDepth(float depth)
-{
-    float z = depth * 2.0 - 1.0; //back to NDC (Normalized Device Coordinates)
-    return (2.0 * zbuffer_far * zbuffer_near) / (zbuffer_far + zbuffer_near - z * (zbuffer_far - zbuffer_near));
+    vec3 norm;
+    if(hasNormalMap == 1)
+    {
+        norm = texture(normalMap, TexCoords).rgb;
+        norm = normalize(norm * 2.0 - 1.0);  // this normal is in tangent space
+    }
+    else 
+        norm = Normal;
+    vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
+    vec3 result = CalcDirLight(dirLight, norm, viewDir);
+    result += CalcPointLight(pointLight, norm, FragPos, viewDir);
+    result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+    FragColor = vec4(result, 1.0);
 }
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
 {
-    vec3 lightDir = normalize(light.direction);
+    vec3 lightDir = normalize(DirLightDirecation);
+    // vec3 lightDir = normalize(light.direction);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
@@ -143,23 +158,21 @@ vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
     vec3 ambient = light.ambient;
     vec3 diffuse = light.diffuse * diff;
     vec3 specular = light.specular * spec;
-    float shadow = ShadowCalculation(FragPosLightSpace, normal, lightDir);
-    return ((ambient + (1.0 - shadow) * (diffuse + specular))* vec3(texture(material.diffuse, TexCoords)));
+    float shadow = ShadowCalculationDir(FragPosLightSpaceDir, normal, lightDir);
+    return ((ambient + (1.0 - shadow) * (diffuse + specular))* color);
+    // return ((ambient + diffuse + specular)* color);
 }
 vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightDir = normalize(TangentLightPos - TangentFragPos);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     // blinn
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
-    // phone
-    // vec3 reflectDir = reflect(-lightDir, normal);
-    // float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
-    float distance = length(light.position - fragPos);
+    float distance = length(TangentLightPos - TangentFragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     // combine
     vec3 ambient = light.ambient;
@@ -168,27 +181,24 @@ vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-    float shadow = ShadowCalculation(fragPos);                      
-    return((ambient + (1.0 - shadow) * (diffuse + specular)) * vec3(texture(material.diffuse, TexCoords)));
-    // return((ambient ) * vec3(texture(material.diffuse, TexCoords)));
+    float shadow = ShadowCalculationPoint();                      
+    return((ambient + (1.0 - shadow) * (diffuse + specular)) * color);
+    // return ((ambient + diffuse + specular) * color);
 }
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightDir = normalize(TangentSpotLightPos - TangentFragPos);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     // blinn
     vec3 halfwayDir = normalize(lightDir + viewDir);  
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
-    // phone
-    // vec3 reflectDir = reflect(-lightDir, normal);
-    // float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
-    float distance = length(light.position - fragPos);
+    float distance = length(TangentSpotLightPos - TangentFragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // spotlight intensity
-    float theta = dot(lightDir, normalize(-light.direction)); 
+    float theta = dot(lightDir, normalize(-SpotLightDirecation)); 
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     // combine results
@@ -198,26 +208,18 @@ vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     ambient *= attenuation * intensity;
     diffuse *= attenuation * intensity;
     specular *= attenuation * intensity;
-    // return ((ambient + diffuse + specular) * vec3(texture(material.diffuse, TexCoords)));
-    float shadow = ShadowCalculation_Spot(FragPosLightSpace_Spot, normal, lightDir);                      
-    return((ambient + (1.0 - shadow) * (diffuse + specular)) * vec3(texture(material.diffuse, TexCoords)));
+    // return ((ambient + diffuse + specular) * color);
+    float shadow = ShadowCalculationSpot(FragPosLightSpaceSpot, normal, lightDir);                      
+    return((ambient + (1.0 - shadow) * (diffuse + specular)) * color);
 }
-float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
+float ShadowCalculationDir(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
-    // 执行透视除法
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     if(projCoords.z > 1.0){
         return 0.0;}
-    // 变换到[0,1]的范围
     projCoords = projCoords * 0.5 + 0.5;
-    // 取得最近点的深度(使用[0,1]范围下的fragPosLight当坐标)
-    // float closestDepth = texture(depthMapDir, projCoords.xy).r; 
-    // 取得当前片段在光源视角下的深度
     float currentDepth = projCoords.z;
-    // 检查当前片段是否在阴影中
-    // float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
     float bias = max(0.02 * (1.0 - dot(normal, lightDir)), 0.002);
-    // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(depthMapDir, 0);
     for(int x = -1; x <= 1; ++x)
@@ -239,82 +241,49 @@ vec3 gridSamplingDisk[20] = vec3[]
    vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
    vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
 );
-float ShadowCalculation(vec3 fragPos)
+float ShadowCalculationPoint()
 {
-    // get vector between fragment position and light position
-    vec3 fragToLight = fragPos - pointLights[0].position;
-    // use the fragment to light vector to sample from the depth map    
-    // float closestDepth = texture(depthMapPoint, fragToLight).r;
-    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
-    // closestDepth *= far_plane;
-    // now get current linear depth as the length between the fragment and light position
+    vec3 fragToLight = FragPos - pointLight.position;
     float currentDepth = length(fragToLight);
     // 20 points
     float shadow = 0.0;
     float bias = 0.05;
     int samples = 20;
     float closestDepth;
-    float viewDistance = length(viewPos - fragPos);
+    float viewDistance = length(TangentViewPos - TangentFragPos);
     float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
     for(int i = 0; i < samples; ++i)
     {
-        closestDepth = texture(depthMapPoint, fragToLight + gridSamplingDisk[i] / 5 * diskRadius).r;
+        closestDepth = texture(depthMapPoint, fragToLight + gridSamplingDisk[i] * 0.1 * diskRadius).r;
         closestDepth *= far_plane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
     shadow /= float(samples);
-    // display closestDepth as debug (to visualize depth cubemap)
     // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);    
     return shadow;
 }
-float ShadowCalculation_Spot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
+float ShadowCalculationSpot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {
-    // 执行透视除法
+    // float near = 0.1, far = 20.0;
+    // (2.0 * near) / (far + near - projCoords.z * (far - near))
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // if(projCoords.z > 1.0){
-    //     return 0.0;}
-    // 变换到[0,1]的范围
     projCoords = projCoords * 0.5 + 0.5;
-    // 取得最近点的深度(使用[0,1]范围下的fragPosLight当坐标)
-    // float closestDepth = texture(depthMapDir, projCoords.xy).r; 
-    // 取得当前片段在光源视角下的深度
-    float currentDepth = projCoords.z;
-    // 检查当前片段是否在阴影中
-    // float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
-    float bias = max(0.004 * (1.0 - dot(normal, lightDir)), 0.0004);
-    // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
+    float linearDepth_current = 0.2 / (20.1 - projCoords.z * 19.9);
+    float bias = max(0.002 * (1.0 - dot(normal, lightDir)), 0.0002);
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(depthMapDir, 0);
+    vec2 texelSize = 1.0 / textureSize(depthMapSpot, 0);
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(depthMapSpot, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
+            float linearDepth_close = 0.2 / (20.1 - texture(depthMapSpot, projCoords.xy + vec2(x, y) * 0.5 * texelSize).r * 19.9);
+            shadow += linearDepth_current - bias> linearDepth_close ? 1.0 : 0.0;        
         }    
     }
     shadow /= 9.0;
     return shadow;
 }
-// float ShadowCalculation_Spot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
-// {
-//     // 执行透视除法
-//     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-//     // 变换到[0,1]的范围
-//     projCoords = projCoords * 0.5 + 0.5;
-//     // 取得最近点的深度(使用[0,1]范围下的fragPosLight当坐标)
-//     float closestDepth = texture(depthMapSpot, projCoords.xy).r; 
-//     // 取得当前片段在光源视角下的深度
-//     float currentDepth = projCoords.z;
-//     // 检查当前片段是否在阴影中
-//     // float shadow = currentDepth > closestDepth  ? 1.0 : 0.0;
-//     // float bias = max(0.02 * (1.0 - dot(normal, lightDir)), 0.002);
-//     float bias = 0.0001;
-//     float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
-//     return shadow;
-// }
-
 
 #shader vertex
 // id --- 1
@@ -693,76 +662,3 @@ in VS_OUT {
 void main()
 {           
 }
-
-// #shader vertex
-// #version 330 core
-// layout (location = 0) in vec3 aPos;
-// layout (location = 2) in vec2 aTexCoords;
-// layout (location = 3) in mat4 aInstanceMatrix;
-// out vec2 TexCoords;
-// uniform mat4 projection;
-// uniform mat4 view;
-// void main()
-// {
-//     TexCoords = aTexCoords;
-//     gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0f); 
-// }
-
-// #shader fragment
-// #version 330 core
-// out vec4 FragColor;
-// in vec2 TexCoords;
-// uniform sampler2D texture_diffuse1;
-// void main()
-// {
-//     FragColor = texture(texture_diffuse1, TexCoords);
-// }
-
-// #shader geometry
-// #version 330 core
-// layout (triangles) in;
-// layout (triangle_strip, max_vertices = 3) out;
-// in VS_OUT {
-//     vec2 texCoords;
-//     vec3 fragPos;
-//     vec3 normal;
-// } gs_in[];
-// out vec3 FragPos;
-// out vec3 Normal;
-// out vec2 TexCoords; 
-// uniform float time;
-// vec4 explode(vec4 position, vec3 normal)
-// {
-//     // float magnitude = 1.0;
-//     // vec3 direction = normal * ((sin(time) + 1.0) / 10.0); 
-//     // vec3 direction = normal * ((sin(time) + 1.0) / 2.0) * magnitude; 
-//     // return position + vec4(direction, 0.0);
-//     return position + vec4(normal*0.001, 0.0);
-//     // return position;
-// }
-// vec3 GetNormal()
-// {
-//     vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-//     vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-//     return normalize(cross(a, b));
-// }
-// void main() {    
-//     vec3 normal = GetNormal();
-//     // gl_Position = explode(gl_in[0].gl_Position, normal);
-//     gl_Position = explode(gl_in[0].gl_Position, normal);
-//     TexCoords = gs_in[0].texCoords;
-//     FragPos = gs_in[0].fragPos;
-//     Normal = gs_in[0].normal;
-//     EmitVertex();
-//     gl_Position = explode(gl_in[1].gl_Position, normal);
-//     TexCoords = gs_in[1].texCoords;
-//     FragPos = gs_in[1].fragPos;
-//     Normal = gs_in[1].normal;
-//     EmitVertex();
-//     gl_Position = explode(gl_in[2].gl_Position, normal);
-//     TexCoords = gs_in[2].texCoords;
-//     FragPos = gs_in[2].fragPos;
-//     Normal = gs_in[2].normal;
-//     EmitVertex();
-//     EndPrimitive();
-// }

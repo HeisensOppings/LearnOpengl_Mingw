@@ -12,6 +12,8 @@ bool rightClick = true;
 bool firstMouse = true;
 bool controlKey = false;
 
+void renderQuad();
+
 Camera camera;
 GLFWwindow *window = nullptr;
 
@@ -47,12 +49,16 @@ int main()
     Shader Program_DCube(8, 8, 1);
     Shader Program_DSpot(9);
 
-    Texture diffuseMapCubes("./src/image/Indoor_Dq_Build_Wood_01_T4_Diffuse.png", GL_REPEAT, GL_LINEAR);
-    Texture diffuseMapPlane("./src/image/Indoor_Ly_Build_Floor_03_T4_Diffuse.png", GL_REPEAT, GL_LINEAR);
+    Texture diffuseMapCubes("./src/image/Wall/bricks2.jpg");
+    // Texture diffuseMapCubes("./src/image/ElectricityCube/Property_Ani_Prop_UGCV2_ElectricityCube_01_Diffuse.png");
+    Texture normalMapCubes("./src/image/Wall/bricks2_normal.jpg", GL_TEXTURE1);
+    // Texture normalMapCubes("./src/image/ElectricityCube/Property_Ani_Prop_UGCV2_ElectricityCube_01_Normal.png", GL_TEXTURE1);
+    // Texture diffuseMapPlane("./src/image/Wood/Indoor_Ly_Build_Floor_03_T4_Diffuse.png");
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
     // Program_cubes.SetUniform1i("material.specular", 1);
+    Program_cubes.SetUniform1i("normalMap", 1);
     Program_cubes.SetUniform1i("depthMapPoint", 1);
     Program_cubes.SetUniform1i("depthMapDir", 2);
     Program_cubes.SetUniform1i("depthMapSpot", 3);
@@ -127,7 +133,10 @@ int main()
         ImGui::PushItemWidth(150);
         // ImGui::SliderFloat("reflect rate", &refractive_rate, 1.00, 3.00);
         if (lighting_mode_camera)
+        {
             lightSpotPos = camera.m_cameraPos;
+        }
+
         ImGui::Checkbox("Camera spot light", &lighting_mode_camera);
         ImGui::Checkbox("Gamma", &gamma);
         if (ImGui::Button(("point distance: " + std::to_string(light_distance_index[light_distance_select_point])).c_str()))
@@ -165,15 +174,15 @@ int main()
         framebuffer_direcatinal.Bind();
 
 #if 1 // --------------------------------------depthMap rendering for directional
-        glm::mat4 lightProjection, lightView;
-        glm::mat4 lightSpaceMatrix;
-        float near_plane_dir = 1.0f, far_plane_dir = 10.0f;
-        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane_dir, far_plane_dir);
-        lightView = glm::lookAt(sunlight_pos / glm::vec3(50), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-        lightSpaceMatrix = lightProjection * lightView;
-        Program_Depth.Bind();
-        Program_Depth.SetUniform4m("lightSpaceMatrix", lightSpaceMatrix);
-        {
+      glm::mat4 lightProjection, lightView;
+      glm::mat4 lightSpaceMatrix;
+      float near_plane_dir = 1.0f, far_plane_dir = 10.0f;
+      lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane_dir, far_plane_dir);
+      lightView = glm::lookAt(sunlight_pos / glm::vec3(50), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+      lightSpaceMatrix = lightProjection * lightView;
+      Program_Depth.Bind();
+      Program_Depth.SetUniform4m("lightSpaceMatrix", lightSpaceMatrix);
+      {
 
             glm::mat4 model = glm::mat4(1.0f);
             VAO_Cubes.Bind();
@@ -212,7 +221,7 @@ int main()
         }
 #endif
 
-        lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 3.0);
+        lightPos.z = static_cast<float>(sin(glfwGetTime() * 0.5) * 4.0);
         framebuffer_point.Bind();
 
 #if 1 // ------------------------------------- depthMap rendering for point light
@@ -276,7 +285,7 @@ int main()
         view_Spot = Camera::calculate_lookAt_matrix(lightSpotPos, lightDirection, glm::vec3(0.0, 1.0, 0.0));
         glm::mat4 projection_Spot = glm::mat4(1.0f);
         projection_Spot = glm::perspective(glm::radians(camera.m_Fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, zbuffer_near, zbuffer_far);
-        glm::mat4 lightSpaceMatrix_Spot = projection_Spot * view_Spot;
+        glm::mat4 lightSpaceMatrixSpot = projection_Spot * view_Spot;
         {
 
             VAO_Cubes.Bind();
@@ -301,7 +310,8 @@ int main()
                 model = glm::scale(model, glm::vec3(100.0f, 100.0f, 100.0f));
                 Program_DSpot.SetUniform4m("model", model);
                 // ourModel_Syabugyo.Draw(Program_cubes);
-
+                // glEnable(GL_CULL_FACE);
+                // glCullFace(GL_FRONT);
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(-1.0f, -0.5f, 0.0f));
                 model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
@@ -313,6 +323,7 @@ int main()
                 model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
                 Program_DSpot.SetUniform4m("model", model);
                 Model_raiden.Draw(Program_DSpot);
+                // glDisable(GL_CULL_FACE);
             }
         }
 #endif
@@ -352,12 +363,12 @@ int main()
             }
 
             // directional light
-            Program_light.SetUniform3f("lightColor", sunlight_color);
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, sunlight_pos);
-            model = glm::scale(model, glm::vec3(50.0f)); // Make it a smaller cube
-            Program_light.SetUniform4m("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            // Program_light.SetUniform3f("lightColor", sunlight_color);
+            // model = glm::mat4(1.0f);
+            // model = glm::translate(model, sunlight_pos);
+            // model = glm::scale(model, glm::vec3(50.0f)); // Make it a smaller cube
+            // Program_light.SetUniform4m("model", model);
+            // glDrawArrays(GL_TRIANGLES, 0, 36);
 
             // point light
             Program_light.SetUniform3f("lightColor", lightColor_point);
@@ -381,10 +392,9 @@ int main()
             Program_cubes.SetUniform1f("far_plane", far_plane);
 
             Program_cubes.SetUniform4m("lightSpaceMatrix", lightSpaceMatrix);
-            Program_cubes.SetUniform4m("lightSpaceMatrix_Spot", lightSpaceMatrix_Spot);
-
+            Program_cubes.SetUniform4m("lightSpaceMatrixSpot", lightSpaceMatrixSpot);
+            Program_cubes.SetUniform1i("hasNormalMap", 1);
             // for (unsigned int i = 0; i < cubePositions.size(); i++)
-            // // for (unsigned int i = 0; i < 1; i++)
             // {
             //     Program_cubes.Bind();
             //     glm::mat4 model = glm::mat4(1.0f);
@@ -399,19 +409,6 @@ int main()
             //     glDrawArrays(GL_TRIANGLES, 0, 36);
             // }
 
-            // // ------------------------------------------ plane
-            // VAO_Plane.Bind();
-            // diffuseMapPlane.Bind();
-            // // Program_cubes.SetUniform1i("gamma", (int)gamma);
-            // Program_cubes.SetUniform1f("scales", 2.0f);
-            // model = glm::mat4(1.0f);
-            // model = glm::translate(model, glm::vec3(0.0f, 0.0, 0.0));
-            // glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-            // Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
-            // Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
-            // Program_cubes.SetUniform4m("model", model);
-            // glDrawArrays(GL_TRIANGLES, 0, 6);
-
             {
                 glm::mat4 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(0.0f, -0.7f, 0.0f));
@@ -420,6 +417,8 @@ int main()
                 glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
                 Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
                 ourModel_Syabugyo.Draw(Program_cubes);
+
+                Program_cubes.SetUniform1i("hasNormalMap", 0);
 
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(-1.0f, -0.5f, 0.0f));
@@ -436,6 +435,33 @@ int main()
                 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
                 Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
                 Model_raiden.Draw(Program_cubes);
+            }
+            Program_cubes.SetUniform1i("hasNormalMap", 1);
+
+            // ------------------------------------------ plane
+            VAO_Plane.Bind();
+            // diffuseMapPlane.Bind();
+            // Program_cubes.SetUniform1i("gamma", (int)gamma);
+            // Program_cubes.SetUniform1f("scales", 2.0f);
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(0.0f, 0.0, 0.0));
+            glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+            Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+            Program_cubes.SetUniform3f("viewPos", camera.m_cameraPos);
+            Program_cubes.SetUniform4m("model", model);
+            // glDrawArrays(GL_TRIANGLES, 0, 6);
+
+            {
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::translate(model, glm::vec3(0.0f, 0.2, -3.0));
+                model = glm::rotate(model, glm::radians((float)45), glm::normalize(glm::vec3(-1.0, 0.0, 0.0))); // rotate the quad to show normal mapping from multiple directions
+                // model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // rotate the quad to show normal mapping from multiple directions
+                Program_cubes.SetUniform4m("model", model);
+                normalMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+                Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
+                diffuseMapCubes.Bind();
+                normalMapCubes.Bind();
+                renderQuad();
             }
         }
 #endif
@@ -611,19 +637,21 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 {
-    static float speed_move = 5.0f;
+    static float speed_move = 2.0f;
     (void)window;
     (void)xoffset;
     if (!rightClick && controlKey)
         camera.ProcessMouseScroll(yoffset);
     else if (yoffset > 0)
     {
-        speed_move += (speed_move < 1.0f) ? 0.1f : 1.0f;
+        speed_move += (speed_move < 1.0f) ? 0.1f : 0.5f;
+        // speed_move += 0.1;
         camera.SetSpeed(speed_move);
     }
     else if (yoffset < 0)
     {
-        speed_move -= (speed_move <= 1.0f) ? 0.1f : 1.0f;
+        speed_move -= (speed_move <= 1.0f) ? 0.1f : 0.5f;
+        // speed_move -= 0.1;
         speed_move = std::max(speed_move, 0.1f);
         camera.SetSpeed(speed_move);
     }
@@ -658,32 +686,32 @@ void SceneLightConfig(Shader &shader, glm::mat4 view, glm::mat4 projection)
     shader.Bind();
     shader.SetUniform4m("view", view);
     shader.SetUniform4m("projection", projection);
-    shader.SetUniform1f("scales", 1.0f);
+    // shader.SetUniform1f("scales", 1.0f);
     // direction light
     // shader.SetUniform1i("depth_test", (int)depth_test);
     // shader.SetUniform1f("zbuffer_near", zbuffer_near);
     // shader.SetUniform1f("zbuffer_far", zbuffer_far);
     // shader.SetUniform1f("refractive_rate", refractive_rate);
     shader.SetUniform3f("dirLight.direction", sunlight_pos);
+    shader.SetUniform3f("dirLightDirecation", sunlight_pos);
     shader.SetUniform3f("dirLight.ambient", sunlight_color * light_am_di_sp_directional.x);
     shader.SetUniform3f("dirLight.diffuse", sunlight_color * light_am_di_sp_directional.y);
     shader.SetUniform3f("dirLight.specular", sunlight_color * light_am_di_sp_directional.z);
     // point light
-    for (GLuint i = 0; i < 1; i++)
-    {
-        string number = to_string(i);
-        shader.SetUniform3f("pointLights[" + number + "].position", lightPos);
-        // shader.SetUniform3f("pointLights[" + number + "].position", pointLightPositions[i]);
-        shader.SetUniform3f("pointLights[" + number + "].ambient", lightColor_point * light_am_di_sp_point.x);
-        shader.SetUniform3f("pointLights[" + number + "].diffuse", lightColor_point * light_am_di_sp_point.y);
-        shader.SetUniform3f("pointLights[" + number + "].specular", lightColor_point * light_am_di_sp_point.z);
-        shader.SetUniform1f("pointLights[" + number + "].constant", 1.0f);
-        shader.SetUniform1f("pointLights[" + number + "].linear", light_distance[light_distance_select_point][0]);
-        shader.SetUniform1f("pointLights[" + number + "].quadratic", light_distance[light_distance_select_point][1]);
-    }
+    shader.SetUniform3f("pointLightPos", lightPos);
+    shader.SetUniform3f("viewPos", camera.m_cameraPos);
+    shader.SetUniform3f("pointLight.position", lightPos);
+    shader.SetUniform3f("pointLight.ambient", lightColor_point * light_am_di_sp_point.x);
+    shader.SetUniform3f("pointLight.diffuse", lightColor_point * light_am_di_sp_point.y);
+    shader.SetUniform3f("pointLight.specular", lightColor_point * light_am_di_sp_point.z);
+    shader.SetUniform1f("pointLight.constant", 1.0f);
+    shader.SetUniform1f("pointLight.linear", light_distance[light_distance_select_point][0]);
+    shader.SetUniform1f("pointLight.quadratic", light_distance[light_distance_select_point][1]);
     // spotLight
     shader.SetUniform3f("spotLight.position", lightSpotPos);
+    shader.SetUniform3f("spotLightPos", lightSpotPos);
     shader.SetUniform3f("spotLight.direction", lightDirection);
+    shader.SetUniform3f("spotLightDirecation", lightDirection);
     shader.SetUniform3f("spotLight.ambient", lightColor_spot * light_am_di_sp_spot.x);
     shader.SetUniform3f("spotLight.diffuse", lightColor_spot * light_am_di_sp_spot.y);
     shader.SetUniform3f("spotLight.specular", lightColor_spot * light_am_di_sp_spot.z);
@@ -697,4 +725,91 @@ void SceneLightConfig(Shader &shader, glm::mat4 view, glm::mat4 projection)
 
 void renderObject([[maybe_unused]] Shader &shader)
 {
+}
+
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+void renderQuad()
+{
+    if (quadVAO == 0)
+    {
+        // positions
+        glm::vec3 pos1(-1.0f, 1.0f, 0.0f);
+        glm::vec3 pos2(-1.0f, -1.0f, 0.0f);
+        glm::vec3 pos3(1.0f, -1.0f, 0.0f);
+        glm::vec3 pos4(1.0f, 1.0f, 0.0f);
+        // texture coordinates
+        glm::vec2 uv1(0.0f, 1.0f);
+        glm::vec2 uv2(0.0f, 0.0f);
+        glm::vec2 uv3(1.0f, 0.0f);
+        glm::vec2 uv4(1.0f, 1.0f);
+        // normal vector
+        glm::vec3 nm(0.0f, 0.0f, 1.0f);
+
+        // calculate tangent/bitangent vectors of both triangles
+        glm::vec3 tangent1, bitangent1;
+        glm::vec3 tangent2, bitangent2;
+        // triangle 1
+        // ----------
+        glm::vec3 edge1 = pos2 - pos1;
+        glm::vec3 edge2 = pos3 - pos1;
+        glm::vec2 deltaUV1 = uv2 - uv1;
+        glm::vec2 deltaUV2 = uv3 - uv1;
+
+        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+        tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+        bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+        bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+        bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+        // triangle 2
+        // ----------
+        edge1 = pos3 - pos1;
+        edge2 = pos4 - pos1;
+        deltaUV1 = uv3 - uv1;
+        deltaUV2 = uv4 - uv1;
+
+        f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+        tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+        bitangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+        bitangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+        bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+        float quadVertices[] = {
+            // positions            // normal         // texcoords  // tangent                          // bitangent
+            pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+            pos2.x, pos2.y, pos2.z, nm.x, nm.y, nm.z, uv2.x, uv2.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+            pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent1.x, tangent1.y, tangent1.z, bitangent1.x, bitangent1.y, bitangent1.z,
+
+            pos1.x, pos1.y, pos1.z, nm.x, nm.y, nm.z, uv1.x, uv1.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+            pos3.x, pos3.y, pos3.z, nm.x, nm.y, nm.z, uv3.x, uv3.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z,
+            pos4.x, pos4.y, pos4.z, nm.x, nm.y, nm.z, uv4.x, uv4.y, tangent2.x, tangent2.y, tangent2.z, bitangent2.x, bitangent2.y, bitangent2.z};
+        // configure plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(6 * sizeof(float)));
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(8 * sizeof(float)));
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void *)(11 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
 }

@@ -1,6 +1,9 @@
 #### LearnOpengl with mingw makefile in vscode
 
-[English](README.md) [Chinese](README_zh.md)
+[English](README.md) [中文](README_zh.md)
+
+##### 环境
+- Cmake, Mingw32-make, Vscode
 
 ##### Build GLFW
 

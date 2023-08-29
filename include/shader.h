@@ -19,18 +19,34 @@ enum SHADER_TYPE
 };
 
 // #define GLSL_CODE_OUTPUT
-#define CHECK_SHADER(programOrShader, Type)                                                            \
-    do                                                                                                 \
-    {                                                                                                  \
-        GLint success;                                                                                 \
-        glGet##Type##iv(programOrShader, GL_COMPILE_STATUS, &success);                                 \
-        if (!success)                                                                                  \
-        {                                                                                              \
-            GLchar infoLog[512];                                                                       \
-            glGet##Type##InfoLog(programOrShader, 512, NULL, infoLog);                                 \
-            std::cout << "\033[37;41mERROR:: " << #programOrShader << " ::COMPILATION_FAILED\033[0m\n" \
-                      << infoLog << std::endl;                                                         \
-        }                                                                                              \
+#define CHECK_SHADER(shader)                                                                  \
+    do                                                                                        \
+    {                                                                                         \
+        GLint success;                                                                        \
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);                                   \
+        if (!success)                                                                         \
+        {                                                                                     \
+            GLchar infoLog[512];                                                              \
+            glGetShaderInfoLog(shader, 512, NULL, infoLog);                          \
+            std::cout << "\033[37;41mERROR:: " << #shader << " ::COMPILATION_FAILED\033[0m\n" \
+                      << infoLog << std::endl;                                                \
+            exit(1);                                                                          \
+        }                                                                                     \
+    } while (0)
+
+#define CHECK_PROGRAM(program)                                                                 \
+    do                                                                                         \
+    {                                                                                          \
+        GLint success;                                                                         \
+        glGetProgramiv(program, GL_LINK_STATUS, &success);                             \
+        if (!success)                                                                          \
+        {                                                                                      \
+            GLchar infoLog[512];                                                               \
+            glGetProgramInfoLog(program, 512, NULL, infoLog);                          \
+            std::cout << "\033[37;41mERROR:: " << #program << " ::COMPILATION_FAILED\033[0m\n" \
+                      << infoLog << std::endl;                                                 \
+            exit(1);                                                                           \
+        }                                                                                      \
     } while (0)
 
 // The contents of the glsl file must be separated by a swap symbol

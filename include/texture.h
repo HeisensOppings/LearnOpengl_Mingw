@@ -12,10 +12,10 @@ class Texture
 {
 private:
     unsigned int m_TextureID;
-    unsigned int m_GL_TextureID;
+    unsigned int m_TextureTarget;
 
 public:
-    Texture(const string &path, GLenum wrapMode, GLenum mapFilter, unsigned int gl_TextureID = 0, bool gammaCorrection = false);
+    Texture(const string &path, GLenum textureTarget = GL_TEXTURE0, GLenum wrapMode = GL_REPEAT, GLenum mapFilter = GL_LINEAR, bool gammaCorrection = false);
     ~Texture();
     void Bind();
     void UnBind();
