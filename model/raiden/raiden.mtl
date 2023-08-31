@@ -11,8 +11,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/cloth.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 二重
 Ns 201.339569
@@ -24,8 +22,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/cloth.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 体
 Ns 201.339569
@@ -37,8 +33,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/cloth.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 发
 Ns 201.339569
@@ -50,8 +44,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/hair1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 发sph+
 Ns 201.339569
@@ -63,8 +55,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/sph.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 发饰
 Ns 201.339569
@@ -76,8 +66,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/hair.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 发饰2
 Ns 201.339569
@@ -89,8 +77,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/hair1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 口舌
 Ns 201.339569
@@ -112,8 +98,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/cloth.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 左袖
 Ns 201.339569
@@ -125,8 +109,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/cloth.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 指甲
 Ns 201.339569
@@ -148,8 +130,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/hair1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 白目
 Ns 201.339569
@@ -161,8 +141,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/face1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 目
 Ns 670.267517
@@ -174,8 +152,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/hair1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 眉
 Ns 201.339569
@@ -187,8 +163,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/face1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 睫
 Ns 201.339569
@@ -200,8 +174,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/face1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 肌
 Ns 201.339569
@@ -213,8 +185,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/skin1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 花
 Ns 201.339569
@@ -236,8 +206,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/cloth.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 面
 Ns 201.339569
@@ -249,8 +217,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/face.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 面2
 Ns 201.339569
@@ -262,8 +228,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/face.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 饰品2
 Ns 201.339569
@@ -275,8 +239,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd /tex/hair1.png
-map_Ks /sph/s1.bmp
-map_Bump /sph/katana.bmp
 
 newmtl 齒
 Ns 201.339569

@@ -38,7 +38,7 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    Shader::ShaderInit("E:/Project/OpenGL/src/shaders.glsl");
+    Shader::ShaderInit("./src/shaders.glsl");
     Shader Program_cubes(0);
     Shader Program_light(1);
     Shader Program_buffe(3);
@@ -50,18 +50,25 @@ int main()
     Shader Program_DSpot(9);
 
     Texture diffuseMapCubes("./src/image/Wall/bricks2.jpg");
-    // Texture diffuseMapCubes("./src/image/ElectricityCube/Property_Ani_Prop_UGCV2_ElectricityCube_01_Diffuse.png");
     Texture normalMapCubes("./src/image/Wall/bricks2_normal.jpg", GL_TEXTURE1);
-    // Texture normalMapCubes("./src/image/ElectricityCube/Property_Ani_Prop_UGCV2_ElectricityCube_01_Normal.png", GL_TEXTURE1);
+    Texture heightMapCubes("./src/image/Wall/bricks2_disp.jpg", GL_TEXTURE3);
+    // Texture diffuseMapCubes("./src/image/Wood/Indoor_Ly_Build_Floor_03_T4_Diffuse.png");
     // Texture diffuseMapPlane("./src/image/Wood/Indoor_Ly_Build_Floor_03_T4_Diffuse.png");
+    // Texture diffuseMapCubes("./src/image/Wall/Level_Common_Build_Ruin_Wall_05_T4A_Diffuse.png");
+    // Texture diffuseMapCubes("./src/image/ElectricityCube/Property_Ani_Prop_UGCV2_ElectricityCube_01_Diffuse.png");
+    // Texture normalMapCubes("./src/image/Wall/Level_Common_Build_Ruin_Wall_05_T4A_Normal.png", GL_TEXTURE1);
+    // Texture normalMapCubes("./src/image/toy_box_normal.png", GL_TEXTURE1);
+    // Texture heightMapCubes("./src/image/Wall/Level_Common_Build_Ruin_Wall_05_T4A_Height.png", GL_TEXTURE2);
+    // Texture heightMapCubes("./src/image/toy_box_disp.png", GL_TEXTURE2);
 
     Program_cubes.Bind();
     Program_cubes.SetUniform1i("material.diffuse", 0);
     // Program_cubes.SetUniform1i("material.specular", 1);
     Program_cubes.SetUniform1i("normalMap", 1);
-    Program_cubes.SetUniform1i("depthMapPoint", 1);
-    Program_cubes.SetUniform1i("depthMapDir", 2);
-    Program_cubes.SetUniform1i("depthMapSpot", 3);
+    Program_cubes.SetUniform1i("heightMap", 3);
+    Program_cubes.SetUniform1i("depthMapDir", 5);
+    Program_cubes.SetUniform1i("depthMapPoint", 6);
+    Program_cubes.SetUniform1i("depthMapSpot", 7);
 
     Program_buffe.Bind();
     Program_buffe.SetUniform1i("screenTexture", 0);
@@ -107,13 +114,13 @@ int main()
     FrameBuffer framebuffer_intermediate(SCR_WIDTH, SCR_HEIGHT, GL_TEXTURE_2D);
 
     // ----------------------------------configure directional light depth map FBO
-    FrameBuffer framebuffer_direcatinal(SCR_WIDTH * 4, SCR_HEIGHT * 4, GL_TEXTURE_2D, GL_TEXTURE2, true);
+    FrameBuffer framebuffer_direcatinal(SCR_WIDTH * 4, SCR_HEIGHT * 4, GL_TEXTURE_2D, GL_TEXTURE5, true);
 
     // ----------------------------------configure point light depth map FBO
-    FrameBuffer framebuffer_point(1024, 1024, GL_TEXTURE_CUBE_MAP, GL_TEXTURE1, true);
+    FrameBuffer framebuffer_point(1024, 1024, GL_TEXTURE_CUBE_MAP, GL_TEXTURE6, true);
 
     // ----------------------------------configure spot light depth map FBO
-    FrameBuffer framebuffer_spot(SCR_WIDTH * 4, SCR_HEIGHT * 4, GL_TEXTURE_2D, GL_TEXTURE3, true);
+    FrameBuffer framebuffer_spot(SCR_WIDTH * 4, SCR_HEIGHT * 4, GL_TEXTURE_2D, GL_TEXTURE7, true);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -390,6 +397,7 @@ int main()
             framebuffer_spot.TextureBind();
 
             Program_cubes.SetUniform1f("far_plane", far_plane);
+            Program_cubes.SetUniform1i("hasHeightMap", 0);
 
             Program_cubes.SetUniform4m("lightSpaceMatrix", lightSpaceMatrix);
             Program_cubes.SetUniform4m("lightSpaceMatrixSpot", lightSpaceMatrixSpot);
@@ -461,6 +469,8 @@ int main()
                 Program_cubes.SetUniform3m("normalMatrix", normalMatrix);
                 diffuseMapCubes.Bind();
                 normalMapCubes.Bind();
+                heightMapCubes.Bind();
+                Program_cubes.SetUniform1i("hasHeightMap", 1);
                 renderQuad();
             }
         }

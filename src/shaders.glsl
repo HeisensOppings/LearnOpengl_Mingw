@@ -118,8 +118,10 @@ uniform sampler2D depthMapDir;
 uniform samplerCube depthMapPoint;
 uniform sampler2D depthMapSpot;
 uniform sampler2D normalMap;
+uniform sampler2D heightMap;
 uniform float far_plane;
 uniform int hasNormalMap;
+uniform int hasHeightMap;
 in vec3 DirLightDirecation;
 in vec3 SpotLightDirecation;
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir);
@@ -128,22 +130,61 @@ vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 float ShadowCalculationDir(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
 float ShadowCalculationPoint();
 float ShadowCalculationSpot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
-vec3 color = vec3(texture(material.diffuse, TexCoords));
+vec2 ParallaxMapping(vec2 TexCoords, vec3 viewDir);
+vec2 texCoords;
 void main()
 {
+    vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
+    if(hasHeightMap == 1)
+    {   
+        texCoords = ParallaxMapping(TexCoords, viewDir);
+        if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+            discard;
+    }
+    else
+        texCoords = TexCoords;
     vec3 norm;
     if(hasNormalMap == 1)
     {
-        norm = texture(normalMap, TexCoords).rgb;
+        norm = texture(normalMap, texCoords).rgb;
         norm = normalize(norm * 2.0 - 1.0);  // this normal is in tangent space
     }
     else 
         norm = Normal;
-    vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
     vec3 result = CalcDirLight(dirLight, norm, viewDir);
     result += CalcPointLight(pointLight, norm, FragPos, viewDir);
-    result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
-    FragColor = vec4(result, 1.0);
+    // result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+    FragColor = vec4(result * vec3(texture(material.diffuse, texCoords)), 1.0);
+}
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{
+    const float minLayers = 8;
+    const float maxLayers = 32;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));
+    float layerDepth = 1.0 / numLayers;
+    float currentLayerDepth = 0.0;
+    vec2 P = viewDir.xy * 0.1;
+    vec2 deltaTexCoords = P / numLayers;
+    vec2 currentTexCoords = texCoords;
+    float currentDepthMapValue = texture(heightMap, currentTexCoords).r;
+    while(currentLayerDepth < currentDepthMapValue)
+    {
+        currentTexCoords -= deltaTexCoords;
+        currentDepthMapValue = (texture(heightMap, currentTexCoords).r);
+        currentLayerDepth += layerDepth;
+    }
+    // float height = texture(heightMap, texCoords).r;
+    // return texCoords - viewDir.xy * (height * 0.1);
+    // return currentTexCoords;
+        // get texture coordinates before collision (reverse operations)
+        vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+        // get depth after and before collision for linear interpolation
+        float afterDepth  = currentDepthMapValue - currentLayerDepth;
+        float beforeDepth = (texture(heightMap, prevTexCoords).r) - currentLayerDepth + layerDepth;
+        // interpolation of texture coordinates
+        float weight = afterDepth / (afterDepth - beforeDepth);
+        vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+        return finalTexCoords;  
 }
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
 {
@@ -159,8 +200,8 @@ vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
     vec3 diffuse = light.diffuse * diff;
     vec3 specular = light.specular * spec;
     float shadow = ShadowCalculationDir(FragPosLightSpaceDir, normal, lightDir);
-    return ((ambient + (1.0 - shadow) * (diffuse + specular))* color);
-    // return ((ambient + diffuse + specular)* color);
+    return ((ambient + (1.0 - shadow) * (diffuse + specular)));
+    // return (ambient + diffuse + specular);
 }
 vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
@@ -175,15 +216,12 @@ vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float distance = length(TangentLightPos - TangentFragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
     // combine
-    vec3 ambient = light.ambient;
-    vec3 diffuse = light.diffuse * diff;
-    vec3 specular = light.specular * spec;
-    ambient *= attenuation;
-    diffuse *= attenuation;
-    specular *= attenuation;
+    vec3 ambient = light.ambient * attenuation;
+    vec3 diffuse = light.diffuse * diff * attenuation;
+    vec3 specular = light.specular * spec * attenuation;
     float shadow = ShadowCalculationPoint();                      
-    return((ambient + (1.0 - shadow) * (diffuse + specular)) * color);
-    // return ((ambient + diffuse + specular) * color);
+    return((ambient + (1.0 - shadow) * (diffuse + specular)));
+    // return(ambient + diffuse + specular);
 }
 vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 {
@@ -202,15 +240,12 @@ vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     // combine results
-    vec3 ambient = light.ambient;
-    vec3 diffuse = light.diffuse * diff;
-    vec3 specular = light.specular * spec;
-    ambient *= attenuation * intensity;
-    diffuse *= attenuation * intensity;
-    specular *= attenuation * intensity;
-    // return ((ambient + diffuse + specular) * color);
+    vec3 ambient = light.ambient * attenuation * intensity;
+    vec3 diffuse = light.diffuse * diff * attenuation * intensity;
+    vec3 specular = light.specular * spec * attenuation * intensity;
     float shadow = ShadowCalculationSpot(FragPosLightSpaceSpot, normal, lightDir);                      
-    return((ambient + (1.0 - shadow) * (diffuse + specular)) * color);
+    return((ambient + (1.0 - shadow) * (diffuse + specular)));
+    // return(ambient + diffuse + specular);
 }
 float ShadowCalculationDir(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 {

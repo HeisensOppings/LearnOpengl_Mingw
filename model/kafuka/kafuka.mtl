@@ -11,8 +11,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd face.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 外套
 Ns 0.000000
@@ -24,8 +22,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd coat.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 外套+
 Ns 0.000000
@@ -37,8 +33,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd coat.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 外套袖饰
 Ns 0.000000
@@ -50,8 +44,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd coat.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 外套铁
 Ns 0.000000
@@ -63,8 +55,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd coat.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 外套饰
 Ns 0.000000
@@ -76,8 +66,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd coat.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 头发
 Ns 0.000000
@@ -89,8 +77,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd hair.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 牙齿
 Ns 201.339569
@@ -112,8 +98,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 眉毛
 Ns 201.339569
@@ -125,8 +109,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd face.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 眼白
 Ns 201.339569
@@ -138,8 +120,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd face.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 眼睛
 Ns 201.339569
@@ -151,8 +131,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd face.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 眼睛1
 Ns 201.339569
@@ -164,8 +142,6 @@ Ni 1.000000
 d 0.300000
 illum 6
 map_Kd face.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 眼镜
 Ns 0.000000
@@ -177,8 +153,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 耳环
 Ns 0.000000
@@ -190,8 +164,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd face.png
-map_Ks mc1.png
-map_Bump toon3.png
 
 newmtl 脸
 Ns 201.339569
@@ -203,8 +175,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd face1.png
-map_Ks mc3.png
-map_Bump toon3.png
 
 newmtl 腿带
 Ns 0.000000
@@ -216,8 +186,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 舌头
 Ns 201.339569
@@ -239,8 +207,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 衣服铁
 Ns 0.000000
@@ -252,8 +218,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 衣饰
 Ns 0.000000
@@ -265,8 +229,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 表情
 Ns 403.895782
@@ -278,8 +240,6 @@ Ni 1.000000
 d 1.000000
 illum 3
 map_Kd emoji.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 袖子
 Ns 0.000000
@@ -291,8 +251,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 袜子
 Ns 0.000000
@@ -304,8 +262,6 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd coat.png
-map_Ks mc1.png
-map_Bump toon2.png
 
 newmtl 鞋子
 Ns 0.000000
@@ -317,5 +273,3 @@ Ni 1.000000
 d 1.000000
 illum 2
 map_Kd cloth.png
-map_Ks mc1.png
-map_Bump toon2.png
