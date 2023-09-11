@@ -12,16 +12,25 @@ unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format = 0;
+        GLenum internalformat = 0;
+        GLenum dataformat = 0;
         if (nrComponents == 1)
-            format = GL_RED;
+        {
+            internalformat = dataformat = GL_RED;
+        }
         else if (nrComponents == 3)
-            format = GL_RGB;
+        {
+            internalformat = gamma ? GL_SRGB : GL_RGB;
+            dataformat = GL_RGB;
+        }
         else if (nrComponents == 4)
-            format = GL_RGBA;
+        {
+            internalformat = gamma ? GL_SRGB : GL_RGB;
+            dataformat = GL_RGBA;
+        }
 
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -193,6 +202,7 @@ vector<Texture_config> Model::loadMaterialTextures(aiMaterial *mat, aiTextureTyp
         { // if texture hasn't been loaded already, load it
             Texture_config texture;
             texture.id = TextureFromFile(str.C_Str(), this->directory);
+            // texture.id = TextureFromFile(str.C_Str(), this->directory, typeName == "texture_diffuse" ? true : false);
             texture.type = typeName;
             texture.path = str.C_Str();
             textures.push_back(texture);

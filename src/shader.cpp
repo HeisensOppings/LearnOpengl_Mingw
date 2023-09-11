@@ -3,6 +3,7 @@
 vector<string> Shader::vertexShaderSources;
 vector<string> Shader::fragmentShaderSources;
 vector<string> Shader::geometryShaderSources;
+bool Shader::CodeOutput;
 
 void Shader::ShaderInit(const string filepath)
 {
@@ -81,10 +82,11 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID)
     const char *vertexShaderSource = vertexShaderSources[vertexShader_ID].c_str();
     const char *fragmentShaderSource = fragmentShaderSources[fragmentShader_ID].c_str();
 
-#ifdef GLSL_CODE_OUTPUT
-    cout << vertexShaderSource << endl;
-    cout << fragmentShaderSource << endl;
-#endif
+    if (CodeOutput)
+    {
+        cout << vertexShaderSource << endl;
+        cout << fragmentShaderSource << endl;
+    }
     unsigned int vertexShader, fragmentShader;
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -113,11 +115,12 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, uns
     const char *fragmentShaderSource = fragmentShaderSources[fragmentShader_ID].c_str();
     const char *geometryShaderSource = geometryShaderSources[geometryShader_ID].c_str();
 
-#ifdef GLSL_CODE_OUTPUT
-    cout << vertexShaderSource << endl;
-    cout << fragmentShaderSource << endl;
-    cout << geometryShaderSource << endl;
-#endif
+    if (CodeOutput)
+    {
+        cout << vertexShaderSource << endl;
+        cout << fragmentShaderSource << endl;
+        cout << geometryShaderSource << endl;
+    }
     unsigned int vertexShader, fragmentShader, geometryShader;
 
     vertexShader = glCreateShader(GL_VERTEX_SHADER);

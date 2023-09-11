@@ -25,13 +25,10 @@
 #include "stb_image.h"
 using namespace std;
 
-#define TEXTURE_ID0 0
-#define TEXTURE_ID1 1
-#define TEXTURE_ID2 2
-#define TEXTURE_ID3 3
-#define TEXTURE_ID4 4
-
 glm::vec3 background_color(0.1);
+
+float exposure = 1.0;
+bool hdr = 1;
 
 float zbuffer_near = 0.1;
 float zbuffer_far = 20.0f;
@@ -111,101 +108,12 @@ float CubesVertices[] = {
     -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f   // bottom-left
 };
 
-float PlaneVertices[] = {
-    // positions       // normals   // texture Coords
-    10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
-    -10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f,
-    -10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-    10.0f, -0.5f, 10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f,
-    10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 2.0f, 2.0f,
-    -10.0f, -0.5f, -10.0f, 0.0f, 1.0f, 0.0f, 0.0f, 2.0f};
-
 float FrameVertices[] = {
-    // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-    // positions   // texCoords
-    -1.0f, 1.0f, 0.0f, 1.0f,
-    -1.0f, -1.0f, 0.0f, 0.0f,
-    1.0f, -1.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 0.0f, 1.0f,
-    1.0f, -1.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 1.0f};
-
-float SkyboxVertices[] = {
-    // positions
-    -1.0f, 1.0f, -1.0f,
-    -1.0f, -1.0f, -1.0f,
-    1.0f, -1.0f, -1.0f,
-    1.0f, -1.0f, -1.0f,
-    1.0f, 1.0f, -1.0f,
-    -1.0f, 1.0f, -1.0f,
-
-    -1.0f, -1.0f, 1.0f,
-    -1.0f, -1.0f, -1.0f,
-    -1.0f, 1.0f, -1.0f,
-    -1.0f, 1.0f, -1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, -1.0f, 1.0f,
-
-    1.0f, -1.0f, -1.0f,
-    1.0f, -1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, -1.0f,
-    1.0f, -1.0f, -1.0f,
-
-    -1.0f, -1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, -1.0f, 1.0f,
-    -1.0f, -1.0f, 1.0f,
-
-    -1.0f, 1.0f, -1.0f,
-    1.0f, 1.0f, -1.0f,
-    1.0f, 1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f, -1.0f,
-
-    -1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, -1.0f,
-    1.0f, -1.0f, -1.0f,
-    -1.0f, -1.0f, 1.0f,
-    1.0f, -1.0f, 1.0f};
-
-vector<glm::vec3>
-    pointLightPositions{
-        glm::vec3(1.0f, 1.0f, 1.0f),
-        glm::vec3(2.3f, -3.3f, -4.0f),
-        glm::vec3(-4.0f, 2.0f, -12.0f),
-        glm::vec3(0.0f, 0.0f, -3.0f)};
-
-vector<glm::vec3> cubePositions{
-    // glm::vec3(0.0f, 0.0f, -15.0f),
-    glm::vec3(0.0f, 0.0f, 0.0f),
-    // glm::vec3(-3.8f, 0.0f, -12.3f),
-    glm::vec3(-1.0f, 0.0f, -1.0f),
-    glm::vec3(-2.1f, 0.0f, -7.5f),
-    glm::vec3(1.3f, 0.0f, -2.5f),
-    // glm::vec3(1.5f, 0.0f, -2.5f),
-    // glm::vec3(1.5f, 0.0f, -1.5f),
-    glm::vec3(-1.5f, 0.0f, -2.0f),
-    glm::vec3(1.0f, 0.0f, 1.0f)};
-
-vector<glm::vec3> vegetation{
-    glm::vec3(-1.5f, 0.0f, -0.48f),
-    glm::vec3(1.5f, 0.0f, 0.51f),
-    glm::vec3(0.0f, 0.0f, 0.7f),
-    glm::vec3(-0.3f, 0.0f, -2.3f),
-    glm::vec3(0.5f, 0.0f, -0.6f)};
-
-vector<glm::vec3> windows{
-    glm::vec3(-1.5f, 0.0f, -0.4f),
-    glm::vec3(1.5f, 0.0f, 0.45f),
-    glm::vec3(0.0f, 0.0f, 0.2f),
-    glm::vec3(-0.3f, 0.0f, -1.8f),
-    glm::vec3(0.5f, 0.0f, -0.2f)};
+    // positions        // texture Coords
+    -1.0f,1.0f,0.0f,0.0f,1.0f,
+    -1.0f,-1.0f,0.0f,0.0f,0.0f,
+    1.0f,1.0f,0.0f,1.0f,1.0f,
+    1.0f,-1.0f,0.0f,1.0f,0.0f};
 
 int opengl_init();
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
@@ -215,5 +123,3 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods);
 void SceneLightConfig(Shader &shader, glm::mat4 view, glm::mat4 projuction);
-void renderObject(Shader &shader);
-

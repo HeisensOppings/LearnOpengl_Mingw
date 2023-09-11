@@ -12,13 +12,6 @@ enum TEXTURE_TYPE_ENUM
     TEXTURE_DEPTH_CUBE
 };
 
-class FrameBufferTexture
-{
-public:
-    unsigned int framebuffertexture_id;
-    FrameBufferTexture(unsigned int texture_width, unsigned int texture_height, TEXTURE_TYPE_ENUM type);
-};
-
 class FrameBuffer
 {
 public:
@@ -33,5 +26,10 @@ public:
     void TextureBind();
     void Bind();
 };
+
+// class RenderBuffer
+// {
+//     RenderBuffer(GLenum frame_width, GLenum frame_height, vector<)
+// };
 
 #endif

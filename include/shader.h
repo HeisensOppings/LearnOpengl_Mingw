@@ -60,6 +60,7 @@ private:
     static vector<string> geometryShaderSources;
 
 public:
+    static bool CodeOutput;
     static void ShaderInit(const string filepath);
     Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID);
     Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, unsigned int geometryShader_ID);

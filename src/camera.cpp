@@ -98,8 +98,8 @@ void Camera::ProcessMouseScroll(float yoffset)
     m_Fov -= (float)yoffset;
     if (m_Fov < 1.0f)
         m_Fov = 1.0f;
-    if (m_Fov > 45.0f)
-        m_Fov = 45.0f;
+    if (m_Fov > 89.0f)
+        m_Fov = 89.0f;
 }
 
 void Camera::updateCameraVectors()
@@ -123,7 +123,8 @@ void Camera::loadCameraPosition(GLFWwindow *window)
         file >> upX >> upY >> upZ;
         file >> yaw;
         file >> pitch;
-        file >> fov;
+        // file >> fov;
+        fov = FOV;
         file >> SCR_X_POS;
         file >> SCR_Y_POS;
         glfwSetWindowPos(window, SCR_X_POS, SCR_Y_POS);
@@ -143,7 +144,7 @@ void Camera::saveCameraPosition(GLFWwindow *window)
         file << m_cameraUp.x << " " << m_cameraUp.y << " " << m_cameraUp.z << "\n";
         file << m_Yaw << "\n";
         file << m_Pitch << "\n";
-        file << m_Fov << "\n";
+        // file << m_Fov << "\n";
         glfwGetWindowPos(window, &SCR_X_POS, &SCR_Y_POS);
         file << SCR_X_POS << "\n";
         file << SCR_Y_POS << "\n";

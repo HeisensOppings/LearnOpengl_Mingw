@@ -49,7 +49,7 @@ FrameBuffer::FrameBuffer(GLenum frame_width, GLenum frame_height, GLenum texture
         if (mtextureType == GL_TEXTURE_2D)
         {
             glBindTexture(GL_TEXTURE_2D, mtexture_id);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mwidth, mheight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, mwidth, mheight, 0, GL_RGBA, GL_FLOAT, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mtexture_id, 0);
@@ -59,7 +59,7 @@ FrameBuffer::FrameBuffer(GLenum frame_width, GLenum frame_height, GLenum texture
         else if (mtextureType == GL_TEXTURE_2D_MULTISAMPLE)
         {
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, mtexture_id);
-            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, mwidth, mwidth, GL_TRUE);
+            glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGBA16F, mwidth, mwidth, GL_TRUE);
             glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, mtexture_id, 0);
             // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)

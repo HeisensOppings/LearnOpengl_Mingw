@@ -1,5 +1,4 @@
 *.o
-*.exe
 .vscode/
 obj/*d
 obj/imgui/*d

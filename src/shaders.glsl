@@ -66,7 +66,8 @@ void main()
 
 #shader fragment
 #version 330 core
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 struct Material{
     sampler2D diffuse;
     sampler2D specular;
@@ -121,7 +122,7 @@ uniform sampler2D normalMap;
 uniform sampler2D heightMap;
 uniform float far_plane;
 uniform int hasNormalMap;
-uniform int hasHeightMap;
+// uniform int hasHeightMap;
 in vec3 DirLightDirecation;
 in vec3 SpotLightDirecation;
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir);
@@ -135,13 +136,13 @@ vec2 texCoords;
 void main()
 {
     vec3 viewDir = normalize(TangentViewPos - TangentFragPos);
-    if(hasHeightMap == 1)
-    {   
-        texCoords = ParallaxMapping(TexCoords, viewDir);
-        if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
-            discard;
-    }
-    else
+    // if(hasHeightMap == 1)
+    // {   
+    //     texCoords = ParallaxMapping(TexCoords, viewDir);
+    //     if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+    //         discard;
+    // }
+    // else
         texCoords = TexCoords;
     vec3 norm;
     if(hasNormalMap == 1)
@@ -151,10 +152,20 @@ void main()
     }
     else 
         norm = Normal;
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
-    result += CalcPointLight(pointLight, norm, FragPos, viewDir);
+    // vec3 result = CalcDirLight(dirLight, norm, viewDir);
+    vec3 result = CalcPointLight(pointLight, norm, FragPos, viewDir);
     // result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
     FragColor = vec4(result * vec3(texture(material.diffuse, texCoords)), 1.0);
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        BrightColor = vec4(result * vec3(texture(material.diffuse, texCoords)), 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    if (dot(normalize(texture(material.diffuse, texCoords).rgb), normalize(vec3(198.0, 66.0, 116.0))) == 1.0)
+    {
+        FragColor = vec4(vec3(198.0, 66.0, 116.0) / 50, 1.0);
+        BrightColor = FragColor;
+    }
 }
 vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
 {
@@ -334,12 +345,17 @@ void main()
 
 #shader fragment
 #version 330 core
-out vec4 FragColor;
-uniform vec3 objectColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 uniform vec3 lightColor;
 void main()
 {
-    FragColor = vec4(lightColor,1.0);
+    FragColor = vec4(lightColor, 1.0);
+    float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        BrightColor = vec4(FragColor.rgb, 1.0);
+	else
+		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 #shader vertex
@@ -388,6 +404,8 @@ void main()
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D screenTexture;
+uniform float exposure;
+uniform int hdr;
 const float offset = 1.0 / 300.0; 
 uniform int mode;
 vec3 kernel_effects(int mode);
@@ -398,7 +416,15 @@ void main()
     {
     // --- normal
         case 0:
-            col = texture(screenTexture, TexCoords).xyz;
+            col = texture(screenTexture, TexCoords).rgb;
+            // vec3 result = col / (col + vec3(1.0));
+            if(hdr == 1)
+            {
+                // vec3 result = col / (col + vec3(1.0));
+                vec3 result = vec3(1.0) - exp(-col * exposure);
+                // result = pow(result, vec3(1.0 / 2.0));
+                col = result;
+            }
         break;
     // --- inversion
         case 1:
@@ -696,4 +722,77 @@ in VS_OUT {
 } fs_in;
 void main()
 {           
+}
+
+#shader vertex
+// id --- 10 bloom blur
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
+out vec2 TexCoords;
+void main()
+{
+    TexCoords = aTexCoords;
+    gl_Position = vec4(aPos, 1.0);
+}
+
+#shader fragment
+#version 330 core
+out vec4 FragColor;
+in vec2 TexCoords;
+uniform sampler2D image;
+uniform bool horizontal;
+uniform float weight[5] = float[] (0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162);
+void main()
+{
+    vec2 tex_offset = 1.0 / textureSize(image, 0);
+    vec3 result = texture(image, TexCoords).rgb * weight[0];
+    if(horizontal)
+    {
+        for(int i = 1; i < 5; ++i)
+        {
+            result += texture(image, TexCoords + vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
+            result += texture(image, TexCoords - vec2(tex_offset.x * i, 0.0)).rgb * weight[i];
+        }
+    }
+    else
+    {
+        for(int i = 1; i < 5; ++i)
+        {
+            result += texture(image, TexCoords + vec2(0.0, tex_offset.y * i)).rgb * weight[i];
+            result += texture(image, TexCoords - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
+        }
+    }
+    FragColor = vec4(result, 1.0);
+}
+
+#shader vertex
+// id --- 11 bloom final
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
+out vec2 TexCoords;
+void main()
+{
+    TexCoords = aTexCoords;
+    gl_Position = vec4(aPos, 1.0);
+}
+
+#shader fragment
+#version 330 core
+out vec4 FragColor;
+in vec2 TexCoords;
+uniform sampler2D scene;
+uniform sampler2D bloomBlur;
+uniform bool bloom;
+uniform float exposure;
+void main()
+{
+    const float gamma = 2.2;
+    vec3 hdrColor = texture(scene, TexCoords).rgb;
+    vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
+    if(bloom)
+        hdrColor += bloomColor;
+    vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+    FragColor = vec4(result, 1.0);
 }
