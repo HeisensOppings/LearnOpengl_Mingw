@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <random>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,9 +32,9 @@ float exposure = 1.0;
 bool hdr = 1;
 
 float zbuffer_near = 0.1;
-float zbuffer_far = 20.0f;
+float zbuffer_far = 40.0f;
 
-glm::vec3 lightPos(0.0f, 1.0f, 0.0f);
+glm::vec3 lightPos(0.0f, 2.0f, 0.0f);
 // glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
 glm::vec3 lightDirection(0.213315, -0.295711, 0.931156);
 
@@ -62,6 +63,7 @@ int material_shininess = 32;
 bool lighting_mode_camera = false;
 // bool depth_test = false;
 bool gamma = false;
+bool hasSSAO = true;
 
 float CubesVertices[] = {
     // Back face

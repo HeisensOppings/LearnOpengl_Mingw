@@ -3,7 +3,7 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### 环境
-- Cmake, Mingw32-make, Vscode
+- [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
 
 ##### Build GLFW
 
