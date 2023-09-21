@@ -1,0 +1,221 @@
+# Blender 3.6.1 MTL File: 'None'
+# www.blender.org
+
+newmtl Area_Dq_Ajar_MS_BankaifangSC_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.669118 0.536787 0.300119
+Ni 1.450000
+illum 3
+map_Kd ./Area_Dq_Ajar_MS_BankaifangSC_01_Diffuse.png
+map_d ./Area_Dq_Ajar_MS_BankaifangSC_01_Diffuse.png
+map_Bump -bm 1.000000 ./Area_Dq_Ajar_MS_BankaifangSC_01_Normal.png
+
+newmtl Area_Dq_Ajar_MS_BankaifangSC_02
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Area_Dq_Ajar_MS_BankaifangSC_02_Diffuse.png
+map_d ./Area_Dq_Ajar_MS_BankaifangSC_02_Diffuse.png
+map_Bump -bm 1.000000 ./Area_Dq_Ajar_MS_BankaifangSC_02_Normal.png
+
+newmtl Area_Dq_Ajar_MS_BankaifangXC_02
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Area_Dq_Ajar_MS_BankaifangXC_02_Diffuse.png
+map_d ./Area_Dq_Ajar_MS_BankaifangXC_02_Diffuse.png
+map_Bump -bm 1.000000 ./Area_Dq_Ajar_MS_BankaifangXC_02_Normal.png
+
+newmtl Area_Dq_Build_Common_TsgWood_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Area_Dq_Build_Common_TsgWood_01_T4_Diffuse.png
+map_d ./Area_Dq_Build_Common_TsgWood_01_T4_Diffuse.png
+map_Bump -bm 1.000000 ./Area_Dq_Build_Common_TsgWood_01_T4_Normal.png
+
+newmtl Area_Dq_Plot_Common_Ground_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Area_Dq_Plot_Common_Ground_01_T4_Diffuse.png
+map_d ./Area_Dq_Plot_Common_Ground_01_T4_Diffuse.png
+map_Bump -bm 1.000000 ./Area_Dq_Plot_Common_Ground_01_T4_Normal.png
+
+newmtl Area_Dq_Prop_MS_ObjectAllTS_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Area_Dq_Prop_MS_ObjectAllTS_01_Diffuse.png
+map_d ./Area_Dq_Prop_MS_ObjectAllTS_01_Diffuse.png
+map_Bump -bm 1.000000 ./Area_Dq_Prop_MS_ObjectAllTS_01_Normal.png
+
+newmtl Indoor_Dq_Build_OrdinaryWall_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.953000 0.914302 0.831016
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Build_OrdinaryWall_01_Diffuse.png
+map_d ./Indoor_Dq_Build_OrdinaryWall_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Build_OrdinaryWall_01_Normal.png
+
+newmtl Indoor_Dq_Build_SeniorWall_02
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.714000 0.702379 0.671874
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Build_SeniorWall_02_Diffuse.png
+map_d ./Indoor_Dq_Build_SeniorWall_02_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Build_SeniorWall_02_Normal.png
+
+newmtl Indoor_Dq_Build_Tatami_01_T4
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Build_Tatami_01_T4_Diffuse.png
+map_d ./Indoor_Dq_Build_Tatami_01_T4_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Build_Tatami_01_T4_Normal.png
+
+newmtl Indoor_Dq_Build_Wood_01_T4
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Build_Wood_01_T4_Diffuse.png
+map_d ./Indoor_Dq_Build_Wood_01_T4_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Build_Wood_01_T4_Normal.png
+
+newmtl Indoor_Dq_Light_UytLantern_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 1.000000 0.876179 0.809000
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_d ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Lantern_01_Normal.png
+
+newmtl Indoor_Dq_Light_UytLantern_02
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.823529 0.566782 0.181661
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_d ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Lantern_01_Normal.png
+
+newmtl Indoor_Dq_Prop_Lantern_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 1.000000 0.641176 0.411765
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_d ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Lantern_01_Normal.png
+
+newmtl Indoor_Dq_Prop_Lantern_01_Unlit
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 1.000000 0.776360 0.551471
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_d ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Lantern_01_Normal.png
+
+newmtl Indoor_Dq_Prop_Lantern_03
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 1.000000 0.688000 0.426471
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_d ./Indoor_Dq_Prop_Lantern_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Lantern_01_Normal.png
+
+newmtl Indoor_Dq_Prop_Thing_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Thing_01_Diffuse.png
+map_d ./Indoor_Dq_Prop_Thing_01_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Thing_01_Normal.png
+
+newmtl Indoor_Dq_Prop_Thing_02
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Indoor_Dq_Prop_Thing_02_Diffuse.png
+map_d ./Indoor_Dq_Prop_Thing_02_Diffuse.png
+map_Bump -bm 1.000000 ./Indoor_Dq_Prop_Thing_02_Normal.png
+
+newmtl Level_Hf_Build_Screen_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd ./Level_Hf_Build_Screen_01_Diffuse.png
+map_Bump -bm 1.000000 ./Level_Hf_Build_Screen_01_Normal.png
+
+newmtl Property_Prop_Kanibata_01
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+illum 3
+map_Kd ./Property_Prop_Kanibata_01_Diffuse.png
+map_d ./Property_Prop_Kanibata_01_Diffuse.png
+map_Bump -bm 1.000000 ./Property_Prop_Kanibata_01_Normal.png
+
+newmtl Stages_ShadowMesh
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.669118 0.637223 0.619918
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
