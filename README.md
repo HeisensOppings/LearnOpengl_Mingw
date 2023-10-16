@@ -92,4 +92,8 @@ obj/%.o: $(SRC)/%.cpp
 -include $(OBJECTS:.o=.d)
 ```
 
-###### Finally open terminal in vscode run command "mingw32-make | .\main.exe" to build project and run program or(windows system) you can ./build.bat to build and run program
+##### Finally open terminal in vscode run command "mingw32-make | .\main.exe" to build project and run program or(windows system) you can ./build.bat to build and run program
+
+- Mouse right-click (Camera | Cursor)
+- Scroll wheel (Movement speed)
+- w a s d (Movement direction)

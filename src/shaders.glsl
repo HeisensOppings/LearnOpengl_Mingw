@@ -411,47 +411,47 @@ uniform int mode;
 vec3 kernel_effects(int mode);
 void main()
 {
-    vec3 col = vec3(0.0);
-    switch(mode)
-    {
-    // --- normal
-        case 0:
+    vec3 col = vec3(0.5, 0.0, 0.0);
+    // switch(mode)
+    // {
+    // // --- normal
+    //     case 0:
             col = texture(screenTexture, TexCoords).rgb;
-            // vec3 result = col / (col + vec3(1.0));
-            if(hdr == 1)
-            {
-                // vec3 result = col / (col + vec3(1.0));
-                vec3 result = vec3(1.0) - exp(-col * exposure);
-                // result = pow(result, vec3(1.0 / 2.0));
-                col = result;
-            }
-        break;
-    // --- inversion
-        case 1:
-            col = vec3(1.0f - texture(screenTexture, TexCoords).xyz);
-        break;
-    // --- Grayscale
-        case 2:
-            col = texture(screenTexture, TexCoords).xyz;
-            float average = (col.r + col.g + col.b) / 3.0;
-            col = vec3(average, average, average);
-        break;
-    // --- sharpen
-        case 3:
-            col = kernel_effects(3);
-        break;
-    // --- blur
-        case 4:
-            col = kernel_effects(4);
-        break;
-    // --- edge detection
-        case 5:
-            col = kernel_effects(5);
-        break;
-        default:
-            col = vec3(1.0f, 1.0f, 1.0f);
-        break;
-    }
+    //         // vec3 result = col / (col + vec3(1.0));
+    //         if(hdr == 1)
+    //         {
+    //             // vec3 result = col / (col + vec3(1.0));
+    //             vec3 result = vec3(1.0) - exp(-col * exposure);
+    //             // result = pow(result, vec3(1.0 / 2.0));
+    //             col = result;
+    //         }
+    //     break;
+    // // --- inversion
+    //     case 1:
+    //         col = vec3(1.0f - texture(screenTexture, TexCoords).xyz);
+    //     break;
+    // // --- Grayscale
+    //     case 2:
+    //         col = texture(screenTexture, TexCoords).xyz;
+    //         float average = (col.r + col.g + col.b) / 3.0;
+    //         col = vec3(average, average, average);
+    //     break;
+    // // --- sharpen
+    //     case 3:
+    //         col = kernel_effects(3);
+    //     break;
+    // // --- blur
+    //     case 4:
+    //         col = kernel_effects(4);
+    //     break;
+    // // --- edge detection
+    //     case 5:
+    //         col = kernel_effects(5);
+    //     break;
+    //     default:
+    //         col = vec3(1.0f, 1.0f, 1.0f);
+    //     break;
+    // }
     FragColor = vec4(col, 1.0);
 }
 vec3 kernel_effects(int mode)
@@ -514,24 +514,37 @@ vec3 kernel_effects(int mode)
 // id --- 4
 #version 330 core
 layout (location = 0) in vec3 aPos;
-out vec3 TexCoords;
+// out vec3 TexCoords;
+out vec3 WorldPos;
 uniform mat4 projection;
 uniform mat4 view;
 void main()
 {
-    TexCoords = aPos;
-    vec4 pos = projection * view * vec4(aPos, 1.0);
-    gl_Position = pos.xyww;
+    // TexCoords = aPos;
+    // vec4 pos = projection * view * vec4(aPos, 1.0);
+    // gl_Position = pos.xyww;
+    WorldPos = aPos;
+    mat4 rotView = mat4(mat3(view));
+    vec4 clipPos = projection * rotView * vec4(WorldPos, 1.0);
+    gl_Position = clipPos.xyww;
 }
 
 #shader fragment
 #version 330 core
 out vec4 FragColor;
-in vec3 TexCoords;
+// in vec3 TexCoords;
+in vec3 WorldPos;
 uniform samplerCube skybox;
+uniform float _fresnel;
 void main()
 {    
-    FragColor = texture(skybox, TexCoords);
+    // FragColor = texture(skybox, TexCoords);
+        // vec3 envColor = textureLod(skybox, WorldPos, _fresnel).rgb;
+        vec3 envColor = texture(skybox, WorldPos).rgb;
+    // HDR tonemap and gamma correct
+    envColor = envColor / (envColor + vec3(1.0));
+    envColor = pow(envColor, vec3(1.0/2.2)); 
+    FragColor = vec4(envColor, 1.0);
 }
 
 #shader vertex
@@ -956,6 +969,7 @@ void main()
 }
 
 #shader fragment
+// id --- 15
 #version 330 core
 out float FragColor;
 in vec2 TexCoords;
@@ -1022,3 +1036,543 @@ void main()
     }
     FragColor = result / (4.0 * 4.0);
 } 
+
+#shader vertex
+// id --- 16
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+out vec2 TexCoords;
+out vec3 WorldPos;
+out vec3 Normal;
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+uniform mat3 normalMatrix;
+void main()
+{
+    TexCoords = aTexCoords;
+    WorldPos = vec3(model * vec4(aPos, 1.0));
+    Normal = normalize(normalMatrix * aNormal);
+    gl_Position = projection * view * vec4(WorldPos, 1.0);
+}
+
+#shader fragment
+// id --- 17
+#version 330 core
+out vec4 FragColor;
+in vec2 TexCoords;
+in vec3 WorldPos;
+in vec3 Normal;
+// material parameters
+uniform vec3 albedo;
+uniform float metallic;
+uniform float roughness;
+uniform float ao;
+// IBL
+uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
+// lights
+uniform vec3 lightPositions[4];
+uniform vec3 lightColors[4];
+uniform vec3 camPos;
+const float PI = 3.14159265359;
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float denom = NdotH * NdotH * (a2 - 1.0) + 1.0;
+    return a2 / (PI * denom * denom);
+}
+float GeometrySchilGGX(float NdotV, float roughness)
+{
+    float r = roughness + 1.0;
+    float k = (r * r) / 8.0;
+    return NdotV / (NdotV * (1.0 - k) + k);
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    return GeometrySchilGGX(NdotV, roughness) * GeometrySchilGGX(NdotL, roughness);
+}
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}   
+void main()
+{		
+    vec3 N = Normal;
+    vec3 V = normalize(camPos - WorldPos);
+    vec3 R = reflect(-V, N); 
+    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
+    vec3 F0 = vec3(0.04); 
+    F0 = mix(F0, albedo, metallic);
+    // reflectance equation
+    vec3 Lo = vec3(0.0);
+    for(int i = 0; i < 4; ++i) 
+    {
+        // calculate per-light radiance
+        vec3 L = normalize(lightPositions[i] - WorldPos);
+        vec3 H = normalize(V + L);
+        float distance = length(lightPositions[i] - WorldPos);
+        float attenuation = 1.0 / (distance * distance);
+        vec3 radiance = lightColors[i] * attenuation;
+        // Cook-Torrance BRDF
+        float NDF = DistributionGGX(N, H, roughness);   
+        float G   = GeometrySmith(N, V, L, roughness);    
+        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);        
+        vec3 numerator    = NDF * G * F;
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
+         // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metallic;	                
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);        
+        // add to outgoing radiance Lo
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL; // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    }   
+    // ambient lighting (we now use IBL as the ambient term)
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;	  
+    vec3 irradiance = texture(irradianceMap, N).rgb;
+    vec3 diffuse      = irradiance * albedo;
+    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    // vec3 ambient = (specular) * ao;
+    vec3 ambient = (kD * diffuse + specular) * ao;
+    vec3 color = ambient + Lo;
+    // HDR tonemapping
+    color = color / (color + vec3(1.0));
+    // gamma correct
+    color = pow(color, vec3(1.0/2.2)); 
+    FragColor = vec4(color , 1.0);
+}
+
+#shader fragment
+// id --- 18
+#version 330 core
+out vec4 FragColor;
+in vec2 TexCoords;
+in vec3 WorldPos;
+in vec3 Normal;
+uniform vec3 camPos;
+// material prarmeters
+uniform sampler2D albedoMap;
+uniform sampler2D aoMap;
+uniform sampler2D metallicMap;
+uniform sampler2D normalMap;
+uniform sampler2D roughnessMap;
+uniform sampler2D emissiveMap;
+uniform bool hasEmissive;
+// IBL
+uniform samplerCube irradianceMap;
+uniform samplerCube prefilterMap;
+uniform sampler2D brdfLUT;
+uniform bool hasIBL;
+// lights
+uniform vec3 lightPositions[4];
+uniform vec3 lightColors[4];
+const float PI = 3.14159265359;
+// ---------------NDF_GGXTR(n,h,α)=α2 / π((n·h)2(α2−1.0)+1.0)2
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float denom = NdotH * NdotH * (a2 - 1.0) + 1.0;
+    return a2 / (PI * denom * denom);
+}
+// --------------GS_chlickGGX(n,v,k)=n⋅v / (n⋅v)(1−k)+k --- k_direct=(α+1)2 / 8.0 --- k_IBL=α2 / 2.0 --- G(n,v,l,k)=G_sub(n,v,k)G_sub(n,l,k)
+float GeometrySchilGGX(float NdotV, float roughness)
+{
+    float r = roughness + 1.0;
+    float k = (r * r) / 8.0;
+    return NdotV / (NdotV * (1.0 - k) + k);
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    return GeometrySchilGGX(NdotV, roughness) * GeometrySchilGGX(NdotL, roughness);
+}
+// --------------F_Schlick(h,v,F0)=F0+(1−F0)(1−(h⋅v))5
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+void main()
+{		
+        vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+        vec3 Q1  = dFdx(WorldPos);
+        vec3 Q2  = dFdy(WorldPos);
+        vec2 st1 = dFdx(TexCoords);
+        vec2 st2 = dFdy(TexCoords);
+        vec3 N_   = normalize(Normal);
+        vec3 T_  = normalize(Q1*st2.t - Q2*st1.t);
+        vec3 B_  = -normalize(cross(N_, T_));
+        mat3 TBN = mat3(T_, B_, N_);
+    vec3 albedo = texture(albedoMap, TexCoords).rgb;
+    float ao = texture(aoMap, TexCoords).r;
+    float metallic = texture(metallicMap, TexCoords).b;
+    float roughness = texture(roughnessMap, TexCoords).g;
+    // vec3 normal = normalize((texture(normalMap, TexCoords).rgb * 2.0 - 1.0));
+    vec3 normal = normalize(TBN * tangentNormal);
+    // vec3 normal = Normal;
+    // vec3 N = normalize(Normal);
+    vec3 N = normalize(normal);
+    vec3 V = normalize(camPos - WorldPos);
+    vec3 R = reflect(-V, N); 
+    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
+    vec3 F0 = vec3(0.04); 
+    F0 = mix(F0, albedo, metallic);
+    // reflectance equation
+    vec3 Lo = vec3(0.0);
+    for(int i = 0; i < 4; ++i) 
+    {
+        // calculate per-light radiance
+        vec3 L = normalize(lightPositions[i] - WorldPos);
+        vec3 H = normalize(V + L);
+        float distance = length(lightPositions[i] - WorldPos);
+        float attenuation = 1.0 / (distance * distance);
+        vec3 radiance = lightColors[i] * attenuation;
+        // Cook-Torrance BRDF
+        float NDF = DistributionGGX(N, H, roughness);   
+        float G   = GeometrySmith(N, V, L, roughness);      
+        vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
+        vec3 numerator    = NDF * G * F; 
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
+        vec3 specular = numerator / denominator;
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metallic;	  
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);      
+        // add to outgoing radiance Lo
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+    }   
+    // ambient lighting (we now use IBL as the ambient term)
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 kS = F;
+    vec3 kD = 1.0 - kS;
+    kD *= 1.0 - metallic;	  
+    vec3 irradiance = texture(irradianceMap, N).rgb;
+    vec3 diffuse      = irradiance * albedo;
+    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+    vec3 ambient = (kD * diffuse + specular) * ao;
+            // ambient lighting (note that the next IBL tutorial will replace 
+            // this ambient lighting with environment lighting).
+            // ambient = vec3(0.03) * albedo * ao;
+    vec3 emissive= vec3(0.0);
+    if(hasEmissive)
+        emissive = texture(emissiveMap, TexCoords).rgb;
+    vec3 color = ambient + Lo + emissive;
+    // HDR tonemapping
+    color = color / (color + vec3(1.0));
+    // gamma correct
+    color = pow(color, vec3(1.0/2.2)); 
+    FragColor = vec4(color, 1.0);
+}
+
+#shader vertex
+// id --- 17
+#version 330 core
+layout (location = 0) in vec3 aPos;
+out vec3 localPos;
+uniform mat4 projection;
+uniform mat4 view;
+void main()
+{
+    localPos = aPos;
+    gl_Position = projection * view * vec4(localPos, 1.0);
+}
+
+#shader fragment
+// id --- 19
+#version 330 core
+out vec4 FragColor;
+in vec3 localPos;
+uniform sampler2D equirectangularMap;
+const vec2 invAtan = vec2(0.1591, 0.3183);
+vec2 SampleSphericalMap(vec3 v)
+{
+    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
+    uv *= invAtan;
+    uv += 0.5;
+    return uv;
+}
+void main()
+{
+    vec2 uv = SampleSphericalMap(normalize(localPos));
+    vec3 envColor = texture(equirectangularMap, uv).rgb;
+    //    envColor = envColor / (envColor + vec3(1.0));
+    // envColor = pow(envColor, vec3(1.0/2.2));
+    FragColor = vec4(envColor, 1.0);
+}
+
+#shader fragment
+// id --- 20
+#version 330 core
+out vec4 FragColor;
+in vec3 localPos;
+uniform samplerCube environmentMap;
+const float PI = 3.14159265359;
+void main()
+{
+// The world vector acts as the normal of a tangent surface
+    // from the origin, aligned to WorldPos. Given this normal, calculate all
+    // incoming radiance of the environment. The result of this radiance
+    // is the radiance of light coming from -Normal direction, which is what
+    // we use in the PBR shader to sample irradiance. 
+    vec3 N = normalize(localPos);
+    vec3 irradiance = vec3(0.0);
+    // tangent space calculation from origin point
+    vec3 up = vec3 (0.0, 1.0, 0.0);
+    vec3 right = normalize(cross(up, N));
+    up = normalize(cross(N, right));
+    float sampleDelta = 0.025;
+    float nrSamples = 0.0;
+    for(float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta)
+    {
+        for(float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta)
+        {
+            // spherical to cartesian (in tangent space)
+            vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+            // tangent space to world
+            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+            // vec3 sampleVec = mat3(right, up, N) * tangentSample;
+            irradiance += texture(environmentMap, sampleVec).rgb * cos(theta) * sin(theta);
+            ++nrSamples;
+        }
+    }
+    irradiance = PI * irradiance * (1.0 / float(nrSamples));
+    FragColor = vec4(irradiance, 1.0);
+}
+
+#shader fragment
+// id --- 21
+#version 330 core
+out vec4 FragColor;
+in vec3 localPos;
+uniform samplerCube environmentMap;
+uniform float roughness;
+const float PI = 3.14159265359;
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH = max(dot(N, H), 0.0);
+    float denom = NdotH * NdotH * (a2 - 1.0) + 1.0;
+    return a2 / (PI * denom * denom);
+}
+// http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+// efficient VanDerCorpus calculation.
+float RadicalInverse_VdC(uint bits) 
+{
+     bits = (bits << 16u) | (bits >> 16u);
+     bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+     return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+}
+vec2 Hammersley(uint i, uint N)
+{
+	return vec2(float(i)/float(N), RadicalInverse_VdC(i));
+}
+vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
+{
+    float a = roughness * roughness;
+	float phi = 2.0 * PI * Xi.x;
+	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
+	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+	// from spherical coordinates to cartesian coordinates - halfway vector
+	vec3 H;
+	H.x = cos(phi) * sinTheta;
+	H.y = sin(phi) * sinTheta;
+	H.z = cosTheta;
+	// from tangent-space H vector to world-space sample vector
+	vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+	vec3 tangent   = normalize(cross(up, N));
+	vec3 bitangent = cross(N, tangent);
+	vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
+	return normalize(sampleVec);
+}
+void main()
+{		
+    vec3 N = normalize(localPos);
+    // make the simplifying assumption that V equals R equals the normal 
+    vec3 R = N;
+    vec3 V = R;
+    const uint SAMPLE_COUNT = 1024u;
+    vec3 prefilteredColor = vec3(0.0);
+    float totalWeight = 0.0;
+    for(uint i = 0u; i < SAMPLE_COUNT; ++i)
+    {
+        // generates a sample vector that's biased towards the preferred alignment direction (importance sampling).
+        vec2 Xi = Hammersley(i, SAMPLE_COUNT);
+        vec3 H = ImportanceSampleGGX(Xi, N, roughness);
+        vec3 L  = normalize(2.0 * dot(V, H) * H - V);
+        float NdotL = max(dot(N, L), 0.0);
+        if(NdotL > 0.0)
+        {
+            // sample from the environment's mip level based on roughness/pdf
+            float D   = DistributionGGX(N, H, roughness);
+            float NdotH = max(dot(N, H), 0.0);
+            float HdotV = max(dot(H, V), 0.0);
+            float pdf = D * NdotH / (4.0 * HdotV) + 0.0001; 
+            float resolution = 512.0; // resolution of source cubemap (per face)
+            float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
+            float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
+            float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
+            prefilteredColor += textureLod(environmentMap, L, mipLevel).rgb * NdotL;
+            totalWeight      += NdotL;
+        }
+    }
+    prefilteredColor = prefilteredColor / totalWeight;
+    FragColor = vec4(prefilteredColor, 1.0);
+}
+
+#shader vertex
+// id --- 18
+#version 330 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoords;
+out vec2 TexCoords;
+void main()
+{
+    TexCoords = aTexCoords;
+	gl_Position = vec4(aPos, 1.0);
+}
+
+#shader fragment
+// id --- 22
+#version 330 core
+out vec2 FragColor;
+in vec2 TexCoords;
+const float PI = 3.14159265359;
+// http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
+// efficient VanDerCorpus calculation.
+float RadicalInverse_VdC(uint bits) 
+{
+     bits = (bits << 16u) | (bits >> 16u);
+     bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+     return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+}
+vec2 Hammersley(uint i, uint N)
+{
+	return vec2(float(i)/float(N), RadicalInverse_VdC(i));
+}
+vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
+{
+	float a = roughness*roughness;
+	float phi = 2.0 * PI * Xi.x;
+	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
+	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+	// from spherical coordinates to cartesian coordinates - halfway vector
+	vec3 H;
+	H.x = cos(phi) * sinTheta;
+	H.y = sin(phi) * sinTheta;
+	H.z = cosTheta;
+	// from tangent-space H vector to world-space sample vector
+	vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+	vec3 tangent   = normalize(cross(up, N));
+	vec3 bitangent = cross(N, tangent);
+	vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
+	return normalize(sampleVec);
+}
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    // note that we use a different k for IBL
+    float a = roughness;
+    float k = (a * a) / 2.0;
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+    return nom / denom;
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+    return ggx1 * ggx2;
+}
+vec2 IntegrateBRDF(float NdotV, float roughness)
+{
+    vec3 V;
+    V.x = sqrt(1.0 - NdotV*NdotV);
+    V.y = 0.0;
+    V.z = NdotV;
+    float A = 0.0;
+    float B = 0.0; 
+    vec3 N = vec3(0.0, 0.0, 1.0);
+    const uint SAMPLE_COUNT = 1024u;
+    for(uint i = 0u; i < SAMPLE_COUNT; ++i)
+    {
+        // generates a sample vector that's biased towards the
+        // preferred alignment direction (importance sampling).
+        vec2 Xi = Hammersley(i, SAMPLE_COUNT);
+        vec3 H = ImportanceSampleGGX(Xi, N, roughness);
+        vec3 L = normalize(2.0 * dot(V, H) * H - V);
+        float NdotL = max(L.z, 0.0);
+        float NdotH = max(H.z, 0.0);
+        float VdotH = max(dot(V, H), 0.0);
+        if(NdotL > 0.0)
+        {
+            float G = GeometrySmith(N, V, L, roughness);
+            float G_Vis = (G * VdotH) / (NdotH * NdotV);
+            float Fc = pow(1.0 - VdotH, 5.0);
+            A += (1.0 - Fc) * G_Vis;
+            B += Fc * G_Vis;
+        }
+    }
+    A /= float(SAMPLE_COUNT);
+    B /= float(SAMPLE_COUNT);
+    return vec2(A, B);
+}
+void main() 
+{
+    vec2 integratedBRDF = IntegrateBRDF(TexCoords.x, TexCoords.y);
+    FragColor = integratedBRDF;
+}

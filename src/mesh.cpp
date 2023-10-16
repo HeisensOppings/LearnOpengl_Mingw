@@ -34,7 +34,7 @@ void Mesh::Draw([[maybe_unused]] Shader &shader)
         // shader.SetUniform1i((name + number).c_str(), i);
         // and finally bind the texture
         // shader.SetUniform1i("hasNormalMap", (name == "texture_normal") ? 1 : 0);
-        shader.SetUniform1i("hasNormalMap", (name == "texture_normal") ? 1 : 0);
+        // shader.SetUniform1i("hasNormalMap", (name == "texture_normal") ? 1 : 0);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 

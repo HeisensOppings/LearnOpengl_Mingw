@@ -20,7 +20,10 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <iomanip>
 using namespace std;
+
+extern bool texture_dir_output;
 
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
 class Model

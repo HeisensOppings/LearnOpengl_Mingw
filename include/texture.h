@@ -1,6 +1,8 @@
 #ifndef __TEXTURE_H__
 #define __TEXTURE_H__
 
+#define STBI_WINDOWS_UTF8
+
 #include <iostream>
 #include <vector>
 #include <string>

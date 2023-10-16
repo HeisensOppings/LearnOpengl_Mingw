@@ -1,5 +1,31 @@
 #include "model.h"
 
+bool texture_dir_output = false;
+
+vector<string> textureTypeStr{
+    "NONE",
+    "DIFFUSE",
+    "SPECULAR",
+    "AMBIENT",
+    "EMISSIVE",
+    "HEIGHT",
+    "NORMALS",
+    "SHININESS",
+    "OPACITY",
+    "DISPLACEMENT",
+    "LIGHTMAP",
+    "REFLECTION",
+    "BASE_COLOR",
+    "NORMAL_CAMERA",
+    "EMISSION_COLOR",
+    "METALNESS",
+    "DIFFUSE_ROUGHNESS",
+    "AMBIENT_OCCLUSION",
+    "SHEEN",
+    "CLEARCOAT",
+    "TRANSMISSION",
+    "UNKNOWN"};
+
 unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_unused]] bool gamma)
 {
     string filename = string(path);
@@ -164,24 +190,91 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     // specular: texture_specularN
     // normal: texture_normalN
 
-    // 1. diffuse maps
-    vector<Texture_config> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
+    // map_Kd map_Ks map_Ka map_Ke map_Bump map_Kn map_Ns map_d map_disp map_Pr map_Ps map_Pm
+
+    // 1 map_Kd        DIFFUSE      albedo diffuse
+    // 2 map_Ks        SPECULAR     metallic specular
+    // 3 map_Ka        AMBIENT      ambient occlusion
+    // 4 map_Ke        EMISSIVE     emissive
+    // 5 map_Bump      HEIGHT       height
+    // 6 map_Kn        NORMALS      normal
+    // 7 map_Ns        SHININESS    roughness
+    // 8 map_d         OPACITY
+    // 9 map_disp      DISPLACEMENT
+
+    // static const std::string DiffuseTexture = "map_Kd";
+    // static const std::string AmbientTexture = "map_Ka";
+    // static const std::string SpecularTexture = "map_Ks";
+    // static const std::string OpacityTexture = "map_d";
+    // static const std::string EmissiveTexture1 = "map_emissive";
+    // static const std::string EmissiveTexture2 = "map_Ke";
+    // static const std::string BumpTexture1 = "map_bump";
+    // static const std::string BumpTexture2 = "bump";
+    // static const std::string NormalTextureV1 = "map_Kn";
+    // static const std::string NormalTextureV2 = "norm";
+    // static const std::string ReflectionTexture = "refl";
+    // static const std::string DisplacementTexture1 = "map_disp";
+    // static const std::string DisplacementTexture2 = "disp";
+    // static const std::string SpecularityTexture = "map_ns";
+    // static const std::string RoughnessTexture = "map_Pr";
+    // static const std::string MetallicTexture = "map_Pm";
+    // static const std::string SheenTexture = "map_Ps";
+    // static const std::string RMATexture = "map_Ps";
+
+    // gltf----------------------------obj---------------------------------name
+    // aiTextureType_DIFFUSE           aiTextureType_DIFFUSE        map_Kd albedo      0      
+    // aiTextureType_NORMALS           aiTextureType_NORMALS        map_Kn normal      1
+    // aiTextureType_METALNESS         aiTextureType_SPECULAR       map_Ks metallic    2
+    // aiTextureType_DIFFUSE_ROUGHNESS aiTextureType_SHININESS      map_Ns roughness   3
+    // aiTextureType_LIGHTMAP          aiTextureType_AMBIENT        map_Ka ao          4
+    // aiTextureType_EMISSIVE          aiTextureType_EMISSIVE       map_Ke emissive    5
+
+    vector<Texture_config> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "d");
     textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-    // 2. specular maps
-    vector<Texture_config> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-    textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-    // 3. normal maps
-    std::vector<Texture_config> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-    textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-    // 4. height maps
-    std::vector<Texture_config> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-    textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+
+    vector<Texture_config> nMaps1 = loadMaterialTextures(material, aiTextureType_HEIGHT, "n");
+    textures.insert(textures.end(), nMaps1.begin(), nMaps1.end());
+    vector<Texture_config> nMaps2 = loadMaterialTextures(material, aiTextureType_NORMALS, "n");
+    textures.insert(textures.end(), nMaps2.begin(), nMaps2.end());
+
+    vector<Texture_config> mMaps1 = loadMaterialTextures(material, aiTextureType_METALNESS, "m");
+    textures.insert(textures.end(), mMaps1.begin(), mMaps1.end());
+    vector<Texture_config> mMaps2 = loadMaterialTextures(material, aiTextureType_SPECULAR, "m");
+    textures.insert(textures.end(), mMaps2.begin(), mMaps2.end());
+
+    vector<Texture_config> rMaps1 = loadMaterialTextures(material, aiTextureType_DIFFUSE_ROUGHNESS, "r");
+    textures.insert(textures.end(), rMaps1.begin(), rMaps1.end());
+    vector<Texture_config> rMaps2 = loadMaterialTextures(material, aiTextureType_SHININESS, "r");
+    textures.insert(textures.end(), rMaps2.begin(), rMaps2.end());
+
+    vector<Texture_config> aMaps1 = loadMaterialTextures(material, aiTextureType_LIGHTMAP, "a");
+    textures.insert(textures.end(), aMaps1.begin(), aMaps1.end());
+    vector<Texture_config> aMaps2 = loadMaterialTextures(material, aiTextureType_AMBIENT, "a");
+    textures.insert(textures.end(), aMaps2.begin(), aMaps2.end());
+
+    vector<Texture_config> eMaps = loadMaterialTextures(material, aiTextureType_EMISSIVE, "e");
+    textures.insert(textures.end(), eMaps.begin(), eMaps.end());
 
     // return a mesh object created from the extracted mesh data
     return Mesh(vertices, indices, textures);
 }
 vector<Texture_config> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName)
 {
+    // if (texture_dir_output)
+    // {
+    //     // aiMaterial *mat;
+    //     for (int ty = aiTextureType_NONE; ty <= aiTextureType_TRANSMISSION; ++ty)
+    //     {
+    //         aiString str_;
+    //         mat->GetTextureCount((aiTextureType)ty);
+    //         // if (mat->GetTextureCount((aiTextureType)ty))
+    //         {
+    //             mat->GetTexture((aiTextureType)ty, 0, &str_);
+    //             cout << setw(18) << textureTypeStr[ty] << " "
+    //                  << setw(2) << mat->GetTextureCount((aiTextureType)ty) << " " << setw(2) << ty << ": " << str_.C_Str() << endl;
+    //         }
+    //     }
+    // }
     vector<Texture_config> textures;
     for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
     {
@@ -205,9 +298,13 @@ vector<Texture_config> Model::loadMaterialTextures(aiMaterial *mat, aiTextureTyp
             // texture.id = TextureFromFile(str.C_Str(), this->directory, typeName == "texture_diffuse" ? true : false);
             texture.type = typeName;
             texture.path = str.C_Str();
+            // if (mat->GetTextureCount(aiTextureType_NORMALS))
+                // cout << texture.id << " " << texture.type << " " << texture.path << endl;
             textures.push_back(texture);
             textures_loaded.push_back(texture); // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
         }
     }
+    // if (texture_dir_output)
+        // texture_dir_output = false;
     return textures;
 }

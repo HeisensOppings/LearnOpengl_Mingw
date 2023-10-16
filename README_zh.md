@@ -93,4 +93,8 @@ obj/%.o: $(SRC)/%.cpp
 -include $(OBJECTS:.o=.d)
 ```
 
-###### 最后在vscode终端mingw32-make | .\main.exe来编译，以及运行，或者(windows系统下) 你可以运行 ./build.bat 脚本来编译，以及运行程序
+##### 最后在vscode终端mingw32-make | .\main.exe来编译，以及运行，或者(windows系统下) 你可以运行 ./build.bat 脚本来编译，以及运行程序
+
+- 鼠标右键 (摄像机 | 光标)
+- 滚轮(移动速度)
+- W A S D(移动方向)

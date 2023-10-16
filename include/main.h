@@ -30,9 +30,12 @@ glm::vec3 background_color(0.1);
 
 float exposure = 1.0;
 bool hdr = 1;
+float _fresnel = 0.0;
 
-float zbuffer_near = 0.1;
-float zbuffer_far = 40.0f;
+float zbuffer_near = 0.01;
+float zbuffer_far = 50.0f;
+
+glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 glm::vec3 lightPos(0.0f, 2.0f, 0.0f);
 // glm::vec3 lightDirection(0.0f, 0.0f, -1.0f);
@@ -57,6 +60,8 @@ vector<int> light_distance_index{32, 65, 160, 325, 600};
 // ----------------------------air - water ice -- glass diamond
 vector<float> refractive_index{1.00, 1.33, 1.309, 1.51, 2.42};
 // float refractive_rate = 1.20;
+
+glm::vec3 sphereColor(0.5, 0.0, 0.0);
 
 int material_shininess = 32;
 
