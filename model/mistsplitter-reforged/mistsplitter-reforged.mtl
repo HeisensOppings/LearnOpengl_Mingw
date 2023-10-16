@@ -1,0 +1,71 @@
+newmtl 刀
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+illum 2
+map_Kd tex/basecolor.png
+map_Kn tex/Normal_OpenGL.png
+map_Ks tex/Metallic.png
+map_Ns tex/Roughness.png
+map_Ka tex/Mixed_AO.png
+map_Ke tex/Emissive.png
+
+newmtl 刀刃
+map_Kd tex/basecolor.png
+map_Kn tex/Normal_OpenGL.png
+map_Ks tex/Metallic.png
+map_Ns tex/Roughness.png
+map_Ka tex/Mixed_AO.png
+map_Ke tex/Emissive.png
+
+newmtl 刀把
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+illum 2
+map_Kd tex/basecolor.png
+map_Kn tex/Normal_OpenGL.png
+map_Ks tex/Metallic.png
+map_Ns tex/Roughness.png
+map_Ka tex/Mixed_AO.png
+map_Ke tex/Emissive.png
+
+newmtl 刀柄
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+illum 2
+map_Kd tex/basecolor.png
+map_Kn tex/Normal_OpenGL.png
+map_Ks tex/Metallic.png
+map_Ns tex/Roughness.png
+map_Ka tex/Mixed_AO.png
+map_Ke tex/Emissive.png
+
+newmtl 刀柄装饰
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+illum 2
+map_Kd tex/basecolor.png
+map_Kn tex/Normal_OpenGL.png
+map_Ks tex/Metallic.png
+map_Ns tex/Roughness.png
+map_Ka tex/Mixed_AO.png
+map_Ke tex/Emissive.png
+
+newmtl 刀背装饰-下
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.450000
+illum 2
+map_Kd tex/basecolor.png
+map_Kn tex/Normal_OpenGL.png
+map_Ks tex/Metallic.png
+map_Ns tex/Roughness.png
+map_Ka tex/Mixed_AO.png
+map_Ke tex/Emissive.png
