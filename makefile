@@ -5,7 +5,7 @@ SRC := ./src
 INCLUDE := ./include
 LIB := ./lib
 
-LIBRARIES := -lglad -lglfw3dll -lassimp
+LIBRARIES := -lglad -lglfw3dll -lassimp -lfreetype
 EXECUTABLE := main.exe
 
 SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)

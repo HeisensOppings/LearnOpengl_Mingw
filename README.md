@@ -3,7 +3,16 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### Environment
-- [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
+- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
+
+##### Use
+terminal in vscode run command **mingw32-make | .\main.exe** to build project and run program or use **.\build.bat**
+
+- Mouse right-click (Camera | Cursor)
+- Scroll wheel (Movement speed)
+- w a s d (Movement direction)
+- Focus on the imgui window, the above operation will not work
+- Use Ctrl+Enter to enter text in the input box of imgui
 
 ##### Build GLFW
 
@@ -31,9 +40,9 @@
 - Put the build\lib\libassimp.dll.a file into lib/ directory
 - Put the build\bin\libassimp-5.dll file into the same directory as the executable file(exe)
 
-###### Loading Modes
+###### Loading MMD models
 
-- Assimp uses models in OBJ format. If the downloaded model is in PMX or other formats, you can import the model using the blender mmd_tools plugin [Download](https://github.com/powroupi/blender_mmd_tools) , and then export it as an OBJ format file. Remember to modify the texture file name in the MTL file. 
+- For mmd models such as pmx format, it seems that assimp can only load tex textures(albedo/diffuse), corresponding to aiTextureType_DIFFUSE, and cannot load sph/spa toon textures of mmd models, but we can convert them to obj models and manually configure the mtl file load the texture, use blender to import the [Download](https://github.com/powroupi/blender_mmd_tools), and then export it as an OBJ format file.
 
 ```
 # example of mtl file
@@ -49,7 +58,25 @@ illum 3
 map_Kd diffuse_texture.png
 map_Ks specular_texture.png
 map_Bump bump_texture.png
+...
 ```
+```
+    // gltf----------------------------obj---------------------------------name
+    // aiTextureType_DIFFUSE           aiTextureType_DIFFUSE        map_Kd albedo      0      
+    // aiTextureType_NORMALS           aiTextureType_NORMALS        map_Kn normal      1
+    // aiTextureType_METALNESS         aiTextureType_SPECULAR       map_Ks metallic    2
+    // aiTextureType_DIFFUSE_ROUGHNESS aiTextureType_SHININESS      map_Ns roughness   3
+    // aiTextureType_LIGHTMAP          aiTextureType_AMBIENT        map_Ka ao          4
+    // aiTextureType_EMISSIVE          aiTextureType_EMISSIVE       map_Ke emissive    5
+```
+
+###### [imgui](https://github.com/ocornut/imgui)
+
+###### [FreeType](https://github.com/ubawurinna/freetype-windows-binaries)
+- Use CMake to configure the FreeType source code and generate build files.
+- Enter the build directory and mingw32-make to compile and generate the libarary
+- Copy the include of source code
+- build\lib\libfreetype.a in the lib/
 
 ###### Create makefile
 
@@ -63,7 +90,7 @@ SRC := ./src
 INCLUDE := ./include
 LIB := ./lib
 
-LIBRARIES := -lglad -lglfw3dll -lassimp
+LIBRARIES := -lglad -lglfw3dll -lassimp -lfreetype
 EXECUTABLE := main.exe
 
 SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)
@@ -91,9 +118,3 @@ obj/%.o: $(SRC)/%.cpp
 
 -include $(OBJECTS:.o=.d)
 ```
-
-##### Finally open terminal in vscode run command "mingw32-make | .\main.exe" to build project and run program or(windows system) you can ./build.bat to build and run program
-
-- Mouse right-click (Camera | Cursor)
-- Scroll wheel (Movement speed)
-- w a s d (Movement direction)

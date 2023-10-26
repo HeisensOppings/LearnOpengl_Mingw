@@ -16,10 +16,168 @@ Camera camera;
 GLFWwindow *window = nullptr;
 
 void renderSphere();
-
-float ourLerp(float a, float b, float f)
+void RenderText(Shader &s, string text, float x, float y, float scale, vec3 color);
+int RenderTextUniCode(Shader &shader, u32string u32text, float x, float y, float scale, vec3 color)
 {
-    return a + f * (b - a);
+    static map<FT_ULong, Character> Characters;
+    static bool first = true;
+    if (first || text_changed)
+    {
+        // if (!first || text_changed)
+        // {
+        // for (auto ch : Characters)
+        // glDeleteTextures(1, &ch.TextureID);
+        // Characters_.clear();
+        // }
+        first = false;
+        text_changed = false;
+
+        FT_Library ft;
+        if (FT_Init_FreeType(&ft))
+        {
+            std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+            return -1;
+        }
+
+        vector<FT_Face> faces;
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        for (const string &font_path : font_paths)
+        {
+            FT_Face face;
+            if (FT_New_Face(ft, font_path.c_str(), 0, &face))
+            {
+                cout << "ERROR::FREETYPE: Failed to load font" << font_path << std::endl;
+                return -1;
+            }
+            FT_Set_Pixel_Sizes(face, 0, FONT_SIZE);
+            faces.push_back(face);
+        }
+
+        // std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        // std::wstring wide_str = converter.from_bytes(text_str_);
+        // std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+        // std::u32string wide_str = converter.from_bytes(text_str_);
+
+        for (size_t i = 0; i < u32text.length(); i++)
+        {
+            for (const auto &face : faces)
+            {
+                FT_UInt glyphIndex = FT_Get_Char_Index(face, u32text[i]);
+                if (glyphIndex == 0)
+                    continue;
+                else
+                {
+                    FT_Load_Char(face, u32text[i], FT_LOAD_RENDER);
+                    // for SDF ----------------------------------------------
+                    FT_GlyphSlot slot = face->glyph;
+                    FT_Render_Glyph(slot, FT_RENDER_MODE_SDF);
+                    // ------------------------------------------------------
+
+                    Character character;
+                    if (u32text[i] == ' ')
+                    {
+                        character.Advance = static_cast<unsigned int>((face)->glyph->advance.x);
+                        Characters.insert(std::pair<FT_ULong, Character>(u32text[i], character));
+                    }
+                    else
+                    {
+                        unsigned int texture;
+                        glGenTextures(1, &texture);
+                        glBindTexture(GL_TEXTURE_2D, texture);
+                        glTexImage2D(
+                            GL_TEXTURE_2D,
+                            0,
+                            GL_RED,
+                            (face)->glyph->bitmap.width,
+                            (face)->glyph->bitmap.rows,
+                            0,
+                            GL_RED,
+                            GL_UNSIGNED_BYTE,
+                            (face)->glyph->bitmap.buffer);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                        character = {
+                            texture,
+                            glm::ivec2((face)->glyph->bitmap.width, (face)->glyph->bitmap.rows),
+                            glm::ivec2((face)->glyph->bitmap_left, (face)->glyph->bitmap_top),
+                            static_cast<unsigned int>((face)->glyph->advance.x)};
+                        Characters.insert(std::pair<FT_ULong, Character>(u32text[i], character));
+                    }
+                    // if (u32text[i] == 'm')
+                    // {
+                    //     for (unsigned int r = 0; r < face->glyph->bitmap.rows; ++r)
+                    //     {
+                    //         cout << endl;
+                    //         for (unsigned int x = 0; x < face->glyph->bitmap.width; ++x)
+                    //         {
+                    //             unsigned int index = r * face->glyph->bitmap.width + x;
+                    //             unsigned int value = face->glyph->bitmap.buffer[index];
+                    //             // cout << setw(4)<<(value > 255/2 ? '-' : value)<< " ";
+                    //             cout << setw(4) << (value) << " ";
+                    //             // cout << (value < 10 ? '-' : '*') << " ";
+                    //         }
+                    //     }
+                    //     cout << endl
+                    //          << face->glyph->advance.x << " " << face->glyph->advance.y << endl;
+                    //     cout << face->glyph->bitmap.width << " " << face->glyph->bitmap.rows << endl;
+                    //     cout << face->glyph->bitmap_left << " " << face->glyph->bitmap_top << endl;
+                    //     cout << (face->size->metrics.height >> 6) << endl;
+                    // }
+                    break;
+                }
+            }
+        }
+        for (auto &face : faces)
+        {
+            FT_Done_Face(face);
+        }
+        FT_Done_FreeType(ft);
+    }
+    shader.Bind();
+    shader.SetUniform3f("texColor", color);
+    shader.SetUniform1i("SDF_Mode", SDF_Mode);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+    for (auto c : u32text)
+    {
+        static float x_pos = x;
+        Character &ch = Characters[c];
+        if (c == '\n')
+        {
+            y -= (FONT_SIZE + line_spec) * scale;
+            x = x_pos;
+        }
+        else
+        {
+            if (c != ' ')
+            {
+                float xpos = x + ch.Bearing.x * scale;
+                float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+                float w = ch.Size.x * scale;
+                float h = ch.Size.y * scale;
+                // update VBO for each character
+                float vertices[4][4] = {
+                    {xpos, ypos, 0.0f, 1.0f},
+                    {xpos, ypos + h, 0.0f, 0.0f},
+                    {xpos + w, ypos, 1.0f, 1.0f},
+                    {xpos + w, ypos + h, 1.0f, 0.0f}};
+
+                glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+                // update content of VBO memory
+                glBindBuffer(GL_ARRAY_BUFFER, VBO);
+                glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            }
+            // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+            x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+        }
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return 0;
 }
 
 int main()
@@ -36,7 +194,23 @@ int main()
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-
+    ImWchar ranges[] = {0x0020, 0xffff, 0};
+    ImWchar ranges1[] = {0x06B0, 0x06ff, 0};
+    ImWchar ranges2[] = {0x1550, 0x15DD, 0};
+    ImWchar ranges3[] = {0x12199, 0x1219A, 0};
+    ImWchar ranges4[] = {0x25E0, 0x28ff, 0};
+    ImWchar ranges5[] = {0x02E0, 0x02FF, 0};
+    ImFontConfig config;
+    config.MergeMode = true;
+    config.PixelSnapH = true;
+    io.Fonts->AddFontFromFileTTF("./src/fonts/HarmonyOS_Sans_SC_Medium.ttf", 18.0f, NULL, ranges);
+    // io.Fonts->AddFontFromFileTTF("./src/fonts/HarmonyOS_Sans_SC_Medium.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+    // io.Fonts->AddFontFromFileTTF("./src/fonts/HarmonyOS_Sans_SC_Medium.ttf", 18.0f, &config, io.Fonts->GetGlyphRangesJapanese());
+    io.Fonts->AddFontFromFileTTF("./src/fonts/NotoSansArabic-Medium.ttf", 18.0f, &config, ranges1);             // ڼ
+    io.Fonts->AddFontFromFileTTF("./src/fonts/NotoSansCanadianAboriginal-Medium.ttf", 18.0f, &config, ranges2); // ᕕᕗ
+    io.Fonts->AddFontFromFileTTF("./src/fonts/NotoSansCuneiform-Regular.ttf", 22.0f, &config, ranges3);         // 𒆚𒆙
+    io.Fonts->AddFontFromFileTTF("./src/fonts/NotoSansSymbols2-Regular.ttf", 22.0f, &config, ranges4);          // ⌒
+    io.Fonts->AddFontFromFileTTF("./src/fonts/NotoSans-ExtraBold.ttf", 22.0f, &config, ranges5);                // ˰
     ImGui::StyleColorsDark();
 
     const char *glsl_version = "#version 330";
@@ -65,6 +239,8 @@ int main()
     Shader shaderIrradiance(17, 20);
     Shader shaderPrefilter(17, 21);
     Shader shaderBRDF(18, 22);
+    // Shader::CodeOutput = true;
+    Shader shaderTEXT(19, 23);
     // Shader Program_geome(5, 5, 0);
     // Shader::CodeOutput = false;
 
@@ -98,6 +274,11 @@ int main()
     Program_buffe.Bind();
     Program_buffe.SetUniform1i("screenTexture", 0);
 
+    shaderTEXT.Bind();
+    // glm::mat4 projection_ortho = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
+    // shaderTEXT.SetUniform4m("projection", projection_ortho);
+    shaderTEXT.SetUniform1i("text", 0);
+
     // Model Model_kafuka("./model/kafuka/kafuka.obj");
     // Model Model_Aru("./model/Aru/Aru.obj");
     // Model Model_kafuka_knife("./model/kafuka/knife.obj");
@@ -109,6 +290,18 @@ int main()
     // texture_dir_output = true;
     Model Model_mistsplitter_reforged("./model/mistsplitter-reforged/mistsplitter-reforged.obj");
     Model Model_DamageHelmet("./model/DamagedHelmet/glTF/DamagedHelmet.gltf");
+
+    // configure VAO/VBO for texture quads
+    // -----------------------------------
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 4 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     BufferLayout layout_Cubes;
     layout_Cubes.AddFloat(3, 3, 2);
@@ -135,9 +328,9 @@ int main()
         glm::vec3(1.0f, 1.0f, 1.0f),
         glm::vec3(1.0f, 1.0f, 1.0f),
         glm::vec3(1.0f, 1.0f, 1.0f)};
-    int nrRows = 7;
-    int nrColumns = 7;
-    float spacing = 2.5;
+    // int nrRows = 7;
+    // int nrColumns = 7;
+    // float spacing = 2.5;
 
     // pbr: setup framebuffer
     // ----------------------
@@ -155,8 +348,8 @@ int main()
     // ---------------------------------
     stbi_set_flip_vertically_on_load(true);
     int width, height, nrComponents;
-    float *data = stbi_loadf("./src/image/dikhololo_night_4k.hdr", &width, &height, &nrComponents, 0);
-    // float *data = stbi_loadf("./src/image/newport_loft.hdr", &width, &height, &nrComponents, 0);
+    // float *data = stbi_loadf("./src/image/dikhololo_night_4k.hdr", &width, &height, &nrComponents, 0);
+    float *data = stbi_loadf("./src/image/newport_loft.hdr", &width, &height, &nrComponents, 0);
     unsigned int hdrTexture;
     if (data)
     {
@@ -340,27 +533,48 @@ int main()
 
     while (!glfwWindowShouldClose(window))
     {
+        // glCheckError();
+        processInput(window);
+
         float currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
-
-        processInput(window);
-        // glEnable(GL_DEPTH_TEST);
-        // glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
-
 #if 1 // -----------------------------------imgui
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGui::Begin("Lighting Settings");
+        imgui_window_focus = ImGui::IsWindowFocused();
         ImGui::PushItemWidth(150);
         ImGui::ColorEdit3(" point", (float *)&lightColor);
         ImGui::Text("Pos: %0.2f,%0.2f,%0.2f", camera.m_cameraPos.x, camera.m_cameraPos.y, camera.m_cameraPos.z);
         ImGui::Text("(%.3f ms)(%.1f fps)", 1000.0f / io.Framerate, io.Framerate);
         // ImGui::SliderFloat("Fresnel", &_fresnel, 0.0, 4.0);
-        ImGui::ColorEdit3(" sphere color", (float *)&sphereColor);
+        // ImGui::ColorEdit3("sphere color", (float *)&sphereColor);
+        ImGui::ColorEdit3("Text color", (float *)&text_color);
+        ImGui::SliderFloat("Text Size", &text_size, 0.005, 0.1);
+        ImGui::SliderFloat("Line Spac", &line_spec, 0.0, 10.0);
+        // ImGui::Text(text_string.c_str(), sizeof(text_string));
+        if (ImGui::InputTextMultiline("Input Text", text_buffer, sizeof(text_buffer), ImVec2(-1, ImGui::GetTextLineHeight() * 4), ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            text_string = text_buffer;
+            std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
+            u32text_string = converter.from_bytes(text_string);
+            if (!text_changed)
+                text_changed = true;
+        }
+        ImGui::RadioButton("Normal", &SDF_Mode, 0);
+        ImGui::SameLine();
+        ImGui::RadioButton("Bloom", &SDF_Mode, 1);
+        ImGui::SameLine();
+        ImGui::RadioButton("Gradient", &SDF_Mode, 2);
+        ImGui::SameLine();
+        ImGui::RadioButton("Shadow", &SDF_Mode, 3);
         ImGui::End();
 #endif
+
+        // glEnable(GL_DEPTH_TEST);
+        // glClearColor(background_color.x, background_color.y, background_color.z, 1.0f);
 
         glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -380,58 +594,58 @@ int main()
         // glm::mat4 model = glm::mat4(1.0f);
 
 #if 1 // -------------------------------------------object rendering PBR
-        shaderPBR.Bind();
-        shaderPBR.SetUniform4m("view", view);
-        shaderPBR.SetUniform3f("camPos", camera.m_cameraPos);
-        shaderPBR.SetUniform4m("projection", projection);
-        shaderPBR.SetUniform3f("albedo", sphereColor);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+      // shaderPBR.Bind();
+      // shaderPBR.SetUniform4m("view", view);
+      // shaderPBR.SetUniform3f("camPos", camera.m_cameraPos);
+      // shaderPBR.SetUniform4m("projection", projection);
+      // shaderPBR.SetUniform3f("albedo", sphereColor);
+      // glActiveTexture(GL_TEXTURE0);
+      // glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+      // glActiveTexture(GL_TEXTURE1);
+      // glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+      // glActiveTexture(GL_TEXTURE2);
+      // glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+        glm::mat4 model = glm::mat4(1.0f);
         {
             // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
-            glm::mat4 model = glm::mat4(1.0f);
-            for (int row = 0; row < nrRows; ++row)
-            {
-                shaderPBR.SetUniform1f("metallic", (float)row / (float)nrRows);
-                for (int col = 0; col < nrColumns; ++col)
-                {
-                    // we clamp the roughness to 0.05 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off
-                    // on direct lighting.
-                    shaderPBR.SetUniform1f("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
+            // for (int row = 0; row < nrRows; ++row)
+            // {
+            //     shaderPBR.SetUniform1f("metallic", (float)row / (float)nrRows);
+            //     for (int col = 0; col < nrColumns; ++col)
+            //     {
+            //         // we clamp the roughness to 0.05 - 1.0 as perfectly smooth surfaces (roughness of 0.0) tend to look a bit off
+            //         // on direct lighting.
+            //         shaderPBR.SetUniform1f("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
 
-                    model = glm::mat4(1.0f);
-                    model = glm::translate(model, glm::vec3(
-                                                      (col - (nrColumns / 2)) * spacing,
-                                                      (row - (nrRows / 2)) * spacing,
-                                                      -2.0f));
-                    shaderPBR.SetUniform4m("model", model);
-                    shaderPBR.SetUniform3m("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-                    renderSphere();
-                }
-            }
+            //         model = glm::mat4(1.0f);
+            //         model = glm::translate(model, glm::vec3(
+            //                                           (col - (nrColumns / 2)) * spacing,
+            //                                           (row - (nrRows / 2)) * spacing,
+            //                                           -2.0f));
+            //         shaderPBR.SetUniform4m("model", model);
+            //         shaderPBR.SetUniform3m("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+            //         renderSphere();
+            //     }
+            // }
 
             // render light source (simply re-render sphere at light positions)
             // this looks a bit off as we use the same shader, but it'll make their positions obvious and
             // keeps the codeprint small.
-            for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
-            {
-                glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
-                // lightPositions[i] = newPos;
-                newPos = lightPositions[i];
-                shaderPBR.SetUniform3f("lightPositions[" + std::to_string(i) + "]", newPos);
-                shaderPBR.SetUniform3f("lightColors[" + std::to_string(i) + "]", lightColors[i]);
+            // for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+            // {
+            //     glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+            //     // lightPositions[i] = newPos;
+            //     newPos = lightPositions[i];
+            //     shaderPBR.SetUniform3f("lightPositions[" + std::to_string(i) + "]", newPos);
+            //     shaderPBR.SetUniform3f("lightColors[" + std::to_string(i) + "]", lightColors[i]);
 
-                // model = glm::mat4(1.0f);
-                // model = glm::translate(model, newPos);
-                // model = glm::scale(model, glm::vec3(0.5f));
-                // shaderPBR.SetUniform4m("model", model);
-                // shaderPBR.SetUniform3m("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-                // renderSphere();
-            }
+            //     // model = glm::mat4(1.0f);
+            //     // model = glm::translate(model, newPos);
+            //     // model = glm::scale(model, glm::vec3(0.5f));
+            //     // shaderPBR.SetUniform4m("model", model);
+            //     // shaderPBR.SetUniform3m("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+            //     // renderSphere();
+            // }
 
             // ------------------------- render light sphere
             shaderLightBox.Bind();
@@ -477,13 +691,13 @@ int main()
             }
             shaderPBRtexture.SetUniform3m("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f));
+            model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
             model = glm::scale(model, glm::vec3(0.5f));
             shaderPBRtexture.SetUniform4m("model", model);
             renderSphere();
 
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+            model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f));
             model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
             model = glm::rotate(model, glm::radians((float)90), glm::normalize(glm::vec3(1.0, 0.0, 0.0)));
             shaderPBRtexture.SetUniform1b("hasEmissive", 1);
@@ -492,7 +706,7 @@ int main()
             Model_DamageHelmet.Draw(shaderPBRtexture);
 
             model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(-1.5f, 0.0f, 5.0f));
+            model = glm::translate(model, glm::vec3(-1.5f, 2.0f, 0.0f));
             model = glm::scale(model, glm::vec3(0.5, 0.5, 0.5));
             model = glm::rotate(model, glm::radians((float)45), glm::normalize(glm::vec3(-1.0, 0.0, 0.0)));
             shaderPBRtexture.SetUniform1b("hasEmissive", 1);
@@ -500,20 +714,20 @@ int main()
             shaderPBRtexture.SetUniform3m("normalMatrix", glm::mat3(glm::transpose(glm::inverse(model))));
             Model_mistsplitter_reforged.Draw(shaderPBRtexture);
 
-            VAO_Cubes.Bind();
-            shaderHDR.Bind();
-            shaderHDR.SetUniform4m("view", view);
-            shaderHDR.SetUniform4m("projection", projection);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, hdrTexture);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            // VAO_Cubes.Bind();
+            // shaderHDR.Bind();
+            // shaderHDR.SetUniform4m("view", view);
+            // shaderHDR.SetUniform4m("projection", projection);
+            // glActiveTexture(GL_TEXTURE0);
+            // glBindTexture(GL_TEXTURE_2D, hdrTexture);
+            // glDrawArrays(GL_TRIANGLES, 0, 36);
 
             VAO_Cubes.Bind();
             shaderSKY.Bind();
             shaderSKY.SetUniform4m("projection", projection);
             shaderSKY.SetUniform4m("view", view);
-            // shaderSKY.SetUniform1f("_fresnel", _fresnel);
             glActiveTexture(GL_TEXTURE0);
+            // shaderSKY.SetUniform1f("_fresnel", _fresnel);
             // glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
             // glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
             glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
@@ -528,6 +742,23 @@ int main()
             // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
             // glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+
+            glEnable(GL_BLEND);
+            // glDisable(GL_DEPTH_TEST);
+            // glDepthMask(GL_FALSE);
+            glDepthMask(GL_FALSE);
+            shaderTEXT.Bind();
+            // shaderTEXT.SetUniform4m("projection", projection_ortho);
+            shaderTEXT.SetUniform4m("projection", projection);
+            shaderTEXT.SetUniform4m("view", view);
+            // RenderTextUniCode(shaderTEXT, u32text_string, 0.0, (FONT_SIZE + 8) * 3, 1.0, text_color);
+            RenderTextUniCode(shaderTEXT, u32text_string, 0.0, 0.0, text_size, text_color);
+            glDepthMask(GL_TRUE);
+            // glEnable(GL_DEPTH_TEST);
+            // RenderText(shaderTEXT, text_string.c_str(), 25.0f, 25.0f, text_size, glm::vec3(0.5, 0.8f, 0.2f));
+            // glDepthMask(GL_TRUE);
+            // RenderText(shaderTEXT, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
+            glDisable(GL_BLEND);
         }
 #endif
 
@@ -595,7 +826,7 @@ int opengl_init()
     glDepthFunc(GL_LEQUAL);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glEnable(GL_FRAMEBUFFER_SRGB);
 
     // glEnable(GL_CULL_FACE);
@@ -620,29 +851,32 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    if (!imgui_window_focus)
     {
-        camera.ProcessKeyBoard(MOVE_RIGHT, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        camera.ProcessKeyBoard(MOVE_LEFT, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        camera.ProcessKeyBoard(MOVE_FORWARD, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        camera.ProcessKeyBoard(MOVE_BACKWARD, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-    {
-        camera.ProcessKeyBoard(MOVE_UP, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-    {
-        camera.ProcessKeyBoard(MOVE_DOWN, deltaTime);
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+            camera.ProcessKeyBoard(MOVE_RIGHT, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        {
+            camera.ProcessKeyBoard(MOVE_LEFT, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            camera.ProcessKeyBoard(MOVE_FORWARD, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            camera.ProcessKeyBoard(MOVE_BACKWARD, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        {
+            camera.ProcessKeyBoard(MOVE_UP, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        {
+            camera.ProcessKeyBoard(MOVE_DOWN, deltaTime);
+        }
     }
 }
 
@@ -669,7 +903,7 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos)
         firstMouse = false;
         return;
     }
-    if (!rightClick)
+    if (!rightClick && !imgui_window_focus)
     {
         float xoffset = xpos - lastX;
         float yoffset = lastY - ypos;
@@ -706,7 +940,7 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 {
     (void)mods;
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS && !imgui_window_focus)
     {
         static bool flag = true;
         if (flag)
@@ -722,9 +956,9 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
         }
         flag = !flag;
     }
-    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-    }
+    // else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    // {
+    // }
 }
 
 void SceneLightConfig(Shader &shader, glm::mat4 view, glm::mat4 projection)
@@ -963,4 +1197,46 @@ void renderSphere()
 
     glBindVertexArray(sphereVAO);
     glDrawElements(GL_TRIANGLE_STRIP, indexCount, GL_UNSIGNED_INT, 0);
+}
+
+// render line of text
+// -------------------
+void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
+{
+    // activate corresponding render state
+    shader.Bind();
+    shader.SetUniform3f("texColor", color);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+    // iterate through all characters
+    std::string::const_iterator c;
+    for (c = text.begin(); c != text.end(); c++)
+    {
+        Character ch = Characters[*c];
+        float xpos = x + ch.Bearing.x * scale;
+        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+        float w = ch.Size.x * scale;
+        float h = ch.Size.y * scale;
+        // update VBO for each character
+        float vertices[6][4] = {
+            {xpos, ypos + h, 0.0f, 0.0f},
+            {xpos, ypos, 0.0f, 1.0f},
+            {xpos + w, ypos, 1.0f, 1.0f},
+            {xpos, ypos + h, 0.0f, 0.0f},
+            {xpos + w, ypos, 1.0f, 1.0f},
+            {xpos + w, ypos + h, 1.0f, 0.0f}};
+
+        // render glyph texture over quad
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        // update content of VBO memory
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // render quad
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+        x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+    }
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

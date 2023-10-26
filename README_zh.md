@@ -3,7 +3,16 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### 环境
-- [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
+- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
+
+##### 使用
+vscode终端 **mingw32-make | .\main.exe** 来编译，以及运行，或者直接 **.\build.bat**
+
+- 鼠标右键 (摄像机 | 光标)
+- 滚轮(移动速度)
+- W A S D(移动方向)
+- 聚焦imgui窗口，以上操作失效
+- imgui的输入框使用ctrl enter输入文本
 
 ##### Build GLFW
 
@@ -34,9 +43,9 @@
 - build\lib\libassimp.dll.a放到lib/目录下
 - build\bin\libassimp-5.dll放到exe同级目录下
 
-###### 加载模型
+###### 加载MMD模型
 
-- assimp使用的是obj格式的模型，如果下载的是pmx等格式的模型，可以用blender导入模型(pmx可以用mmd_tools插件导入，[Download](https://github.com/powroupi/blender_mmd_tools))，再导出为obj格式文件，记得修改mtl文件的纹理文件名
+- 对于mmd模型例如pmx格式，assimp似乎只能加载tex纹理，也就是albedo/diffuse纹理，对应aiTextureType_DIFFUSE，并不能加载mmd模型的sph/spa toon纹理，但是我们可以转成obj模型，手动配置mtl文件来加载纹理，用blender导入(pmx可以用mmd_tools插件导入，[Download](https://github.com/powroupi/blender_mmd_tools))，再导出为OBJ格式
 
 ```
 # example of mtl file
@@ -52,7 +61,25 @@ illum 3
 map_Kd diffuse_texture.png
 map_Ks specular_texture.png
 map_Bump bump_texture.png
+...
 ```
+```
+    // gltf----------------------------obj---------------------------------name
+    // aiTextureType_DIFFUSE           aiTextureType_DIFFUSE        map_Kd albedo      0      
+    // aiTextureType_NORMALS           aiTextureType_NORMALS        map_Kn normal      1
+    // aiTextureType_METALNESS         aiTextureType_SPECULAR       map_Ks metallic    2
+    // aiTextureType_DIFFUSE_ROUGHNESS aiTextureType_SHININESS      map_Ns roughness   3
+    // aiTextureType_LIGHTMAP          aiTextureType_AMBIENT        map_Ka ao          4
+    // aiTextureType_EMISSIVE          aiTextureType_EMISSIVE       map_Ke emissive    5
+```
+
+###### [imgui](https://github.com/ocornut/imgui)
+
+###### [FreeType](https://github.com/ubawurinna/freetype-windows-binaries)
+- 使用CMake对FreeType源码进行配置和生成构建文件
+- 进入build目录，使用mingw32-make编译并生成库
+- 拷贝 source code 的 include
+- build\lib\libfreetype.a放到lib/
 
 ###### 确保makefile格式正确，例如tab与空格
 
@@ -64,7 +91,7 @@ SRC := ./src
 INCLUDE := ./include
 LIB := ./lib
 
-LIBRARIES := -lglad -lglfw3dll -lassimp
+LIBRARIES := -lglad -lglfw3dll -lassimp -lfreetype
 EXECUTABLE := main.exe
 
 SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)
@@ -92,9 +119,3 @@ obj/%.o: $(SRC)/%.cpp
 
 -include $(OBJECTS:.o=.d)
 ```
-
-##### 最后在vscode终端mingw32-make | .\main.exe来编译，以及运行，或者(windows系统下) 你可以运行 ./build.bat 脚本来编译，以及运行程序
-
-- 鼠标右键 (摄像机 | 光标)
-- 滚轮(移动速度)
-- W A S D(移动方向)

@@ -1576,3 +1576,82 @@ void main()
     vec2 integratedBRDF = IntegrateBRDF(TexCoords.x, TexCoords.y);
     FragColor = integratedBRDF;
 }
+
+#shader vertex
+// id --- 19
+#version 330 core
+layout (location = 0) in vec4 vertex;
+out vec2 TexCoords;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+void main()
+{
+    gl_Position = projection * view * vec4(vertex.xy, 0.0, 1.0);
+    // gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
+    TexCoords = vertex.zw;
+}
+
+#shader fragment
+// id --- 23
+#version 330 core
+in vec2 TexCoords;
+out vec4 color;
+uniform sampler2D text;
+uniform vec3 texColor;
+uniform int SDF_Mode;
+void main()
+{
+    float alpha = texture(text, TexCoords).r;
+    float edge = 0.5;
+    // normal Not SDF---------------------------------------
+    // if(alpha == 0)
+        // discard;
+    // color = vec4(texColor, alpha);
+    // normal ----------------------------------------------
+    if(SDF_Mode == 0)
+    {
+        // --------------- jagged edges
+        // if(alpha < 0.5)
+            // discard;
+        float alpha1 = smoothstep(edge - 0.001 ,edge, alpha);
+        float alpha2 = smoothstep(edge - 0.01, edge, alpha);
+        if(alpha2 == 0.0)
+            discard;
+        color = vec4(texColor, alpha1 + alpha2);
+    }
+    // bloom -----------------------------------------------
+    else if(SDF_Mode == 1)
+    {
+        float alpha1 = smoothstep(edge - 0.001 ,edge, alpha);
+        float alpha2 = smoothstep(edge - 0.2, edge, alpha);
+        // edge bloom only
+        // // alpha2 = alpha2 == 1.0 ? 0.0 : alpha2;
+        // if(alpha2 == 0.0 && alpha1 == 0.0)
+        if(alpha2 == 0.0)
+            discard;
+        color = vec4(texColor, alpha1 + alpha2);
+    }
+    // gradient --------------------------------------------
+    else if(SDF_Mode == 2)
+    {
+        vec3 edgeColor = vec3(1.0);
+        if(alpha < 0.5)
+            discard;
+        color = vec4(mix(edgeColor,texColor , TexCoords.y), 1.0);
+    }
+    // shadow ----------------------------------------------
+    else if(SDF_Mode == 3)
+    {
+        float bias = 0.1;
+        float alpha_shadow = texture(text, TexCoords-bias).r;
+        vec3 shadow = vec3(0.0);
+        bool out_of_edge = alpha < 0.5;
+        float shodow_alpha = smoothstep(edge - 0.001 ,edge, alpha_shadow) + smoothstep(edge - 0.3, edge, alpha_shadow);
+        if(out_of_edge && shodow_alpha == 0.0)
+            discard;
+        color = vec4(out_of_edge ? shadow: texColor , (out_of_edge ? 0.0 : 1.0) + shodow_alpha);
+    }
+    else
+        color = vec4(texColor, alpha);
+}
