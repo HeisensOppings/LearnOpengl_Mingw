@@ -52,8 +52,8 @@ bool imgui_window_focus = false;
 // ⠀⠀⠀⠀⢀⣠⡾⠿⣿⣄⣤⢹⡎⠉⠉⠍⠉⠁⠠⠀⢱⡀⠀⠀
 
 #define FONT_SIZE 30
-    // U -- UTF-32; L -- UTF-16; u8 -- UTF-8;
-    vec3 text_color(0.0);
+// U -- UTF-32; L -- UTF-16; u8 -- UTF-8;
+vec3 text_color(0.2, 0.8, 0.9);
 string text_string("mashiro-真白-ましろ ❀ ⛅ ✯ ❅\nᕕ(◠ڼ◠)ᕗ Ciallo～(∠・ω< )⌒★ (ᗜ˰ᗜ)\n天动万象 I will have order 𒆚 𒆚 𒆙");
 char text_buffer[4096]{"mashiro-真白-ましろ ❀ ⛅ ✯ ❅\nᕕ(◠ڼ◠)ᕗ Ciallo～(∠・ω< )⌒★ (ᗜ˰ᗜ)\n天动万象 I will have order 𒆚 𒆚 𒆙"};
 u32string u32text_string(U"mashiro-真白-ましろ ❀ ⛅ ✯ ❅\nᕕ(◠ڼ◠)ᕗ Ciallo～(∠・ω< )⌒★ (ᗜ˰ᗜ)\n天动万象 I will have order 𒆚 𒆚 𒆙");
@@ -61,6 +61,9 @@ float text_size(0.01);
 bool text_changed = false;
 int SDF_Mode = 0;
 float line_spec = 8;
+float word_spec = 0;
+bool hasSDF = true;
+double rotationAngle = 30.0;
 
 vector<string> font_paths = {
     "./src/fonts/HarmonyOS_Sans_SC_Medium.ttf",

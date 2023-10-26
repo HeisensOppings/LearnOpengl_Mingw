@@ -23,12 +23,13 @@ int RenderTextUniCode(Shader &shader, u32string u32text, float x, float y, float
     static bool first = true;
     if (first || text_changed)
     {
-        // if (!first || text_changed)
-        // {
-        // for (auto ch : Characters)
-        // glDeleteTextures(1, &ch.TextureID);
-        // Characters_.clear();
-        // }
+        if (!first || text_changed)
+        {
+            for (auto ch : Characters)
+                glDeleteTextures(1, &ch.second.TextureID);
+            Characters.clear();
+            cout<<"clean"<<endl;
+        }
         first = false;
         text_changed = false;
 
@@ -58,6 +59,24 @@ int RenderTextUniCode(Shader &shader, u32string u32text, float x, float y, float
         // std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> converter;
         // std::u32string wide_str = converter.from_bytes(text_str_);
 
+        // FT_Matrix matrix;
+        // matrix.xx = 2.0 * 0x10000;
+        // matrix.xy = 0;
+        // matrix.yx = -2.0 * 0x10000;
+        // matrix.yy = 1.0 * 0x10000;
+        FT_Matrix matrix;
+        FT_Vector pen;
+        if (!hasSDF)
+        {
+            double radians = rotationAngle * 3.14159 / 180.0;
+            matrix.xx = (FT_Fixed)(cos(radians) * 0x10000);
+            matrix.xy = (FT_Fixed)(-sin(radians) * 0x10000);
+            matrix.yx = (FT_Fixed)(sin(radians) * 0x10000);
+            matrix.yy = (FT_Fixed)(cos(radians) * 0x10000);
+            pen.x = 0;
+            pen.y = 0;
+        }
+
         for (size_t i = 0; i < u32text.length(); i++)
         {
             for (const auto &face : faces)
@@ -68,10 +87,14 @@ int RenderTextUniCode(Shader &shader, u32string u32text, float x, float y, float
                 else
                 {
                     FT_Load_Char(face, u32text[i], FT_LOAD_RENDER);
-                    // for SDF ----------------------------------------------
-                    FT_GlyphSlot slot = face->glyph;
-                    FT_Render_Glyph(slot, FT_RENDER_MODE_SDF);
-                    // ------------------------------------------------------
+                    if (hasSDF)
+                    {
+                        FT_GlyphSlot slot = face->glyph;
+                        FT_Render_Glyph(slot, FT_RENDER_MODE_SDF);
+                    }
+                    else
+                        FT_Set_Transform(face, &matrix, &pen);
+
 
                     Character character;
                     if (u32text[i] == ' ')
@@ -172,7 +195,7 @@ int RenderTextUniCode(Shader &shader, u32string u32text, float x, float y, float
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             }
             // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-            x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+            x += ((ch.Advance >> 6) + word_spec) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
         }
     }
     glBindVertexArray(0);
@@ -553,7 +576,9 @@ int main()
         // ImGui::ColorEdit3("sphere color", (float *)&sphereColor);
         ImGui::ColorEdit3("Text color", (float *)&text_color);
         ImGui::SliderFloat("Text Size", &text_size, 0.005, 0.1);
-        ImGui::SliderFloat("Line Spac", &line_spec, 0.0, 10.0);
+        ImGui::SliderFloat("Line Spac", &line_spec, 0.0, 20.0);\
+        ImGui::SameLine();
+        ImGui::SliderFloat("word Spac", &word_spec, 0.0, 10.0);
         // ImGui::Text(text_string.c_str(), sizeof(text_string));
         if (ImGui::InputTextMultiline("Input Text", text_buffer, sizeof(text_buffer), ImVec2(-1, ImGui::GetTextLineHeight() * 4), ImGuiInputTextFlags_EnterReturnsTrue))
         {
@@ -563,6 +588,7 @@ int main()
             if (!text_changed)
                 text_changed = true;
         }
+        static int preSDF_Mode = SDF_Mode;
         ImGui::RadioButton("Normal", &SDF_Mode, 0);
         ImGui::SameLine();
         ImGui::RadioButton("Bloom", &SDF_Mode, 1);
@@ -570,6 +596,15 @@ int main()
         ImGui::RadioButton("Gradient", &SDF_Mode, 2);
         ImGui::SameLine();
         ImGui::RadioButton("Shadow", &SDF_Mode, 3);
+        ImGui::SameLine();
+        ImGui::RadioButton("rotate30°", &SDF_Mode, 4);
+        if (preSDF_Mode != SDF_Mode)
+        {
+            preSDF_Mode = SDF_Mode;
+            hasSDF = (SDF_Mode != 4 ? true : false);
+            if (!text_changed)
+                text_changed = true;
+        }
         ImGui::End();
 #endif
 

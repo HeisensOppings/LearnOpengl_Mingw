@@ -1604,10 +1604,6 @@ void main()
 {
     float alpha = texture(text, TexCoords).r;
     float edge = 0.5;
-    // normal Not SDF---------------------------------------
-    // if(alpha == 0)
-        // discard;
-    // color = vec4(texColor, alpha);
     // normal ----------------------------------------------
     if(SDF_Mode == 0)
     {
@@ -1651,6 +1647,13 @@ void main()
         if(out_of_edge && shodow_alpha == 0.0)
             discard;
         color = vec4(out_of_edge ? shadow: texColor , (out_of_edge ? 0.0 : 1.0) + shodow_alpha);
+    }
+    // normal Not SDF---------------------------------------
+    else if(SDF_Mode == 4)
+    {
+        if(alpha == 0)
+            discard;
+        color = vec4(texColor, alpha);
     }
     else
         color = vec4(texColor, alpha);
