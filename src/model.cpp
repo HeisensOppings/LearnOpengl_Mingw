@@ -33,6 +33,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
+    stbi_set_flip_vertically_on_load(false);
 
     int width, height, nrComponents;
     unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
@@ -51,7 +52,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_
         }
         else if (nrComponents == 4)
         {
-            internalformat = gamma ? GL_SRGB : GL_RGB;
+            internalformat = gamma ? GL_SRGB : GL_RGBA;
             dataformat = GL_RGBA;
         }
 

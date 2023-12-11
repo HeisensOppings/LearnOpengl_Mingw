@@ -1,4 +1,4 @@
-#### LearnOpengl with mingw makefile in vscode
+#### [LearnOpengl](https://learnopengl.com/) with mingw makefile in vscode
 
 [English](README.md) [中文](README_zh.md)
 
@@ -16,12 +16,10 @@ vscode终端 **mingw32-make | .\main.exe** 来编译，以及运行，或者直�
 
 ##### Build GLFW
 
-- [Download](https://github.com/glfw/glfw/releases) 下载GLFW的源代码包，重新编译以确保能够在自己的机器上运行
-
+- [GLFW](https://github.com/glfw/glfw/releases) 下载GLFW的源代码包，重新编译以确保能够在自己的机器上运行
 - 解压源代码，打开CMake。
 - 输入 source code 目录，以及 build 目录(自行创建)
 - 点击 Configure，选择 MinGW Makefiles
-
 - 完成后勾选 BUILD_SHARED_LIBS，创建动态库
 - 点击 Generate
 - 进入build目录，$ minggw32-make ../
@@ -30,14 +28,14 @@ vscode终端 **mingw32-make | .\main.exe** 来编译，以及运行，或者直�
 
 ##### 配置GLAD
 
-- [Download](https://glad.dav1d.de/) language - C/C++, API - 高于3.3, Profile - Core, Generate a loader, Generate, 下载压缩包
+- [GLAD](https://glad.dav1d.de/) language - C/C++, API - 高于3.3, Profile - Core, Generate a loader, Generate, 下载压缩包
 - gcc .\src\glad.c -c -I.\include\
 - ar -rc libglad.a glad.o
 - 拷贝**libglad.a** 和 include
 
 ###### Assimp
 
-- [Download](https://github.com/assimp/assimp) Assimp源码并解压缩到本地目录
+- [Assimp](https://github.com/assimp/assimp) Assimp源码并解压缩到本地目录
 - 使用CMake对Assimp源码进行配置和生成构建文件，默认生成build目录
 - 进入build目录，使用mingw32-make命令来编译Assimp源代码并生成可执行文件或库
 - build\lib\libassimp.dll.a放到lib/目录下
@@ -45,7 +43,7 @@ vscode终端 **mingw32-make | .\main.exe** 来编译，以及运行，或者直�
 
 ###### 加载MMD模型
 
-- 对于mmd模型例如pmx格式，assimp似乎只能加载tex纹理，也就是albedo/diffuse纹理，对应aiTextureType_DIFFUSE，并不能加载mmd模型的sph/spa toon纹理，但是我们可以转成obj模型，手动配置mtl文件来加载纹理，用blender导入(pmx可以用mmd_tools插件导入，[Download](https://github.com/powroupi/blender_mmd_tools))，再导出为OBJ格式
+- 对于mmd模型例如pmx格式，assimp似乎只能加载tex纹理，也就是albedo/diffuse纹理，对应aiTextureType_DIFFUSE，并不能加载mmd模型的sph/spa toon纹理，但是我们可以转成obj模型，手动配置mtl文件来加载纹理，用blender导入(pmx可以用mmd_tools插件导入，[blender_mmd_tools](https://github.com/powroupi/blender_mmd_tools))，再导出为OBJ格式
 
 ```
 # example of mtl file

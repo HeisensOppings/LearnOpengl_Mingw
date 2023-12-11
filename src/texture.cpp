@@ -8,7 +8,6 @@ Texture::Texture(const string &path, GLenum textureTarget, GLenum wrapMode, GLen
 
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(false); // tell stb_image.h to flip loaded texture's on the y-axis.
-    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
@@ -25,7 +24,7 @@ Texture::Texture(const string &path, GLenum textureTarget, GLenum wrapMode, GLen
         }
         else if (nrChannels == 4)
         {
-            internalformat = gammaCorrection ? GL_SRGB : GL_RGB;
+            internalformat = gammaCorrection ? GL_SRGB : GL_RGBA;
             dataformat = GL_RGBA;
         }
         glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
@@ -38,6 +37,7 @@ Texture::Texture(const string &path, GLenum textureTarget, GLenum wrapMode, GLen
     else
     {
         std::cout << "Failed to load texture path: " << path << std::endl;
+        exit(0);
     }
     stbi_image_free(data);
 }

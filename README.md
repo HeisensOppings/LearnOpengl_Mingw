@@ -1,4 +1,4 @@
-#### LearnOpengl with mingw makefile in vscode
+#### [LearnOpengl](https://learnopengl.com/) with mingw makefile in vscode
 
 [English](README.md) [中文](README_zh.md)
 
@@ -16,7 +16,7 @@ terminal in vscode run command **mingw32-make | .\main.exe** to build project an
 
 ##### Build GLFW
 
-- [Download](https://github.com/glfw/glfw/releases) the GLFW source code package and recompile it to make sure it runs on you own machine
+- [GLFW](https://github.com/glfw/glfw/releases) the GLFW source code package and recompile it to make sure it runs on you own machine
 - Unzip the source code and open CMake
 - Input the source code and build(mkdir) directory
 - Click Configure, Select MinGW Makefiles
@@ -27,14 +27,14 @@ terminal in vscode run command **mingw32-make | .\main.exe** to build project an
 
 ##### Configure GLAD
 
-- language - C/C++, API - higher than 3.3, Profile - Core, Generate a loader, Generate, [Download](https://glad.dav1d.de/) the zip
+- language - C/C++, API - higher than 3.3, Profile - Core, Generate a loader, Generate, [GLAD](https://glad.dav1d.de/) the zip
 - gcc .\src\glad.c -c -I.\include\
 - ar -rc libglad.a glad.o
 - copy file **libglad.a** and include
 
 ###### Assimp
 
-- [Download](https://github.com/assimp/assimp) Assimp source code and extract it to a local directory
+- [Assimp](https://github.com/assimp/assimp) Assimp source code and extract it to a local directory
 - Use CMake to configure and generate build files for the Assimp source code, By default, the build directory will be generated
 - Navigate to the build directory and use the mingw32-make command to compile the Assimp source code and generate executable files or libraries
 - Put the build\lib\libassimp.dll.a file into lib/ directory
@@ -42,7 +42,7 @@ terminal in vscode run command **mingw32-make | .\main.exe** to build project an
 
 ###### Loading MMD models
 
-- For mmd models such as pmx format, it seems that assimp can only load tex textures(albedo/diffuse), corresponding to aiTextureType_DIFFUSE, and cannot load sph/spa toon textures of mmd models, but we can convert them to obj models and manually configure the mtl file load the texture, use blender to import the [Download](https://github.com/powroupi/blender_mmd_tools), and then export it as an OBJ format file.
+- For mmd models such as pmx format, it seems that assimp can only load tex textures(albedo/diffuse), corresponding to aiTextureType_DIFFUSE, and cannot load sph/spa toon textures of mmd models, but we can convert them to obj models and manually configure the mtl file load the texture, use blender to import the [blender_mmd_tools](https://github.com/powroupi/blender_mmd_tools), and then export it as an OBJ format file.
 
 ```
 # example of mtl file

@@ -56,6 +56,8 @@ public:
     void loadCameraPosition(GLFWwindow *window);
     void saveCameraPosition(GLFWwindow *window);
 
+    Camera(GLFWwindow *window) { loadCameraPosition(window); }
+
     Camera(glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -Z_VALUE), glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, Z_VALUE), glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f))
         : m_cameraPos(cameraPos),
           m_cameraDir(cameraDir),

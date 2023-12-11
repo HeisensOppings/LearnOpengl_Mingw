@@ -1,6 +1,6 @@
 #shader vertex
 // id --- 0
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
@@ -65,7 +65,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 struct Material{
@@ -333,7 +333,7 @@ float ShadowCalculationSpot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
 
 #shader vertex
 // id --- 1
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 uniform mat4 model;
 uniform mat4 view;
@@ -344,7 +344,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 uniform vec3 lightColor;
@@ -360,7 +360,7 @@ void main()
 
 #shader vertex
 // id --- 2
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 uniform mat4 model;
@@ -374,7 +374,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D texture1;
@@ -389,7 +389,7 @@ void main()
 
 #shader vertex
 // id --- 3
-#version 330 core
+#version 420 core
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -400,7 +400,7 @@ void main()
 }  
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D screenTexture;
@@ -512,25 +512,27 @@ vec3 kernel_effects(int mode)
 
 #shader vertex
 // id --- 4
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 // out vec3 TexCoords;
 out vec3 WorldPos;
 uniform mat4 projection;
 uniform mat4 view;
+// uniform mat4 vp;
 void main()
 {
     // TexCoords = aPos;
     // vec4 pos = projection * view * vec4(aPos, 1.0);
     // gl_Position = pos.xyww;
     WorldPos = aPos;
+    // vec4 clipPos = mat4(mat3(projection * view)) * vec4(WorldPos, 1.0);
     mat4 rotView = mat4(mat3(view));
     vec4 clipPos = projection * rotView * vec4(WorldPos, 1.0);
     gl_Position = clipPos.xyww;
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 // in vec3 TexCoords;
 in vec3 WorldPos;
@@ -549,7 +551,7 @@ void main()
 
 #shader vertex
 // id --- 5
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 3) in mat4 aInstanceMatrix;
@@ -569,7 +571,7 @@ void main()
 }
 
 #shader geometry
-#version 330 core
+#version 420 core
 layout (triangles) in;
 layout (line_strip, max_vertices = 3) out;
 in VS_OUT {
@@ -599,7 +601,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec3 fColor;
 void main()
@@ -609,7 +611,7 @@ void main()
 
 #shader vertex
 // id --- 6
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 uniform mat4 lightSpaceMatrix;
 uniform mat4 model;
@@ -619,7 +621,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 void main()
 {             
     // gl_FragDepth = gl_FragCoord.z;
@@ -627,7 +629,7 @@ void main()
 
 #shader vertex
 // id --- 7
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -638,7 +640,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D depthMap;
@@ -659,7 +661,7 @@ void main()
 
 #shader vertex
 // id --- 8
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 uniform mat4 model;
 void main()
@@ -668,7 +670,7 @@ void main()
 }
 
 #shader geometry
-#version 330 core
+#version 420 core
 layout (triangles) in;
 layout (triangle_strip, max_vertices=18) out;
 uniform mat4 shadowMatrices[6];
@@ -689,7 +691,7 @@ void main()
 } 
 
 #shader fragment
-#version 330 core
+#version 420 core
 in vec4 FragPos;
 uniform vec3 lightPos;
 uniform float far_plane;
@@ -704,7 +706,7 @@ void main()
 
 #shader vertex
 // id --- 9
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
@@ -726,7 +728,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in VS_OUT {
     vec3 FragPos;
@@ -739,7 +741,7 @@ void main()
 
 #shader vertex
 // id --- 10 bloom blur
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -750,7 +752,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D image;
@@ -781,7 +783,7 @@ void main()
 
 #shader vertex
 // id --- 11 bloom final
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -792,7 +794,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D scene;
@@ -812,7 +814,7 @@ void main()
 
 #shader vertex
 // id --- 12
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
@@ -842,7 +844,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
 layout (location = 2) out vec4 gAlbedo;
@@ -872,7 +874,7 @@ void main()
 
 #shader vertex
 // id --- 13
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -883,7 +885,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D gPosition;
@@ -935,7 +937,7 @@ void main()
 
 #shader vertex
 // id --- 14
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
@@ -948,7 +950,7 @@ void main()
 }
 
 #shader fragment
-#version 330 core
+#version 420 core
 layout (location = 0) out vec4 FragColor;
 uniform vec3 lightColor;
 void main()
@@ -958,7 +960,7 @@ void main()
 
 #shader vertex
 // id --- 15
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -970,7 +972,7 @@ void main()
 
 #shader fragment
 // id --- 15
-#version 330 core
+#version 420 core
 out float FragColor;
 in vec2 TexCoords;
 uniform sampler2D gPosition;
@@ -1018,7 +1020,7 @@ void main()
 
 #shader fragment
 // id --- 16
-#version 330 core
+#version 420 core
 out float FragColor;
 in vec2 TexCoords;
 uniform sampler2D ssaoInput;
@@ -1039,15 +1041,16 @@ void main()
 
 #shader vertex
 // id --- 16
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 out vec2 TexCoords;
 out vec3 WorldPos;
 out vec3 Normal;
-uniform mat4 projection;
-uniform mat4 view;
+// uniform mat4 projection;
+// uniform mat4 view;
+uniform mat4 vp;
 uniform mat4 model;
 uniform mat3 normalMatrix;
 void main()
@@ -1055,12 +1058,13 @@ void main()
     TexCoords = aTexCoords;
     WorldPos = vec3(model * vec4(aPos, 1.0));
     Normal = normalize(normalMatrix * aNormal);
-    gl_Position = projection * view * vec4(WorldPos, 1.0);
+    gl_Position = vp * vec4(WorldPos, 1.0);
+    // gl_Position = projection * view * vec4(WorldPos, 1.0);
 }
 
 #shader fragment
 // id --- 17
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 in vec3 WorldPos;
@@ -1172,7 +1176,7 @@ void main()
 
 #shader fragment
 // id --- 18
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 in vec3 WorldPos;
@@ -1313,7 +1317,7 @@ void main()
 
 #shader vertex
 // id --- 17
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 out vec3 localPos;
 uniform mat4 projection;
@@ -1326,7 +1330,7 @@ void main()
 
 #shader fragment
 // id --- 19
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec3 localPos;
 uniform sampler2D equirectangularMap;
@@ -1349,7 +1353,7 @@ void main()
 
 #shader fragment
 // id --- 20
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec3 localPos;
 uniform samplerCube environmentMap;
@@ -1388,7 +1392,7 @@ void main()
 
 #shader fragment
 // id --- 21
-#version 330 core
+#version 420 core
 out vec4 FragColor;
 in vec3 localPos;
 uniform samplerCube environmentMap;
@@ -1472,7 +1476,7 @@ void main()
 
 #shader vertex
 // id --- 18
-#version 330 core
+#version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
 out vec2 TexCoords;
@@ -1484,7 +1488,7 @@ void main()
 
 #shader fragment
 // id --- 22
-#version 330 core
+#version 420 core
 out vec2 FragColor;
 in vec2 TexCoords;
 const float PI = 3.14159265359;
@@ -1579,82 +1583,259 @@ void main()
 
 #shader vertex
 // id --- 19
-#version 330 core
-layout (location = 0) in vec4 vertex;
-out vec2 TexCoords;
+#version 420 core
+layout (location = 0) in vec2 vertex;
+layout (location = 1) in vec4 texcoord;
+out vec4 texCoords;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 mvp;
 void main()
 {
-    gl_Position = projection * view * vec4(vertex.xy, 0.0, 1.0);
+    // gl_Position = projection * view * model * vec4(vertex, 0.0, 1.0);
+    gl_Position = mvp * vec4(vertex, 0.0, 1.0);
+    // gl_Position = projection * view * model * vec4(vertex.xy, 0.0, 1.0);
     // gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
-    TexCoords = vertex.zw;
+    texCoords = texcoord;
+    // TexCoords = vertex.zw;
 }
 
 #shader fragment
 // id --- 23
-#version 330 core
-in vec2 TexCoords;
+#version 420 core
+in vec4 texCoords;
 out vec4 color;
-uniform sampler2D text;
-uniform vec3 texColor;
-uniform int SDF_Mode;
+uniform sampler2D textTexture;
+// uniform vec3 texColor;
+uniform vec4 Coords;
+uniform float deltaTime;
+uniform float thickness;
+uniform float softness;
+uniform float outline_thickness;
+uniform float outline_softness;
+uniform vec2 shadow_offset;
 void main()
 {
-    float alpha = texture(text, TexCoords).r;
-    float edge = 0.5;
-    // normal ----------------------------------------------
-    if(SDF_Mode == 0)
-    {
-        // --------------- jagged edges
-        // if(alpha < 0.5)
-            // discard;
-        float alpha1 = smoothstep(edge - 0.001 ,edge, alpha);
-        float alpha2 = smoothstep(edge - 0.01, edge, alpha);
-        if(alpha2 == 0.0)
-            discard;
-        color = vec4(texColor, alpha1 + alpha2);
-    }
-    // bloom -----------------------------------------------
-    else if(SDF_Mode == 1)
-    {
-        float alpha1 = smoothstep(edge - 0.001 ,edge, alpha);
-        float alpha2 = smoothstep(edge - 0.2, edge, alpha);
-        // edge bloom only
-        // // alpha2 = alpha2 == 1.0 ? 0.0 : alpha2;
-        // if(alpha2 == 0.0 && alpha1 == 0.0)
-        if(alpha2 == 0.0)
-            discard;
-        color = vec4(texColor, alpha1 + alpha2);
-    }
-    // gradient --------------------------------------------
-    else if(SDF_Mode == 2)
-    {
-        vec3 edgeColor = vec3(1.0);
-        if(alpha < 0.5)
-            discard;
-        color = vec4(mix(edgeColor,texColor , TexCoords.y), 1.0);
-    }
-    // shadow ----------------------------------------------
-    else if(SDF_Mode == 3)
-    {
-        float bias = 0.1;
-        float alpha_shadow = texture(text, TexCoords-bias).r;
-        vec3 shadow = vec3(0.0);
-        bool out_of_edge = alpha < 0.5;
-        float shodow_alpha = smoothstep(edge - 0.001 ,edge, alpha_shadow) + smoothstep(edge - 0.3, edge, alpha_shadow);
-        if(out_of_edge && shodow_alpha == 0.0)
-            discard;
-        color = vec4(out_of_edge ? shadow: texColor , (out_of_edge ? 0.0 : 1.0) + shodow_alpha);
-    }
-    // normal Not SDF---------------------------------------
-    else if(SDF_Mode == 4)
-    {
-        if(alpha == 0)
-            discard;
-        color = vec4(texColor, alpha);
-    }
-    else
-        color = vec4(texColor, alpha);
+    // glm::vec4(texture_sub_x / textureWidth, texture_sub_y / textureHeight, slot->bitmap.width / textureWidth, slot->bitmap.rows / textureHeight)};
+    // float alpha = texture(text, (TexCoords*Coords.zw + Coords.xy)).r;
+    vec2 TexCoords = texCoords.xy;
+    float alpha = texture(textTexture, TexCoords).r;
+    float offset_alpha = texture(textTexture, (TexCoords + shadow_offset)).r;
+    // ---- 
+    vec3 texColor = vec3(0.666, .0, 1.0);
+    // vec3 texColor = vec3(0.761, 0.165, 0.839);
+    vec3 outline_color = vec3(0.0, 1.0, 0.8);
+    vec3 shadow_color = vec3(.0);
+    vec3 gradients_color = vec3(0.631, 0.863, 0.333);
+    // ----
+    float shadow_alpha = smoothstep(1.0 - thickness - softness, 1.0 - thickness, offset_alpha);
+    float text_alpha = smoothstep(1.0 - thickness - softness, 1.0 - thickness, alpha);
+    // ----
+    float outline = smoothstep(outline_thickness - outline_softness, outline_thickness + outline_softness, alpha);
+    // 0.0 ~ 1.0 ~ 0.0 ...
+    float result = mod((texCoords.z + texCoords.w) * 0.5 + deltaTime, 2.0);
+    result = (result > 1.0 ) ? (2.0 - result) : result;
+    // vec3 text_color = mix(outline_color, mix(gradients_color, texColor, fract(result)), outline);
+    // smooth a little
+    vec3 text_color = mix(outline_color, mix(gradients_color, texColor, (cos((3.1415926 * ( fract(result)))) + 1.0) / 2.0), outline);
+    // vec3 text_color = mix(outline_color, mix(gradients_color,texColor, ((texCoords.z + texCoords.w) / 2.0)), outline); 
+    // ----
+    float overallAlpha = text_alpha + (1 - text_alpha) * shadow_alpha;
+    color = vec4(mix(shadow_color, text_color, text_alpha / overallAlpha), overallAlpha);
+}
+
+#shader vertex
+// id --- 20
+#version 420 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+out vec2 TexCoords;
+uniform mat3 normalMatrix;
+// uniform mat4 projection;
+// uniform mat4 view;
+// uniform mat4 model;
+uniform mat4 mvp;
+void main()
+{
+    TexCoords = aTexCoords;
+    gl_Position = mvp * vec4(aPos, 1.0);
+    // gl_Position = projection * view * model * vec4(aPos, 1.0);
+    vec3 normal = normalMatrix * aNormal;
+}
+
+#shader fragment
+// id --- 24
+#version 420 core
+in vec2 TexCoords;
+out vec4 color;
+uniform sampler2D image;
+void main()
+{
+    color = (texture(image, TexCoords));
+}  
+
+#shader vertex
+// id --- 21
+layout (location = 0) in vec3 position;
+uniform mat4 mvp;
+void main()
+{
+	gl_Position = mvp * vec4(position, 1.0f);
+}
+
+#shader fragment
+// id --- 25
+#version 420 core
+layout (location = 0) out vec4 frag;
+uniform vec3 color;
+void main()
+{
+	frag = vec4(color, 1.0f);
+}
+
+#shader fragment
+// id --- 26
+#version 420 core
+layout (location = 0) out vec4 accum;
+layout (location = 1) out float reveal;
+uniform vec4 color;
+void main()
+{
+	// weight function
+	float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+	// store pixel color accumulation
+	accum = vec4(color.rgb * color.a, color.a) * weight;
+	// store pixel revealage threshold
+	reveal = color.a;
+}
+
+#shader vertex
+// id --- 22
+#version 420 core
+// shader inputs
+layout (location = 0) in vec3 position;
+void main()
+{
+	gl_Position = vec4(position, 1.0f);
+}
+
+#shader fragment
+// id --- 27
+#version 420 core
+// shader outputs
+layout (location = 0) out vec4 frag;
+// color accumulation buffer
+layout (binding = 0) uniform sampler2D accum;
+// revealage threshold buffer
+layout (binding = 1) uniform sampler2D reveal;
+// epsilon number
+const float EPSILON = 0.00001f;
+// calculate floating point numbers equality accurately
+bool isApproximatelyEqual(float a, float b)
+{
+	return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;
+}
+// get the max value between three values
+float max3(vec3 v) 
+{
+	return max(max(v.x, v.y), v.z);
+}
+void main()
+{
+	// fragment coordination
+	ivec2 coords = ivec2(gl_FragCoord.xy);
+	// fragment revealage
+	float revealage = texelFetch(reveal, coords, 0).r;
+	// save the blending and color texture fetch cost if there is not a transparent fragment
+	if (isApproximatelyEqual(revealage, 1.0f)) 
+		discard;
+	// fragment color
+	vec4 accumulation = texelFetch(accum, coords, 0);
+	
+	// suppress overflow
+	if (isinf(max3(abs(accumulation.rgb)))) 
+		accumulation.rgb = vec3(accumulation.a);
+	// prevent floating point precision bug
+	vec3 average_color = accumulation.rgb / max(accumulation.a, EPSILON);
+	// blend pixels
+	frag = vec4(average_color, 1.0f - revealage);
+}
+
+#shader vertex
+// id --- 23
+#version 420 core
+// shader inputs
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 uv;
+// shader outputs
+out vec2 texture_coords;
+void main()
+{
+	texture_coords = uv;
+	gl_Position = vec4(position, 1.0f);
+}
+
+#shader fragment
+// id --- 28
+#version 420 core
+// shader inputs
+in vec2 texture_coords;
+// shader outputs
+layout (location = 0) out vec4 frag;
+// screen image
+uniform sampler2D screen;
+void main()
+{
+	frag = vec4(texture(screen, texture_coords).rgb, 1.0f);
+}
+
+#shader vertex
+// id --- 24
+#version 420 core
+layout (location = 0) in vec3 position;
+// layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 texcoord;
+uniform mat4 mvp;
+out vec2 texCoord;
+void main()
+{
+	gl_Position = mvp * vec4(position, 1.0f);
+    texCoord = texcoord;
+}
+
+#shader fragment
+// id --- 29
+#version 420 core
+layout (location = 0) out vec4 frag;
+in vec2 texCoord;
+uniform vec3 color;
+uniform sampler2D diffuse;
+void main()
+{
+    vec4 color = texture(diffuse, texCoord);
+    if(color.a != 1.0)
+        discard;
+	frag = color;
+}
+
+#shader fragment
+// id --- 30
+#version 420 core
+layout (location = 0) out vec4 accum;
+layout (location = 1) out float reveal;
+in vec2 texCoord;
+uniform sampler2D diffuse;
+void main()
+{
+    vec4 color = texture(diffuse, texCoord);
+    if(color.a == 1.0)
+        discard;
+	// weight function
+	float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+	// store pixel color accumulation
+	accum = vec4(color.rgb * color.a, color.a) * weight;
+	// store pixel revealage threshold
+	reveal = color.a;
 }
