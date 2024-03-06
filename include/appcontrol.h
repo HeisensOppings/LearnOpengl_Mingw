@@ -3,26 +3,40 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-using namespace glm;
 
 class AppControl
 {
 public:
     // all
     static unsigned int scr_width, scr_height;
-    static mat4 view, projection, vp;
+    static glm::mat4 view, projection, vp;
     static float deltaTime;
+    // light
+    static glm::vec3 pointLightPos, pointLightColor;
     // text
     static float thickness,
         softness, outline_thickness, outline_softness;
-    static vec3 text_color;
-    static vec2 text_shadow_offset;
+    static glm::vec3 text_color;
+    static glm::vec2 text_shadow_offset;
     // pbr ibl
-    static vec3 irradiance_color;
+    static glm::vec3 irradiance_color;
+    // animation
+    static std::vector<std::string> animNames;
+    static int animIndex;
+    static float playSpeed;
+    static float duration;
+    static float currentFrame;
+    static bool playBackState;
+    
+    //imgui
+    // static vector<string, >
 };
+
+typedef AppControl App;
 
 #endif

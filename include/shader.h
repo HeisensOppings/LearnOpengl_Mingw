@@ -10,22 +10,23 @@
 #include <sstream>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 using namespace std;
 
 // #define GLSL_CODE_OUTPUT
-#define CHECK_SHADER(shader)                                                                  \
-    do                                                                                        \
-    {                                                                                         \
-        GLint success;                                                                        \
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);                                   \
-        if (!success)                                                                         \
-        {                                                                                     \
-            GLchar infoLog[512];                                                              \
-            glGetShaderInfoLog(shader, 512, NULL, infoLog);                                   \
-            std::cout << "\033[37;41mERROR:: " << #shader << " ::COMPILATION_FAILED\033[0m\n" \
-                      << infoLog << std::endl;                                                \
-            exit(1);                                                                          \
-        }                                                                                     \
+#define CHECK_SHADER(shader, id)                                                                              \
+    do                                                                                                        \
+    {                                                                                                         \
+        GLint success;                                                                                        \
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);                                                   \
+        if (!success)                                                                                         \
+        {                                                                                                     \
+            GLchar infoLog[512];                                                                              \
+            glGetShaderInfoLog(shader, 512, NULL, infoLog);                                                   \
+            std::cout << "\033[37;41mERROR:: " << #shader << " ID:" << id << " ::COMPILATION_FAILED\033[0m\n" \
+                      << infoLog << std::endl;                                                                \
+            exit(1);                                                                                          \
+        }                                                                                                     \
     } while (0)
 
 #define CHECK_PROGRAM(program)                                                                 \

@@ -24,7 +24,8 @@ struct VertexBufferElement
         case GL_UNSIGNED_BYTE:
             return sizeof(GLbyte);
         }
-        assert(false);
+        std::cout << __FUNCTION__ << "unknown type" << std::endl;
+        exit(-1);
         return 0;
     }
 };

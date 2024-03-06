@@ -1,4 +1,6 @@
-*.o
+*.exe
 .vscode/
-obj/*d
-obj/imgui/*d
+*.o
+*.d
+build
+.log

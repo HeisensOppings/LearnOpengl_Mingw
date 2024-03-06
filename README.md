@@ -6,7 +6,9 @@
 - Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
 
 ##### Use
-terminal in vscode run command **mingw32-make | .\main.exe** to build project and run program or use **.\build.bat**
+If you are not yet familiar with using CmakeLists:
+
+terminal in vscode run command **mingw32-make | .\opengl.exe** to build project and run program or use **.\build.bat**
 
 - Mouse right-click (Camera | Cursor)
 - Scroll wheel (Movement speed)
@@ -77,44 +79,3 @@ map_Bump bump_texture.png
 - Enter the build directory and mingw32-make to compile and generate the libarary
 - Copy the include of source code
 - build\lib\libfreetype.a in the lib/
-
-###### Create makefile
-
-- make sure formatting is correct, especially tabs and spaces
-
-```makefile
-CXX := g++
-CXX_FLAGS := -g -std=c++17 -O2 -Wextra -Wall -Wno-pragmas
-
-SRC := ./src
-INCLUDE := ./include
-LIB := ./lib
-
-LIBRARIES := -lglad -lglfw3dll -lassimp -lfreetype
-EXECUTABLE := main.exe
-
-SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)
-HEADERS := $(wildcard $(INCLUDE)/*.h) $(wildcard $(SRC)/**/*.h)
-OBJECTS := $(patsubst $(SRC)/%.cpp, obj/%.o, $(SOURCES))
-
-ifeq ($(wildcard obj),)
-$(shell mkdir obj)
-endif
-
-ifeq ($(wildcard obj\imgui),)
-$(shell mkdir obj\imgui)
-endif
-
-all: ./$(EXECUTABLE)
-
-run: all
-	./$(EXECUTABLE)
-
-./$(EXECUTABLE): $(OBJECTS)
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
-
-obj/%.o: $(SRC)/%.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(SRC) -MMD -MP -c $< -o $@
-
--include $(OBJECTS:.o=.d)
-```

@@ -11,8 +11,11 @@
 #include "resource.h"
 #include "objectrender.h"
 #include "model.h"
+#include "animation.h"
 
-using namespace glm;
+#define DELETE_PTR(param) \
+    if (param != nullptr) \
+        delete param;
 
 const float CubesVertices[] = {
     // Back face
@@ -91,12 +94,16 @@ private:
     Camera *m_camera = nullptr;
 
     TextObject *text = nullptr;
-    // Model *model_Aru = nullptr;
-    // Model *model_DamageHelmet = nullptr;
-    Model *model_miku = nullptr;
+    Model *model_DamageHelmet = nullptr;
+    Model *model_IndoorScene_Dq_Uyutei = nullptr;
+    Model *model_aru = nullptr;
+    Model *model_niru = nullptr;
     Model *model_anon = nullptr;
     PBRObject *pbr_model = nullptr;
     SKYObject *skybox = nullptr;
+
+    Animations *pAnimations = nullptr;
+    Animator *pAnimator = nullptr;
 
     float zbuffer_near = 0.01;
     float zbuffer_far = 40.0f;
@@ -107,9 +114,18 @@ public:
     Scene();
     ~Scene()
     {
-        delete text;
+        DELETE_PTR(text);
+        DELETE_PTR(model_DamageHelmet);
+        DELETE_PTR(model_IndoorScene_Dq_Uyutei);
+        DELETE_PTR(model_aru);
+        DELETE_PTR(model_niru);
+        DELETE_PTR(model_anon);
+        DELETE_PTR(pbr_model);
+        DELETE_PTR(skybox);
+
+        DELETE_PTR(pAnimations);
+        DELETE_PTR(pAnimator);
     };
-    void ProcessInput(float dt);
     void Update(float dt);
     void Render();
 };

@@ -1,6 +1,6 @@
 @echo off
 
-SET SourceExe=main.exe
+SET SourceExe=opengl.exe
 
 if "%1" == "rebuild" (
     @REM echo "Cleaning obj directory"
@@ -23,14 +23,14 @@ if "%1" == "rebuild" (
 @REM     if exist obj\imgui rmdir /s /q obj\imgui
 @REM )
 
-rem Remove the old executable
-if exist %SourceExe% del main.exe
+@REM rem Remove the old executable
+@REM if exist %SourceExe% del opengl.exe
 
 rem Run mingw32-make to compile the program
 mingw32-make -f Makefile
 if not errorlevel 1 (
     rem Run the program if compilation succeeds
-    main.exe
+    opengl.exe
 ) else (
     rem Print error message if compilation fails
     call :colorEcho 4 "Compilation failed, please check the log"

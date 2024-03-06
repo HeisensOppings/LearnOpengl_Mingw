@@ -1,8 +1,5 @@
 #include "main.h"
 
-int SCR_WIDTH = 800;
-int SCR_HEIGHT = 600;
-
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 bool rightClick = true;
@@ -19,8 +16,14 @@ int main()
     if (opengl_init())
         return -1;
 
+    float initTime = glfwGetTime();
+
     camera = new Camera(window);
-    scene = new Scene(camera, SCR_WIDTH, SCR_HEIGHT);
+    scene = new Scene(camera, App::scr_width, App::scr_height);
+
+    lastFrame = glfwGetTime();
+    cout << endl
+         << "Initialization time(s):" << lastFrame - initTime << endl;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -66,7 +69,7 @@ int opengl_init()
 
     // glfw window creation
     // --------------------
-    window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "mashiro", NULL, NULL);
+    window = glfwCreateWindow(App::scr_width, App::scr_height, "mashiro", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -88,7 +91,7 @@ int opengl_init()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetScrollCallback(window, scroll_callback);
-    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+    glViewport(0, 0, App::scr_width, App::scr_height);
 
     // glEnable(GL_MULTISAMPLE); // Enabled by default on some drivers, but not all so always enable to make sure
     glEnable(GL_DEPTH_TEST);
@@ -117,20 +120,48 @@ void imgui_frame()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     ImGui::Begin("LearnOpenGL");
+    // ImGui::BeginChild("scrolling", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+
     imgui_window_focus = ImGui::IsWindowFocused();
     ImGui::PushItemWidth(140);
-    ImGui::ColorEdit3(" point", (float *)&AppControl::irradiance_color);
     ImGui::Text("Pos: %0.2f,%0.2f,%0.2f", camera->m_cameraPos.x, camera->m_cameraPos.y, camera->m_cameraPos.z);
+    if (ImGui::Button("Pos_Reset"))
+        camera->m_cameraPos = vec3(.0f);
     ImGui::Text("(%.3f ms)(%.1f fps)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    if (ImGui::CollapsingHeader("Light"))
+    {
+        ImGui::SliderFloat3("PointLightPos", (float *)&App::pointLightPos, .0f, 4.0f);
+        ImGui::SliderFloat3("PointLightColor", (float *)&App::pointLightColor, .0f, 1.0f);
+    }
+    if (ImGui::CollapsingHeader("PBR"))
+    {
+        ImGui::ColorEdit3(" point", (float *)&App::irradiance_color);
+    }
     if (ImGui::CollapsingHeader("Text"))
     {
-        ImGui::SliderFloat2("ShadowOffset", (float *)&AppControl::text_shadow_offset, -5.0f, 5.0f);
+        ImGui::SliderFloat2("ShadowOffset", (float *)&App::text_shadow_offset, -5.0f, 5.0f);
         ImGui::PushItemWidth(40);
-        ImGui::SliderFloat("Thickness", &AppControl::thickness, 0.4, 0.8);
-        ImGui::SliderFloat("Softness", &AppControl::softness, 0.0, 0.5);
-        ImGui::SliderFloat("OutlineThickness", &AppControl::outline_thickness, 0.4, 0.8);
-        ImGui::SliderFloat("OutlineSoftness", &AppControl::outline_softness, 0.0, 0.1);
+        ImGui::SliderFloat("Thickness", &App::thickness, 0.4, 0.8);
+        ImGui::SliderFloat("Softness", &App::softness, 0.0, 0.5);
+        ImGui::SliderFloat("OutlineThickness", &App::outline_thickness, 0.4, 0.8);
+        ImGui::SliderFloat("OutlineSoftness", &App::outline_softness, 0.0, 0.1);
     }
+    if (ImGui::CollapsingHeader("Animation", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+
+        vector<const char *> itemLabels;
+        for (const auto &item : App::animNames)
+            itemLabels.push_back(item.c_str());
+        ImGui::Combo("Animations", &App::animIndex, itemLabels.data(), itemLabels.size());
+
+        ImGui::SliderFloat("PerFrame", &App::currentFrame, .0f, App::duration);
+        if (ImGui::Button(App::playBackState ? "Pause" : "Play"))
+            App::playBackState = !App::playBackState;
+        ImGui::SameLine();
+        ImGui::SliderFloat("PlaySpeed", &App::playSpeed, .1f, 2.0f);
+    }
+
+    // ImGui::EndChild();
     ImGui::End();
 }
 

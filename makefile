@@ -1,12 +1,12 @@
 CXX := g++
-CXX_FLAGS := -g -std=c++17 -O2 -Wextra -Wall -Wno-pragmas
+CXX_FLAGS := -g -std=c++17 -O2 -Wextra -Wall -Wno-pragmas -pthread
 
 SRC := ./src
 INCLUDE := ./include
 LIB := ./lib
 
 LIBRARIES := -lglad -lglfw3dll -lassimp -lfreetype
-EXECUTABLE := main.exe
+EXECUTABLE := opengl.exe
 
 SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)
 HEADERS := $(wildcard $(INCLUDE)/*.h) $(wildcard $(SRC)/**/*.h)

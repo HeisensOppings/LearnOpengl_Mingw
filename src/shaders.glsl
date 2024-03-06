@@ -44,7 +44,7 @@ void main()
         vec3 N = normalize(normalMatrix * aNormal);
         T = normalize(T - dot(T, N) * N);
         vec3 B = cross(N, T);
-        mat3 TBN = transpose(mat3(T, B, N)); 
+        mat3 TBN = transpose(mat3(T, B, N));
         TangentLightPos = TBN * pointLightPos;
         TangentSpotLightPos = TBN * spotLightPos;
         TangentViewPos  = TBN * viewPos;
@@ -65,6 +65,7 @@ void main()
 }
 
 #shader fragment
+// id --- 0
 #version 420 core
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
@@ -100,8 +101,8 @@ struct Spotlight{
     vec3 diffuse;
     vec3 specular;
 };
-in vec3 FragPos;  
-in vec3 Normal;  
+in vec3 FragPos;
+in vec3 Normal;
 in vec2 TexCoords;
 in vec4 FragPosLightSpaceDir;
 in vec4 FragPosLightSpaceSpot;
@@ -143,14 +144,14 @@ void main()
     //         discard;
     // }
     // else
-        texCoords = TexCoords;
+    texCoords = TexCoords;
     vec3 norm;
     if(hasNormalMap == 1)
     {
         norm = texture(normalMap, texCoords).rgb;
         norm = normalize(norm * 2.0 - 1.0);  // this normal is in tangent space
     }
-    else 
+    else
         norm = Normal;
     // vec3 result = CalcDirLight(dirLight, norm, viewDir);
     vec3 result = CalcPointLight(pointLight, norm, FragPos, viewDir);
@@ -188,14 +189,14 @@ vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
     // return texCoords - viewDir.xy * (height * 0.1);
     // return currentTexCoords;
         // get texture coordinates before collision (reverse operations)
-        vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
         // get depth after and before collision for linear interpolation
-        float afterDepth  = currentDepthMapValue - currentLayerDepth;
-        float beforeDepth = (texture(heightMap, prevTexCoords).r) - currentLayerDepth + layerDepth;
+    float afterDepth  = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = (texture(heightMap, prevTexCoords).r) - currentLayerDepth + layerDepth;
         // interpolation of texture coordinates
-        float weight = afterDepth / (afterDepth - beforeDepth);
-        vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
-        return finalTexCoords;  
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+    return finalTexCoords;
 }
 vec3 CalcDirLight(Dirlight light, vec3 normal, vec3 viewDir)
 {
@@ -221,7 +222,7 @@ vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     // blinn
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     // attenuation
     float distance = length(TangentLightPos - TangentFragPos);
@@ -230,7 +231,7 @@ vec3 CalcPointLight(Pointlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     vec3 ambient = light.ambient * attenuation;
     vec3 diffuse = light.diffuse * diff * attenuation;
     vec3 specular = light.specular * spec * attenuation;
-    float shadow = ShadowCalculationPoint();                      
+    float shadow = ShadowCalculationPoint();
     return((ambient + (1.0 - shadow) * (diffuse + specular)));
     // return(ambient + diffuse + specular);
 }
@@ -241,20 +242,20 @@ vec3 CalcSpotLight(Spotlight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     // blinn
-    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess);
     // attenuation
     float distance = length(TangentSpotLightPos - TangentFragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // spotlight intensity
-    float theta = dot(lightDir, normalize(-SpotLightDirecation)); 
+    float theta = dot(lightDir, normalize(-SpotLightDirecation));
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     // combine results
     vec3 ambient = light.ambient * attenuation * intensity;
     vec3 diffuse = light.diffuse * diff * attenuation * intensity;
     vec3 specular = light.specular * spec * attenuation * intensity;
-    float shadow = ShadowCalculationSpot(FragPosLightSpaceSpot, normal, lightDir);                      
+    float shadow = ShadowCalculationSpot(FragPosLightSpaceSpot, normal, lightDir);
     return((ambient + (1.0 - shadow) * (diffuse + specular)));
     // return(ambient + diffuse + specular);
 }
@@ -272,9 +273,9 @@ float ShadowCalculationDir(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(depthMapDir, projCoords.xy + vec2(x, y) * texelSize).r; 
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;        
-        }    
+            float pcfDepth = texture(depthMapDir, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+        }
     }
     shadow /= 9.0;
     return shadow;
@@ -324,8 +325,8 @@ float ShadowCalculationSpot(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir)
         for(int y = -1; y <= 1; ++y)
         {
             float linearDepth_close = 0.2 / (20.1 - texture(depthMapSpot, projCoords.xy + vec2(x, y) * 0.5 * texelSize).r * 19.9);
-            shadow += linearDepth_current - bias> linearDepth_close ? 1.0 : 0.0;        
-        }    
+            shadow += linearDepth_current - bias> linearDepth_close ? 1.0 : 0.0;
+        }
     }
     shadow /= 9.0;
     return shadow;
@@ -344,6 +345,7 @@ void main()
 }
 
 #shader fragment
+// id --- 1
 #version 420 core
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
@@ -354,8 +356,8 @@ void main()
     float brightness = dot(FragColor.rgb, vec3(0.2126, 0.7152, 0.0722));
     if(brightness > 1.0)
         BrightColor = vec4(FragColor.rgb, 1.0);
-	else
-		BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
 
 #shader vertex
@@ -374,12 +376,13 @@ void main()
 }
 
 #shader fragment
+// id --- 2
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D texture1;
 void main()
-{             
+{
     vec4 texColor = texture(texture1, TexCoords);
     if(texColor.a < 0.01)
         discard;
@@ -396,17 +399,18 @@ out vec2 TexCoords;
 void main()
 {
     TexCoords = aTexCoords;
-    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0); 
+    gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
 }  
 
 #shader fragment
+// id --- 3
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
 uniform sampler2D screenTexture;
 uniform float exposure;
 uniform int hdr;
-const float offset = 1.0 / 300.0; 
+const float offset = 1.0 / 300.0;
 uniform int mode;
 vec3 kernel_effects(int mode);
 void main()
@@ -416,7 +420,7 @@ void main()
     // {
     // // --- normal
     //     case 0:
-            col = texture(screenTexture, TexCoords).rgb;
+    col = texture(screenTexture, TexCoords).rgb;
     //         // vec3 result = col / (col + vec3(1.0));
     //         if(hdr == 1)
     //         {
@@ -457,16 +461,16 @@ void main()
 vec3 kernel_effects(int mode)
 {
     // --- kernel effects
-        vec2 offsets[9] = vec2[](
+    vec2 offsets[9] = vec2[](
         vec2(-offset,  offset), // 左上
-        vec2( 0.0f,    offset), // 正上
-        vec2( offset,  offset), // 右上
-        vec2(-offset,  0.0f),   // 左
-        vec2( 0.0f,    0.0f),   // 中
-        vec2( offset,  0.0f),   // 右
-        vec2(-offset, -offset), // 左下
-        vec2( 0.0f,   -offset), // 正下
-        vec2( offset, -offset)  // 右下
+    vec2( 0.0f,    offset), // 正上
+    vec2( offset,  offset), // 右上
+    vec2(-offset,  0.0f),   // 左
+    vec2( 0.0f,    0.0f),   // 中
+    vec2( offset,  0.0f),   // 右
+    vec2(-offset, -offset), // 左下
+    vec2( 0.0f,   -offset), // 正下
+    vec2( offset, -offset)  // 右下
     );
     float kernel[9];
     if (mode == 3)
@@ -532,6 +536,7 @@ void main()
 }
 
 #shader fragment
+// id --- 4
 #version 420 core
 out vec4 FragColor;
 // in vec3 TexCoords;
@@ -542,10 +547,10 @@ void main()
 {    
     // FragColor = texture(skybox, TexCoords);
         // vec3 envColor = textureLod(skybox, WorldPos, _fresnel).rgb;
-        vec3 envColor = texture(skybox, WorldPos).rgb;
+    vec3 envColor = texture(skybox, WorldPos).rgb;
     // HDR tonemap and gamma correct
     envColor = envColor / (envColor + vec3(1.0));
-    envColor = pow(envColor, vec3(1.0/2.2)); 
+    envColor = pow(envColor, vec3(1.0/2.2));
     FragColor = vec4(envColor, 1.0);
 }
 
@@ -567,10 +572,11 @@ void main()
     // mat3 normalMatrix = mat3(transpose(inverse(view * model)));
     // vs_out.normal = vec3(vec4(normalMatrix * aNormal, 0.0));
     vs_out.normal = normalize( mat3(transpose(inverse(aInstanceMatrix))) * aNormal);
-    gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0); 
+    gl_Position = projection * view * aInstanceMatrix * vec4(aPos, 1.0);
 }
 
 #shader geometry
+// id --- 0
 #version 420 core
 layout (triangles) in;
 layout (line_strip, max_vertices = 3) out;
@@ -582,7 +588,7 @@ const float MAGNITUDE = 0.01;
 uniform float time;
 void GenerateLine(int index)
 {
-    float direction = ((sin(time) + 1.0) / 10.0); 
+    float direction = ((sin(time) + 1.0) / 10.0);
     fColor = vec3(0.0f, 1.0f, 0.0f);
     gl_Position = gl_in[index].gl_Position;
     EmitVertex();
@@ -601,6 +607,7 @@ void main()
 }
 
 #shader fragment
+// id --- 5
 #version 420 core
 out vec4 FragColor;
 in vec3 fColor;
@@ -621,6 +628,7 @@ void main()
 }
 
 #shader fragment
+// id --- 6
 #version 420 core
 void main()
 {             
@@ -640,6 +648,7 @@ void main()
 }
 
 #shader fragment
+// id --- 7
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -650,10 +659,10 @@ uniform float far_plane;
 float LinearizeDepth(float depth)
 {
     float z = depth * 2.0 - 1.0; // Back to NDC 
-    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));	
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
 }
 void main()
-{             
+{
     float depthValue = texture(depthMap, TexCoords).r;
     // FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0); // perspective
     FragColor = vec4(vec3(depthValue), 1.0); // orthographic
@@ -670,6 +679,7 @@ void main()
 }
 
 #shader geometry
+// id --- 1
 #version 420 core
 layout (triangles) in;
 layout (triangle_strip, max_vertices=18) out;
@@ -685,12 +695,13 @@ void main()
             FragPos = gl_in[i].gl_Position;
             gl_Position = shadowMatrices[face] * FragPos;
             EmitVertex();
-        }    
+        }
         EndPrimitive();
     }
 } 
 
 #shader fragment
+// id --- 8
 #version 420 core
 in vec4 FragPos;
 uniform vec3 lightPos;
@@ -728,6 +739,7 @@ void main()
 }
 
 #shader fragment
+// id --- 9
 #version 420 core
 out vec4 FragColor;
 in VS_OUT {
@@ -736,7 +748,7 @@ in VS_OUT {
     vec2 TexCoords;
 } fs_in;
 void main()
-{           
+{
 }
 
 #shader vertex
@@ -752,6 +764,7 @@ void main()
 }
 
 #shader fragment
+// id --- 10 bloom blur
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -794,6 +807,7 @@ void main()
 }
 
 #shader fragment
+// id --- 11 bloom final
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -840,10 +854,11 @@ void main()
     T = normalize(T - dot(T, N) * N);
     TBN = mat3(T, cross(N, T), N);
     // if (!hasNormalMap)
-        Normal = normalize(normalMatrix * aNormal);
+    Normal = normalize(normalMatrix * aNormal);
 }
 
 #shader fragment
+// id --- 12
 #version 420 core
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
@@ -851,8 +866,8 @@ layout (location = 2) out vec4 gAlbedo;
 struct Material{
     sampler2D diffuse;
 };
-in vec3 FragPos;  
-in vec3 Normal;  
+in vec3 FragPos;
+in vec3 Normal;
 in vec2 TexCoords;
 in mat3 TBN;
 uniform bool hasNormalMap;
@@ -885,6 +900,7 @@ void main()
 }
 
 #shader fragment
+// id --- 13
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -920,7 +936,7 @@ void main()
         vec3 lightDir = normalize(lights[i].Position - FragPos);
         vec3 diffuse = max(dot(Normal, lightDir), 0.0) * Diffuse * lights[i].Color;
         // specular
-        vec3 halfwayDir = normalize(lightDir + viewDir);  
+        vec3 halfwayDir = normalize(lightDir + viewDir);
         float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
         vec3 specular = lights[i].Color * spec * Specular;
         // attenuation
@@ -950,11 +966,12 @@ void main()
 }
 
 #shader fragment
+// id --- 14
 #version 420 core
 layout (location = 0) out vec4 FragColor;
 uniform vec3 lightColor;
 void main()
-{           
+{
     FragColor = vec4(lightColor, 1.0);
 }
 
@@ -984,7 +1001,7 @@ int kernelSize = 64;
 float radius = 0.5;
 float bias = 0.025;
 // tile noise texture over screen based on screen dimensions divided by noise size
-const vec2 noiseScale = vec2(800.0/4.0, 600.0/4.0); 
+const vec2 noiseScale = vec2(800.0/4.0, 600.0/4.0);
 uniform mat4 projection;
 void main()
 {
@@ -1012,7 +1029,7 @@ void main()
         float sampleDepth = texture(gPosition, offset.xy).z; // get depth value of kernel sample
         // range check & accumulate
         float rangeCheck = smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
-        occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;           
+        occlusion += (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
     }
     occlusion = 1.0 - (occlusion / kernelSize);
     FragColor = occlusion;
@@ -1110,15 +1127,15 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}   
+}
 void main()
-{		
+{
     vec3 N = Normal;
     vec3 V = normalize(camPos - WorldPos);
     vec3 R = reflect(-V, N); 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    vec3 F0 = vec3(0.04); 
+    vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -1131,9 +1148,9 @@ void main()
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
         // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);    
-        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);        
+        float NDF = DistributionGGX(N, H, roughness);
+        float G   = GeometrySmith(N, V, L, roughness);
+        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
         vec3 numerator    = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
         vec3 specular = numerator / denominator;
@@ -1156,12 +1173,12 @@ void main()
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;	  
+    kD *= 1.0 - metallic;
     vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse      = irradiance * albedo;
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
     // vec3 ambient = (specular) * ao;
@@ -1170,7 +1187,7 @@ void main()
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
+    color = pow(color, vec3(1.0/2.2));
     FragColor = vec4(color , 1.0);
 }
 
@@ -1231,18 +1248,18 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 void main()
-{		
-        vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
-        vec3 Q1  = dFdx(WorldPos);
-        vec3 Q2  = dFdy(WorldPos);
-        vec2 st1 = dFdx(TexCoords);
-        vec2 st2 = dFdy(TexCoords);
-        vec3 N_   = normalize(Normal);
-        vec3 T_  = normalize(Q1*st2.t - Q2*st1.t);
-        vec3 B_  = -normalize(cross(N_, T_));
-        mat3 TBN = mat3(T_, B_, N_);
+{
+    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+    vec3 Q1  = dFdx(WorldPos);
+    vec3 Q2  = dFdy(WorldPos);
+    vec2 st1 = dFdx(TexCoords);
+    vec2 st2 = dFdy(TexCoords);
+    vec3 N_   = normalize(Normal);
+    vec3 T_  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B_  = -normalize(cross(N_, T_));
+    mat3 TBN = mat3(T_, B_, N_);
     vec3 albedo = texture(albedoMap, TexCoords).rgb;
-    float ao = texture(aoMap, TexCoords).r;
+        float ao = texture(aoMap, TexCoords).r;
     float metallic = texture(metallicMap, TexCoords).b;
     float roughness = texture(roughnessMap, TexCoords).g;
     // vec3 normal = normalize((texture(normalMap, TexCoords).rgb * 2.0 - 1.0));
@@ -1254,7 +1271,7 @@ void main()
     vec3 R = reflect(-V, N); 
     // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
     // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
-    vec3 F0 = vec3(0.04); 
+    vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);
     // reflectance equation
     vec3 Lo = vec3(0.0);
@@ -1267,10 +1284,10 @@ void main()
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightColors[i] * attenuation;
         // Cook-Torrance BRDF
-        float NDF = DistributionGGX(N, H, roughness);   
-        float G   = GeometrySmith(N, V, L, roughness);      
+        float NDF = DistributionGGX(N, H, roughness);
+        float G   = GeometrySmith(N, V, L, roughness);
         vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);
-        vec3 numerator    = NDF * G * F; 
+        vec3 numerator    = NDF * G * F;
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
         vec3 specular = numerator / denominator;
         // kS is equal to Fresnel
@@ -1292,12 +1309,12 @@ void main()
     vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
-    kD *= 1.0 - metallic;	  
+    kD *= 1.0 - metallic;
     vec3 irradiance = texture(irradianceMap, N).rgb;
     vec3 diffuse      = irradiance * albedo;
     // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
     const float MAX_REFLECTION_LOD = 4.0;
-    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;
     vec2 brdf  = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
     vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
     vec3 ambient = (kD * diffuse + specular) * ao;
@@ -1307,11 +1324,13 @@ void main()
     vec3 emissive= vec3(0.0);
     if(hasEmissive)
         emissive = texture(emissiveMap, TexCoords).rgb;
+    // no Lo
+    // vec3 color = ambient;
     vec3 color = ambient + Lo + emissive;
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2)); 
+    color = pow(color, vec3(1.0/2.2));
     FragColor = vec4(color, 1.0);
 }
 
@@ -1410,37 +1429,37 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 // efficient VanDerCorpus calculation.
 float RadicalInverse_VdC(uint bits) 
 {
-     bits = (bits << 16u) | (bits >> 16u);
-     bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-     return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
 }
 vec2 Hammersley(uint i, uint N)
 {
-	return vec2(float(i)/float(N), RadicalInverse_VdC(i));
+    return vec2(float(i)/float(N), RadicalInverse_VdC(i));
 }
 vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 {
     float a = roughness * roughness;
-	float phi = 2.0 * PI * Xi.x;
-	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
-	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+    float phi = 2.0 * PI * Xi.x;
+    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
+    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	// from spherical coordinates to cartesian coordinates - halfway vector
-	vec3 H;
-	H.x = cos(phi) * sinTheta;
-	H.y = sin(phi) * sinTheta;
-	H.z = cosTheta;
+    vec3 H;
+    H.x = cos(phi) * sinTheta;
+    H.y = sin(phi) * sinTheta;
+    H.z = cosTheta;
 	// from tangent-space H vector to world-space sample vector
-	vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-	vec3 tangent   = normalize(cross(up, N));
-	vec3 bitangent = cross(N, tangent);
-	vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
-	return normalize(sampleVec);
+    vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3 tangent   = normalize(cross(up, N));
+    vec3 bitangent = cross(N, tangent);
+    vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
+    return normalize(sampleVec);
 }
 void main()
-{		
+{
     vec3 N = normalize(localPos);
     // make the simplifying assumption that V equals R equals the normal 
     vec3 R = N;
@@ -1461,11 +1480,11 @@ void main()
             float D   = DistributionGGX(N, H, roughness);
             float NdotH = max(dot(N, H), 0.0);
             float HdotV = max(dot(H, V), 0.0);
-            float pdf = D * NdotH / (4.0 * HdotV) + 0.0001; 
+            float pdf = D * NdotH / (4.0 * HdotV) + 0.0001;
             float resolution = 512.0; // resolution of source cubemap (per face)
             float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
             float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
-            float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel); 
+            float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
             prefilteredColor += textureLod(environmentMap, L, mipLevel).rgb * NdotL;
             totalWeight      += NdotL;
         }
@@ -1483,7 +1502,7 @@ out vec2 TexCoords;
 void main()
 {
     TexCoords = aTexCoords;
-	gl_Position = vec4(aPos, 1.0);
+    gl_Position = vec4(aPos, 1.0);
 }
 
 #shader fragment
@@ -1496,34 +1515,34 @@ const float PI = 3.14159265359;
 // efficient VanDerCorpus calculation.
 float RadicalInverse_VdC(uint bits) 
 {
-     bits = (bits << 16u) | (bits >> 16u);
-     bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
-     bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
-     bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
-     bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
-     return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
 }
 vec2 Hammersley(uint i, uint N)
 {
-	return vec2(float(i)/float(N), RadicalInverse_VdC(i));
+    return vec2(float(i)/float(N), RadicalInverse_VdC(i));
 }
 vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 {
-	float a = roughness*roughness;
-	float phi = 2.0 * PI * Xi.x;
-	float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
-	float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+    float a = roughness*roughness;
+    float phi = 2.0 * PI * Xi.x;
+    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
+    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
 	// from spherical coordinates to cartesian coordinates - halfway vector
-	vec3 H;
-	H.x = cos(phi) * sinTheta;
-	H.y = sin(phi) * sinTheta;
-	H.z = cosTheta;
+    vec3 H;
+    H.x = cos(phi) * sinTheta;
+    H.y = sin(phi) * sinTheta;
+    H.z = cosTheta;
 	// from tangent-space H vector to world-space sample vector
-	vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-	vec3 tangent   = normalize(cross(up, N));
-	vec3 bitangent = cross(N, tangent);
-	vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
-	return normalize(sampleVec);
+    vec3 up          = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+    vec3 tangent   = normalize(cross(up, N));
+    vec3 bitangent = cross(N, tangent);
+    vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;
+    return normalize(sampleVec);
 }
 float GeometrySchlickGGX(float NdotV, float roughness)
 {
@@ -1549,7 +1568,7 @@ vec2 IntegrateBRDF(float NdotV, float roughness)
     V.y = 0.0;
     V.z = NdotV;
     float A = 0.0;
-    float B = 0.0; 
+    float B = 0.0;
     vec3 N = vec3(0.0, 0.0, 1.0);
     const uint SAMPLE_COUNT = 1024u;
     for(uint i = 0u; i < SAMPLE_COUNT; ++i)
@@ -1617,7 +1636,7 @@ uniform float outline_softness;
 uniform vec2 shadow_offset;
 void main()
 {
-    // glm::vec4(texture_sub_x / textureWidth, texture_sub_y / textureHeight, slot->bitmap.width / textureWidth, slot->bitmap.rows / textureHeight)};
+    // glm::vec4(texture_sub_x / textureWidth, texture_sub_y / textureHeight, slot->bitmap.width / textureWidth, slot->bitmap.rows / textureHeight);
     // float alpha = texture(text, (TexCoords*Coords.zw + Coords.xy)).r;
     vec2 TexCoords = texCoords.xy;
     float alpha = texture(textTexture, TexCoords).r;
@@ -1638,7 +1657,9 @@ void main()
     result = (result > 1.0 ) ? (2.0 - result) : result;
     // vec3 text_color = mix(outline_color, mix(gradients_color, texColor, fract(result)), outline);
     // smooth a little
-    vec3 text_color = mix(outline_color, mix(gradients_color, texColor, (cos((3.1415926 * ( fract(result)))) + 1.0) / 2.0), outline);
+    result = fract(result);
+    vec3 text_color = mix(outline_color, mix(gradients_color, texColor, result * result * (3.0 - 2.0 * result) ), outline);
+    // vec3 text_color = mix(outline_color, mix(gradients_color, texColor, (cos((3.1415926 * ( fract(result)))) + 1.0) / 2.0), outline);
     // vec3 text_color = mix(outline_color, mix(gradients_color,texColor, ((texCoords.z + texCoords.w) / 2.0)), outline); 
     // ----
     float overallAlpha = text_alpha + (1 - text_alpha) * shadow_alpha;
@@ -1648,19 +1669,20 @@ void main()
 #shader vertex
 // id --- 20
 #version 420 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTexCoords;
+layout(location = 5) in ivec4 boneIds;
+layout(location = 6) in vec4 weights;
 out vec2 TexCoords;
 uniform mat3 normalMatrix;
 // uniform mat4 projection;
 // uniform mat4 view;
 // uniform mat4 model;
-uniform mat4 mvp;
-void main()
-{
+uniform mat4 pvm;
+void main() {
     TexCoords = aTexCoords;
-    gl_Position = mvp * vec4(aPos, 1.0);
+    gl_Position = pvm * vec4(aPos, 1.0);
     // gl_Position = projection * view * model * vec4(aPos, 1.0);
     vec3 normal = normalMatrix * aNormal;
 }
@@ -1671,9 +1693,11 @@ void main()
 in vec2 TexCoords;
 out vec4 color;
 uniform sampler2D image;
+// uniform vec4 colorOnly = vec4(.0,.0,.0,-1.0);
 void main()
 {
-    color = (texture(image, TexCoords));
+    // color = (colorOnly.a != -1) ? colorOnly : (texture(image, TexCoords));
+    color = texture(image, TexCoords);
 }  
 
 #shader vertex
@@ -1682,7 +1706,7 @@ layout (location = 0) in vec3 position;
 uniform mat4 mvp;
 void main()
 {
-	gl_Position = mvp * vec4(position, 1.0f);
+    gl_Position = mvp * vec4(position, 1.0f);
 }
 
 #shader fragment
@@ -1692,7 +1716,7 @@ layout (location = 0) out vec4 frag;
 uniform vec3 color;
 void main()
 {
-	frag = vec4(color, 1.0f);
+    frag = vec4(color, 1.0f);
 }
 
 #shader fragment
@@ -1704,11 +1728,11 @@ uniform vec4 color;
 void main()
 {
 	// weight function
-	float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+    float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
 	// store pixel color accumulation
-	accum = vec4(color.rgb * color.a, color.a) * weight;
+    accum = vec4(color.rgb * color.a, color.a) * weight;
 	// store pixel revealage threshold
-	reveal = color.a;
+    reveal = color.a;
 }
 
 #shader vertex
@@ -1735,32 +1759,31 @@ const float EPSILON = 0.00001f;
 // calculate floating point numbers equality accurately
 bool isApproximatelyEqual(float a, float b)
 {
-	return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;
+    return abs(a - b) <= (abs(a) < abs(b) ? abs(b) : abs(a)) * EPSILON;
 }
 // get the max value between three values
 float max3(vec3 v) 
 {
-	return max(max(v.x, v.y), v.z);
+    return max(max(v.x, v.y), v.z);
 }
 void main()
 {
 	// fragment coordination
-	ivec2 coords = ivec2(gl_FragCoord.xy);
+    ivec2 coords = ivec2(gl_FragCoord.xy);
 	// fragment revealage
-	float revealage = texelFetch(reveal, coords, 0).r;
+    float revealage = texelFetch(reveal, coords, 0).r;
 	// save the blending and color texture fetch cost if there is not a transparent fragment
-	if (isApproximatelyEqual(revealage, 1.0f)) 
-		discard;
+    if (isApproximatelyEqual(revealage, 1.0f))
+        discard;
 	// fragment color
-	vec4 accumulation = texelFetch(accum, coords, 0);
-	
+    vec4 accumulation = texelFetch(accum, coords, 0);
 	// suppress overflow
-	if (isinf(max3(abs(accumulation.rgb)))) 
-		accumulation.rgb = vec3(accumulation.a);
+    if (isinf(max3(abs(accumulation.rgb))))
+        accumulation.rgb = vec3(accumulation.a);
 	// prevent floating point precision bug
-	vec3 average_color = accumulation.rgb / max(accumulation.a, EPSILON);
+    vec3 average_color = accumulation.rgb / max(accumulation.a, EPSILON);
 	// blend pixels
-	frag = vec4(average_color, 1.0f - revealage);
+    frag = vec4(average_color, 1.0 - revealage);
 }
 
 #shader vertex
@@ -1773,8 +1796,8 @@ layout (location = 1) in vec2 uv;
 out vec2 texture_coords;
 void main()
 {
-	texture_coords = uv;
-	gl_Position = vec4(position, 1.0f);
+    texture_coords = uv;
+    gl_Position = vec4(position, 1.0f);
 }
 
 #shader fragment
@@ -1788,7 +1811,7 @@ layout (location = 0) out vec4 frag;
 uniform sampler2D screen;
 void main()
 {
-	frag = vec4(texture(screen, texture_coords).rgb, 1.0f);
+    frag = vec4(texture(screen, texture_coords).rgb, 1.0f);
 }
 
 #shader vertex
@@ -1801,7 +1824,7 @@ uniform mat4 mvp;
 out vec2 texCoord;
 void main()
 {
-	gl_Position = mvp * vec4(position, 1.0f);
+    gl_Position = mvp * vec4(position, 1.0f);
     texCoord = texcoord;
 }
 
@@ -1817,7 +1840,7 @@ void main()
     vec4 color = texture(diffuse, texCoord);
     if(color.a != 1.0)
         discard;
-	frag = color;
+    frag = color;
 }
 
 #shader fragment
@@ -1830,12 +1853,58 @@ uniform sampler2D diffuse;
 void main()
 {
     vec4 color = texture(diffuse, texCoord);
-    if(color.a == 1.0)
-        discard;
+    color = vec4(color.rgb, 0.5);
+    // if(color.a == 1.0)
+        // discard;
 	// weight function
-	float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+    float weight = clamp(pow(min(1.0, color.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
 	// store pixel color accumulation
-	accum = vec4(color.rgb * color.a, color.a) * weight;
+    accum = vec4(color.rgb * color.a, color.a) * weight;
 	// store pixel revealage threshold
-	reveal = color.a;
+    reveal = color.a;
+}
+
+#shader vertex
+// id --- 25
+#version 420 core
+layout(location = 0) in vec3 pos;
+layout(location = 1) in vec3 norm;
+layout(location = 2) in vec2 tex;
+layout(location = 5) in ivec4 boneIds;
+layout(location = 6) in vec4 weights;
+uniform mat4 pvm;
+// const int MAX_BONES = 100;
+uniform int MAX_BONES = 200;
+const int MAX_BONE_INFLUENCE = 4;
+// uniform mat4 finalBonesMatrices[MAX_BONES];
+uniform sampler2D boneMatrixImage;
+out vec2 TexCoords;
+mat4 getBoneMatrix(int row)
+{
+    return mat4(
+        texelFetch(boneMatrixImage, ivec2(0, row), 0),
+        texelFetch(boneMatrixImage, ivec2(1, row), 0),
+        texelFetch(boneMatrixImage, ivec2(2, row), 0),
+        texelFetch(boneMatrixImage, ivec2(3, row), 0));
+}
+void main()
+{
+    vec4 totalPosition = vec4(.0f);
+    for(int i = 0; i< MAX_BONE_INFLUENCE; ++i)
+    {
+        if(boneIds[i] == -1)
+            continue;
+        // if(boneIds[i] >= MAX_BONES)
+        // {
+        //     totalPosition = vec4(pos, 1.0f);
+        //     break;
+        // }
+        mat4 boneMatrix = getBoneMatrix(boneIds[i]);
+        vec4 localPosition = boneMatrix * vec4(pos,1.0f);
+        // vec4 localPosition = finalBonesMatrices[boneIds[i]] * vec4(pos, 1.0f);
+        totalPosition += localPosition * weights[i];
+        // vec3 localNormal = mat3(finalBonesMatrices[boneIds[i]]) * norm;
+    }
+    gl_Position = pvm * totalPosition;
+    TexCoords = tex;
 }

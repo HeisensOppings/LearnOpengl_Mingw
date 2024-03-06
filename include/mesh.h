@@ -7,8 +7,8 @@
 
 #include "shader.h"
 #include <vector>
-using namespace std;
 #define MAX_BONE_INFLUENCE 4
+
 struct Vertex
 {
     // position
@@ -26,26 +26,34 @@ struct Vertex
     // weights from each bone
     float m_Weights[MAX_BONE_INFLUENCE];
 };
-struct Texture_config
+
+struct Materials
 {
-    unsigned int id;
+    int id;
     string type;
     string path;
+    // if mesh has color only, id = -1
+    glm::vec3 color;
 };
 
 class Mesh
 {
 public:
+    vector<glm::vec3> mPositions;
     vector<Vertex> vertices;
     vector<unsigned int> indices;
-    vector<Texture_config> textures;
+    vector<Materials> materials;
+    unordered_map<string, vector<glm::vec3>> morphAnims;
     unsigned int VAO;
-    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture_config> textures);
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials);
+    Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials, unordered_map<string, vector<glm::vec3>> morphAnims);
     void Draw(Shader &shader);
+    void Draw(Shader &shader, unordered_map<string, float> morphanimkeys);
     void DrawInstance(Shader &shader);
 
 private:
     unsigned int VBO, EBO;
+    unsigned int VBO_Position;
     void setupMesh();
 };
 

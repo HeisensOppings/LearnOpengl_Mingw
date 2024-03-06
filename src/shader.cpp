@@ -110,19 +110,19 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, int
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
-    CHECK_SHADER(vertexShader);
+    CHECK_SHADER(vertexShader, vertexShader_ID);
 
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
-    CHECK_SHADER(fragmentShader);
+    CHECK_SHADER(fragmentShader, fragmentShader_ID);
 
     if (geometryShader_ID != -1)
     {
         geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
         glShaderSource(geometryShader, 1, &geometryShaderSource, NULL);
         glCompileShader(geometryShader);
-        CHECK_SHADER(geometryShader);
+        CHECK_SHADER(geometryShader, geometryShader_ID);
     }
 
     ProgramID = glCreateProgram();

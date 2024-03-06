@@ -1,49 +1,91 @@
 #include "mesh.h"
 
-Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture_config> textures)
+Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials)
 {
     this->vertices = vertices;
     this->indices = indices;
-    this->textures = textures;
+    this->materials = materials;
+    setupMesh();
+}
+
+Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials, unordered_map<string, vector<glm::vec3>> morphAnims)
+{
+    this->vertices = vertices;
+    this->indices = indices;
+    this->materials = materials;
+    this->morphAnims = morphAnims;
     setupMesh();
 }
 
 void Mesh::Draw([[maybe_unused]] Shader &shader)
 {
     // bind appropriate textures
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int heightNr = 1;
-    for (unsigned int i = 0; i < textures.size(); i++)
+    for (unsigned int i = 0; i < materials.size(); i++)
     {
-        glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-        // retrieve texture number (the N in diffuse_textureN)
-        string number;
-        string name = textures[i].type;
-        if (name == "texture_diffuse")
-            number = std::to_string(diffuseNr++);
-        else if (name == "texture_specular")
-            number = std::to_string(specularNr++); // transfer unsigned int to string
-        else if (name == "texture_normal")
-            number = std::to_string(normalNr++); // transfer unsigned int to string
-        else if (name == "texture_height")
-            number = std::to_string(heightNr++); // transfer unsigned int to string
-
-        // now set the sampler to the correct texture unit
-        // shader.SetUniform1i((name + number).c_str(), i);
-        // and finally bind the texture
-        // shader.SetUniform1i("hasNormalMap", (name == "texture_normal") ? 1 : 0);
-        // shader.SetUniform1i("hasNormalMap", (name == "texture_normal") ? 1 : 0);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        // if (materials[i].id != -1)
+        // {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, materials[i].id);
+        // shader.SetUniform4f("colorOnly", glm::vec4(-1.0));
+        // }
+        // else
+        //     shader.SetUniform4f("colorOnly", glm::vec4(materials[i].color, 1.0));
     }
-
     // draw mesh
     glBindVertexArray(VAO);
+
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
-    // // glDrawElements(GL_POINTS, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
-    // // glDrawElements(GL_LINES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
-    // // glDrawArrays(GL_LINES, 0, static_cast<unsigned int>(vertices.size()));
+    // glDrawArrays(GL_TRIANGLES, 0, static_cast<unsigned int>(vertices.size()));
+    // glDrawArrays(GL_TRIANGLE_STRIP, 0, static_cast<unsigned int>(vertices.size()));
+    glBindVertexArray(0);
+
+    // always good practice to set everything back to defaults once configured.
+    glActiveTexture(GL_TEXTURE0);
+}
+
+void Mesh::Draw([[maybe_unused]] Shader &shader, unordered_map<string, float> morphanimkeys)
+{
+    // bind appropriate textures
+    for (unsigned int i = 0; i < materials.size(); i++)
+    {
+        // if (materials[i].id != -1)
+        // {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, materials[i].id);
+        // shader.SetUniform4f("colorOnly", glm::vec4(-1.0));
+        // }
+        // else
+        // shader.SetUniform4f("colorOnly", glm::vec4(materials[i].color, 1.0));
+    }
+    glBindVertexArray(VAO);
+
+    if (!morphAnims.empty())
+    {
+        vector<glm::vec3> vers = mPositions;
+        if (!morphanimkeys.empty())
+        {
+            for (const auto &morphanimkey : morphanimkeys)
+            {
+                string keyName = morphanimkey.first;
+                float keyValue = morphanimkey.second;
+                if (morphAnims.count(keyName))
+                {
+                    auto &positions = morphAnims[keyName];
+                    for (unsigned int i = 0; i < mPositions.size(); ++i)
+                    {
+                        vers[i] += (positions[i] * keyValue);
+                    }
+                }
+            }
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_Position);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vers.size() * sizeof(glm::vec3), vers.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
     // always good practice to set everything back to defaults once configured.
@@ -53,29 +95,10 @@ void Mesh::Draw([[maybe_unused]] Shader &shader)
 void Mesh::DrawInstance([[maybe_unused]] Shader &shader)
 {
     // bind appropriate textures
-    unsigned int diffuseNr = 1;
-    unsigned int specularNr = 1;
-    unsigned int normalNr = 1;
-    unsigned int heightNr = 1;
-    for (unsigned int i = 0; i < textures.size(); i++)
+    for (unsigned int i = 0; i < materials.size(); i++)
     {
-        glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-        // retrieve texture number (the N in diffuse_textureN)
-        string number;
-        string name = textures[i].type;
-        if (name == "texture_diffuse")
-            number = std::to_string(diffuseNr++);
-        else if (name == "texture_specular")
-            number = std::to_string(specularNr++); // transfer unsigned int to string
-        else if (name == "texture_normal")
-            number = std::to_string(normalNr++); // transfer unsigned int to string
-        else if (name == "texture_height")
-            number = std::to_string(heightNr++); // transfer unsigned int to string
-
-        // now set the sampler to the correct texture unit
-        // shader.SetUniform1i((name + number).c_str(), i);
-        // and finally bind the texture
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, materials[i].id);
     }
 
     // draw mesh
@@ -89,12 +112,29 @@ void Mesh::DrawInstance([[maybe_unused]] Shader &shader)
 
 void Mesh::setupMesh()
 {
+
     // create buffers/arrays
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
+
+    // -------------
+    if (morphAnims.size())
+    {
+        mPositions.resize(vertices.size());
+        std::transform(vertices.begin(), vertices.end(), mPositions.begin(),
+                       [](const Vertex &vertice)
+                       { return vertice.Position; });
+        glGenBuffers(1, &VBO_Position);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO_Position);
+        glBufferData(GL_ARRAY_BUFFER, mPositions.size() * sizeof(glm::vec3), mPositions.data(), GL_DYNAMIC_DRAW);
+    }
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void *)0);
+
     // load data into vertex buffers
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // A greate thing about struct is that their memory layout is sequential for all its items.
@@ -106,8 +146,11 @@ void Mesh::setupMesh()
 
     // set the vertex attribute pointers
     // vertex Positions
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    if (morphAnims.size() == 0)
+    {
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
+    }
     // vertex normals
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, Normal));
@@ -123,7 +166,6 @@ void Mesh::setupMesh()
     // ids
     glEnableVertexAttribArray(5);
     glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void *)offsetof(Vertex, m_BoneIDs));
-
     // weights
     glEnableVertexAttribArray(6);
     glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, m_Weights));

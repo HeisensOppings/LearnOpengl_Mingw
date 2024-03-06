@@ -6,7 +6,9 @@
 - Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
 
 ##### 使用
-vscode终端 **mingw32-make | .\main.exe** 来编译，以及运行，或者直接 **.\build.bat**
+如果你还不是很熟悉使用CmakeLists:
+
+vscode终端 **mingw32-make | .\opengl.exe** 来编译，以及运行，或者直接 **.\build.bat**
 
 - 鼠标右键 (摄像机 | 光标)
 - 滚轮(移动速度)
@@ -78,42 +80,3 @@ map_Bump bump_texture.png
 - 进入build目录，使用mingw32-make编译并生成库
 - 拷贝 source code 的 include
 - build\lib\libfreetype.a放到lib/
-
-###### 确保makefile格式正确，例如tab与空格
-
-```makefile
-CXX := g++
-CXX_FLAGS := -g -std=c++17 -O2 -Wextra -Wall -Wno-pragmas
-
-SRC := ./src
-INCLUDE := ./include
-LIB := ./lib
-
-LIBRARIES := -lglad -lglfw3dll -lassimp -lfreetype
-EXECUTABLE := main.exe
-
-SOURCES := $(wildcard $(SRC)/**/*.cpp $(SRC)/*.cpp)
-HEADERS := $(wildcard $(INCLUDE)/*.h) $(wildcard $(SRC)/**/*.h)
-OBJECTS := $(patsubst $(SRC)/%.cpp, obj/%.o, $(SOURCES))
-
-ifeq ($(wildcard obj),)
-$(shell mkdir obj)
-endif
-
-ifeq ($(wildcard obj\imgui),)
-$(shell mkdir obj\imgui)
-endif
-
-all: ./$(EXECUTABLE)
-
-run: all
-	./$(EXECUTABLE)
-
-./$(EXECUTABLE): $(OBJECTS)
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
-
-obj/%.o: $(SRC)/%.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -I$(SRC) -MMD -MP -c $< -o $@
-
--include $(OBJECTS:.o=.d)
-```

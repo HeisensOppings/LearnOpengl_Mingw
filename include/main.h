@@ -103,7 +103,7 @@ int material_shininess = 32;
 
 bool lighting_mode_camera = false;
 // bool depth_test = false;
-bool gamma = false;
+// bool gamma = false;
 bool hasSSAO = true;
 
 unsigned int VAO, VBO;
