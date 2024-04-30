@@ -12,6 +12,7 @@
 #include "texture.h"
 #include "shader.h"
 #include "vertexarray.h"
+#include "appcontrol.h"
 
 #include "ft2build.h"
 #include FT_FREETYPE_H

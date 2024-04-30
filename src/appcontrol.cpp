@@ -1,7 +1,7 @@
 #include "appcontrol.h"
 
-unsigned int AppControl::scr_width = 1440;
-unsigned int AppControl::scr_height = 810;
+unsigned int AppControl::scr_width = 1920;
+unsigned int AppControl::scr_height = 1080;
 glm::mat4 AppControl::view = glm::mat4(1.0);
 glm::mat4 AppControl::projection = glm::mat4(1.0);
 glm::mat4 AppControl::vp = glm::mat4(1.0);
@@ -25,3 +25,6 @@ float AppControl::playSpeed = 1.0f;
 float AppControl::duration = .0f;
 float AppControl::currentFrame = .0f;
 bool AppControl::playBackState = false;
+
+float AppControl::bias_offs = 0.2f;
+float AppControl::bias_mids = 12.0f;

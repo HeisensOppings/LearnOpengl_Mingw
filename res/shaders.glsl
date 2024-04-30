@@ -1908,3 +1908,210 @@ void main()
     gl_Position = pvm * totalPosition;
     TexCoords = tex;
 }
+
+#shader vertex
+// id --- 26 shader shadow
+#version 420 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+out VS_OUT{
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+}vs_out;
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+void main()
+{
+    vs_out.FragPos = vec3(model * vec4(aPos, 1.0f));
+    vs_out.Normal = transpose(inverse(mat3(model))) * aNormal;
+    vs_out.TexCoords = aTexCoords;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+}
+
+#shader fragment
+// id --- 31 shader shadow
+#version 420 core
+out vec4 FragColor;
+in VS_OUT {
+    vec3 FragPos;
+    vec3 Normal;
+    vec2 TexCoords;
+} fs_in;
+uniform sampler2D diffuseTexture;
+uniform sampler2DArray shadowMap;
+uniform vec3 lightDir;
+uniform vec3 viewPos;
+uniform float farPlane;
+uniform mat4 view;
+uniform float bias_offs;
+uniform float bias_mids;
+layout (std140) uniform LightSpaceMatrices
+{
+    mat4 lightSpaceMatrices[16];
+};
+uniform float cascadePlaneDistances[16];
+uniform int cascadeCount;   // number of frusta - 1
+float ShadowCalculation(vec3 fragPosWorldSpace)
+{
+    // select cascade layer
+    vec4 fragPosViewSpace = view * vec4(fragPosWorldSpace, 1.0);
+    float depthValue = abs(fragPosViewSpace.z);
+    int layer = -1;
+    for (int i = 0; i < cascadeCount; ++i)
+    {
+        if (depthValue < cascadePlaneDistances[i])
+        {
+            layer = i;
+            break;
+        }
+    }
+    if (layer == -1)
+    {
+        layer = cascadeCount;
+    }
+    vec4 fragPosLightSpace = lightSpaceMatrices[layer] * vec4(fragPosWorldSpace, 1.0);
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if (currentDepth > 1.0)
+    {
+        return 0.0;
+    }
+    // calculate bias (based on depth map resolution and slope)
+    vec3 normal = normalize(fs_in.Normal);
+    float bias = max(0.01 * bias_offs * (1.0 - dot(normal, lightDir)), 0.001 * bias_offs);
+    const float biasModifier = bias_mids;
+    // if (layer == cascadeCount)
+    // {
+    //     bias *= 1 / (farPlane * biasModifier);
+    // }
+    // else
+    // {
+    //     bias *= 1 / (cascadePlaneDistances[layer] * biasModifier);
+    // }
+    float shadow = 0.0;
+    currentDepth -= bias;
+    // PCF
+    // vec2 texelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+    // for(int x = -1; x <= 1; ++x)
+    // {
+    //     for(int y = -1; y <= 1; ++y)
+    //     {
+    //         float pcfDepth = texture(shadowMap, vec3(projCoords.xy + vec2(x, y) * texelSize, layer)).r;
+    //         shadow += (currentDepth ) > pcfDepth ? 1.0 : 0.0;        
+    //     }    
+    // }
+    // shadow /= 9.0;
+    // -----------
+    // currentDepth -= gl_FrontFacing ? bias : 0.0;
+    float pcfDepth = texture(shadowMap, vec3(projCoords.xy, layer)).r;
+    shadow += (currentDepth) > pcfDepth ? 1.0 : 0.0;
+    // return (gl_FrontFacing ? shadow : .0);
+    //------------
+    // float pcfDepth = texture(shadowMap, vec3(projCoords.xy, layer)).r;
+    // shadow += (currentDepth) > pcfDepth ? 1.0 : 0.0; 
+    return shadow;
+}
+void main()
+{
+    vec3 color = vec3(.5);
+    // vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
+    vec3 normal = normalize(fs_in.Normal);
+    vec3 lightColor = vec3(0.8);
+    // ambient
+    vec3 ambient = 0.2 * color;
+    // diffuse
+    float diff = max(dot(lightDir, normal), 0.0);
+    vec3 diffuse = diff * lightColor;
+    // specular
+    vec3 viewDir = normalize(viewPos - fs_in.FragPos);
+    vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = 0.0;
+    vec3 halfwayDir = normalize(lightDir + viewDir);  
+    spec = pow(max(dot(normal, halfwayDir), 0.0), 64.0);
+    vec3 specular = spec * lightColor;    
+    // calculate shadow
+    float shadow = ShadowCalculation(fs_in.FragPos);                      
+    vec3 lighting = (ambient )+( (1.0 - shadow) * (diffuse)) * color;    
+    // vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
+    FragColor = vec4(lighting, 1.0);
+}
+
+#shader fragment
+// id --- 32 simpleDepthShader
+#version 410 core
+void main()
+{             
+}
+
+#shader fragment
+// id --- 33 debugDepthQuad
+#version 420 core
+out vec4 FragColor;
+in vec2 TexCoords;
+uniform sampler2DArray depthMap;
+uniform float near_plane;
+uniform float far_plane;
+uniform int layer;
+// required when using a perspective projection matrix
+float LinearizeDepth(float depth)
+{
+    float z = depth * 2.0 - 1.0; // Back to NDC
+    return (2.0 * near_plane * far_plane) / (far_plane + near_plane - z * (far_plane - near_plane));
+}
+void main()
+{
+    float depthValue = texture(depthMap, vec3(TexCoords, layer)).r;
+    // FragColor = vec4(vec3(LinearizeDepth(depthValue) / far_plane), 1.0); // perspective
+    FragColor = vec4(vec3(depthValue),1.0);
+}
+
+#shader vertex
+// id --- 27
+#version 420 core
+layout (location = 0) in vec3 aPos;
+uniform mat4 view;
+uniform mat4 projection;
+void main()
+{
+    gl_Position = projection * view * vec4(aPos, 1.0);
+}
+
+#shader fragment
+// id --- 34 debugCascadeShader
+#version 420 core
+out vec4 FragColor;
+uniform vec4 color;
+void main()
+{             
+    FragColor = color;
+    // FragColor = vec4(color.r, .0f,.0f,0.5f);
+}
+
+#shader geometry
+// id --- 2 simpleDepthShader
+#version 420 core
+layout(triangles, invocations = 5) in;
+layout(triangle_strip, max_vertices = 3) out;
+// layout (std140) uniform LightSpaceMatrices
+layout (std140, binding = 0) uniform LightSpaceMatrices
+{
+    mat4 lightSpaceMatrices[16];
+};
+void main()
+{          
+	for (int i = 0; i < 3; ++i)
+	{
+		gl_Position = lightSpaceMatrices[gl_InvocationID] * gl_in[i].gl_Position;
+		gl_Layer = gl_InvocationID;
+		EmitVertex();
+	}
+	EndPrimitive();
+} 

@@ -214,9 +214,9 @@ void Shader::SetUniform4m(const std::string &name, const glm::mat4 &mat)
     glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
-void Shader::ShaderClear()
+void Shader::Clear()
 {
-    vertexShaderSources.shrink_to_fit();
-    fragmentShaderSources.shrink_to_fit();
-    geometryShaderSources.shrink_to_fit();
+    vertexShaderSources.erase(vertexShaderSources.begin(),vertexShaderSources.end());
+    fragmentShaderSources.erase(fragmentShaderSources.begin(),fragmentShaderSources.end());
+    geometryShaderSources.erase(geometryShaderSources.begin(),geometryShaderSources.end());
 }

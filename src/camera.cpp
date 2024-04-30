@@ -1,4 +1,5 @@
-#include "camera.h"
+#include "../include/camera.h"
+using namespace std;
 
 glm::mat4 Camera::GetViewMatrix()
 {
@@ -112,30 +113,30 @@ void Camera::updateCameraVectors()
 
 void Camera::loadCameraPosition(GLFWwindow *window)
 {
-    std::ifstream file("config.ini");
+    std::ifstream file(string(RES_DIR) + "config.ini");
     if (file.is_open())
     {
         int SCR_X_POS = 0, SCR_Y_POS = 0;
         float posX,
-            posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch, fov;
+            posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch;
         file >> posX >> posY >> posZ;
         file >> dirX >> dirY >> dirZ;
         file >> upX >> upY >> upZ;
         file >> yaw;
         file >> pitch;
-        // file >> fov;
-        fov = FOV;
         file >> SCR_X_POS;
         file >> SCR_Y_POS;
         glfwSetWindowPos(window, SCR_X_POS, SCR_Y_POS);
         file.close();
-        SetCameraSettings(posX, posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch, fov);
+        SetCameraSettings(posX, posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch, FOV);
     }
+    else
+        SetCameraSettings(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, FOV);
 }
 
 void Camera::saveCameraPosition(GLFWwindow *window)
 {
-    std::ofstream file("config.ini");
+    std::ofstream file(string(RES_DIR) + "config.ini");
     if (file.is_open())
     {
         int SCR_X_POS = 0, SCR_Y_POS = 0;

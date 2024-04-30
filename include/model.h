@@ -38,10 +38,11 @@ class Model
 public:
     // model data
     vector<Materials> m_materials; // stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-    vector<Mesh> m_meshes;
+    vector<std::unique_ptr<Mesh>> m_meshes;
     // vector<Animation> animations;
     string directory;
     bool gammaCorrection;
+    bool GetshapeKeysNameID = false;
     // morph data
     unordered_map<string, vector<glm::vec3>> morphAnims;
     unordered_map<unsigned int, string> shapeKeysNameID;
@@ -50,6 +51,7 @@ public:
     // constructor, expects a filepath to a 3D model.
     Model(string const &path, bool gamma = false);
     Model(const aiScene *scene, const string path);
+    ~Model();
     // draws the model, and thus all its meshes
     void Draw(Shader &shader);
     void DrawInstance(Shader &shader);
@@ -88,7 +90,7 @@ private:
     void loadModel(string const &path);
     // processes a node in a recursive. Processes each individual mesh located at the node and repeats this process on its children nodes
     void processNode(aiNode *node, const aiScene *scene);
-    Mesh processMesh(aiMesh *mesh, const aiScene *scene);
+    void processMesh(aiMesh *mesh, const aiScene *scene);
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
     // the required info is returned as a Texture struct.
     void loadMaterialTextures(vector<Materials> &materials, aiMaterial *mat, aiTextureType type, string typeName);

@@ -11,15 +11,25 @@ GLFWwindow *window = nullptr;
 Camera *camera = nullptr;
 Scene *scene = nullptr;
 
-int main()
+int main(int argc, char *argv[])
 {
+    if (argc < 2)
+        std::cout << "Usage: opengl.exe [-cascaded | -animations]" << std::endl;
+
     if (opengl_init())
         return -1;
 
     float initTime = glfwGetTime();
 
     camera = new Camera(window);
-    scene = new Scene(camera, App::scr_width, App::scr_height);
+    ResourceManager::ShaderInit(std::string(RES_DIR) + "shaders.glsl");
+    std::string arg = argv[1];
+    if (arg == "-cascaded")
+        scene = new SceneCascadedShadowMap(camera, App::scr_width, App::scr_height);
+    else if (arg == "-animations")
+        scene = new SceneAnimations(camera, App::scr_width, App::scr_height);
+    else
+        scene = new SceneDefault(camera, App::scr_width, App::scr_height);
 
     lastFrame = glfwGetTime();
     cout << endl
@@ -160,7 +170,11 @@ void imgui_frame()
         ImGui::SameLine();
         ImGui::SliderFloat("PlaySpeed", &App::playSpeed, .1f, 2.0f);
     }
-
+    if (ImGui::CollapsingHeader("Cascaded CSM"))
+    {
+        ImGui::SliderFloat("bias_offs", &AppControl::bias_offs, 0.1f, 2.0f);
+        ImGui::SliderFloat("bias_mids", &AppControl::bias_mids, 1.0f, 25.0f);
+    }
     // ImGui::EndChild();
     ImGui::End();
 }
@@ -208,6 +222,8 @@ void processInput(GLFWwindow *window)
         {
             camera->ProcessKeyBoard(MOVE_DOWN, deltaTime);
         }
+        if (scene != nullptr)
+            scene->processInput(window);
     }
 }
 

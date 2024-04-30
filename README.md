@@ -3,18 +3,25 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### Environment
-- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
+- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) 
 
 ##### Use
-If you are not yet familiar with using CmakeLists:
+```sh
+cmake -S ./ -B ./build/ -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cd build
+mingw32-make.exe -j4
+opengl.exe
+```
+
+- or use build.bat
 
 terminal in vscode run command **mingw32-make | .\opengl.exe** to build project and run program or use **.\build.bat**
 
 - Mouse right-click (Camera | Cursor)
 - Scroll wheel (Movement speed)
 - w a s d (Movement direction)
+- Left Ctrl key mouse wheel controls camera Fov
 - Focus on the imgui window, the above operation will not work
-- Use Ctrl+Enter to enter text in the input box of imgui
 
 ##### Build GLFW
 

@@ -47,6 +47,7 @@ public:
     unsigned int VAO;
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials);
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials, unordered_map<string, vector<glm::vec3>> morphAnims);
+    ~Mesh();
     void Draw(Shader &shader);
     void Draw(Shader &shader, unordered_map<string, float> morphanimkeys);
     void DrawInstance(Shader &shader);

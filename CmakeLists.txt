@@ -7,42 +7,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O2 -Wextra -Wall -Wno-pragmas")
 
 # Copy lib and ini file
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/glfw3.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/libassimp-5.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config.ini DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-
-# Copy Assets
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/model
-        ${CMAKE_CURRENT_BINARY_DIR}/model
-)
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/image
-        ${CMAKE_CURRENT_BINARY_DIR}/src/image
-)
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/fonts
-        ${CMAKE_CURRENT_BINARY_DIR}/src/fonts
-)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/shaders.glsl DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src)
-# Image file...
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib/glfw3.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib/libassimp-5.dll DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # Source files
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-file(GLOB_RECURSE SOURCES "${SRC_DIR}/*.c" "${SRC_DIR}/*.cc" "${SRC_DIR}/*.cpp" "${SRC_DIR}/*.h" "${SRC_DIR}/*.hpp")
+set(INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external")
+file(GLOB_RECURSE SOURCES "${SRC_DIR}/*.c" "${SRC_DIR}/*.cc" "${SRC_DIR}/*.cpp" "${LIB_DIR}/imgui/*.cpp")
 add_executable(${PROJECT_NAME} ${SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE "${SRC_DIR}")
 
-set(LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_include_directories(${PROJECT_NAME} PRIVATE "${LIB_DIR}/")
-
+target_include_directories(${PROJECT_NAME} PRIVATE "${INC_DIR}" "${LIB_DIR}")
 target_link_libraries(${PROJECT_NAME}
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/libfreetype.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/libglad.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/libglfw3dll.a
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/libassimp.dll.a
+${CMAKE_CURRENT_SOURCE_DIR}/lib/libfreetype.a
+${CMAKE_CURRENT_SOURCE_DIR}/lib/libglad.a
+${CMAKE_CURRENT_SOURCE_DIR}/lib/libglfw3dll.a
+${CMAKE_CURRENT_SOURCE_DIR}/lib/libassimp.dll.a
 )
+target_compile_definitions(${PROJECT_NAME} PRIVATE RES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/res/")

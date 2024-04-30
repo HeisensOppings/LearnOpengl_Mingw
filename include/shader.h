@@ -62,7 +62,7 @@ public:
     ~Shader() { glDeleteProgram(ProgramID); }
     inline void Bind() { glUseProgram(ProgramID); }
     void Unbind() const { glUseProgram(0); }
-    static void ShaderClear();
+    static void Clear();
     GLuint &GetID() { return ProgramID; }
 
     int GetUniformLocation(const std::string &name);

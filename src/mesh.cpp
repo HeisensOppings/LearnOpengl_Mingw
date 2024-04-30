@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "../include/mesh.h"
 
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materials> materials)
 {
@@ -15,6 +15,14 @@ Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Materia
     this->materials = materials;
     this->morphAnims = morphAnims;
     setupMesh();
+}
+
+Mesh::~Mesh()
+{
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VBO_Position);
 }
 
 void Mesh::Draw([[maybe_unused]] Shader &shader)
@@ -112,7 +120,6 @@ void Mesh::DrawInstance([[maybe_unused]] Shader &shader)
 
 void Mesh::setupMesh()
 {
-
     // create buffers/arrays
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);

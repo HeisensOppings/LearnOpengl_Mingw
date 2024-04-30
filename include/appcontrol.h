@@ -9,6 +9,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#ifndef RES_DIR
+#define RES_DIR "../res/"
+#endif
+
 class AppControl
 {
 public:
@@ -32,9 +36,10 @@ public:
     static float duration;
     static float currentFrame;
     static bool playBackState;
-    
-    //imgui
-    // static vector<string, >
+    // shadow
+    static float bias_offs;
+    static float bias_mids;
+
 };
 
 typedef AppControl App;

@@ -26,7 +26,10 @@
 #include "vertexarray.h"
 #include "camera.h"
 // #include "framebuffer.h"
-#include "scene.h"
+
+#include "SceneDefault.h"
+#include "SceneAnimations.h"
+#include "SceneCascadedShadowMap.h"
 
 #include "objectrender.h"
 #include "appcontrol.h"

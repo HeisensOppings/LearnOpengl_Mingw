@@ -2,42 +2,39 @@
 
 SET SourceExe=opengl.exe
 
-if "%1" == "rebuild" (
-    @REM echo "Cleaning obj directory"
-    @REM By default, .bat files are executed with Command Prompt.
-    @REM PowerShell Get-Childitem -Path "obj" -files.
-    @REM delims= is an option that specifies how for /f should split text lines.
-    @REM The /b option only displays file names, excluding other information such as file size, modification data, etc.
-    @REM The /a-d option indicates that inly files, not subdirectories, will be listed.
-
-    if exist obj (
-        for /f "delims=" %%f in ('dir /b /a-d obj') do (
-            del "obj\%%f"
-        )
+rem build.bat -c // clean
+if "%1" == "-c" (
+    if exist build (
+        cmake -G "MinGW Makefiles" -S . -B ./build
+        cd build
+        mingw32-make.exe clean
+        cd ..
     )
 )
 
-@REM if "%1" == "rebuild" (
-@REM     echo "Cleaning obj and obj/imgui directories"
-@REM     if exist obj rmdir /s /q obj
-@REM     if exist obj\imgui rmdir /s /q obj\imgui
-@REM )
+rem Run CMake to generate the build files
+if not exist build (
+    cmake -S ./ -B ./build/ -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+    if errorlevel 1 (
+        call :colorEcho 4 "Failed to create build directory"
+        goto :eof
+    )
+)
 
-@REM rem Remove the old executable
-@REM if exist %SourceExe% del opengl.exe
-
-rem Run mingw32-make to compile the program
-mingw32-make -f Makefile
+rem compile exe and run it
+cd build
+mingw32-make.exe -j4
 if not errorlevel 1 (
-    rem Run the program if compilation succeeds
-    opengl.exe
+    if "%1" == "-c" (
+        %SourceExe% "%2"
+    ) else (
+        %SourceExe% "%1"
+    )
 ) else (
-    rem Print error message if compilation fails
     call :colorEcho 4 "Compilation failed, please check the log"
 )
 
 goto :eof
-
 :colorEcho
 echo %~2
-exit /b 0
+exit /b 0”

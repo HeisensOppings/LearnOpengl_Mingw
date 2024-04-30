@@ -3,18 +3,25 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### 环境
-- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/) [Cmake](https://cmake.org/download/) 
+- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) 
 
 ##### 使用
-如果你还不是很熟悉使用CmakeLists:
+```sh
+cmake -S ./ -B ./build/ -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cd build
+mingw32-make.exe -j4
+opengl.exe
+```
+
+- 或者使用 build.bat
 
 vscode终端 **mingw32-make | .\opengl.exe** 来编译，以及运行，或者直接 **.\build.bat**
 
 - 鼠标右键 (摄像机 | 光标)
 - 滚轮(移动速度)
 - W A S D(移动方向)
+- 左Ctrl键鼠标滚轮控制camera Fov
 - 聚焦imgui窗口，以上操作失效
-- imgui的输入框使用ctrl enter输入文本
 
 ##### Build GLFW
 

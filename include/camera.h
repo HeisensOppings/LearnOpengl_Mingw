@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-using namespace std;
+#include "appcontrol.h"
 
 enum CameraMovement
 {

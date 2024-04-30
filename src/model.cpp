@@ -17,10 +17,8 @@ vector<TextureData> textureData;
 
 void TextureFromData(vector<TextureData> &textureData)
 {
-    static double time = .0f;
     for (auto &texture : textureData)
     {
-        double startTime = glfwGetTime();
         GLenum internalformat = 0;
         GLenum dataformat = 0;
         if (texture.nrComponents == 1)
@@ -46,10 +44,8 @@ void TextureFromData(vector<TextureData> &textureData)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         stbi_image_free(texture.data);
-        time += glfwGetTime() - startTime;
-        // cout << time << endl;
     }
-    textureData.clear();
+    textureData.erase(textureData.begin(), textureData.end());
 }
 
 void TextureFromFileThread(unsigned int texture_id, string filename)
@@ -139,7 +135,7 @@ vector<TetxtureType> textureTypes{
 Model::Model(string const &path, [[maybe_unused]] bool gamma)
 {
 #if TEXTURE_THREAD
-    texture_threads.clear();
+    texture_threads.erase(texture_threads.begin(), texture_threads.end());
 #endif
 
     loadModel(path);
@@ -154,7 +150,7 @@ Model::Model(string const &path, [[maybe_unused]] bool gamma)
 Model::Model(const aiScene *scene, const string path)
 {
 #if TEXTURE_THREAD
-    texture_threads.clear();
+    texture_threads.erase(texture_threads.begin(), texture_threads.end());
 #endif
 
     // retrieve the directory path of the filepath
@@ -172,13 +168,19 @@ Model::Model(const aiScene *scene, const string path)
 void Model::Draw(Shader &shader)
 {
     for (unsigned int i = 0; i < m_meshes.size(); ++i)
-        m_meshes[i].Draw(shader, morphAnimKeys);
+        m_meshes[i]->Draw(shader, morphAnimKeys);
 }
 
 void Model::DrawInstance(Shader &shader)
 {
     for (unsigned int i = 0; i < m_meshes.size(); ++i)
-        m_meshes[i].DrawInstance(shader);
+        m_meshes[i]->DrawInstance(shader);
+}
+
+Model::~Model()
+{
+    for (auto &material : m_materials)
+        glDeleteTextures(1, (unsigned int *)&material.id);
 }
 
 void Model::loadModel(string const &path)
@@ -207,10 +209,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
         // COUT(node->mName.data);
         // COUTL(node->mNumMeshes);
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-        static double process = .0f;
-        auto startprocess = glfwGetTime();
-        m_meshes.push_back(processMesh(mesh, scene));
-        process += glfwGetTime() - startprocess;
+        processMesh(mesh, scene);
         // COUTL("processMesh" << process);
     }
     // after we've processed all of the meshes (if any) we then recursively process each of the children nodes
@@ -220,7 +219,7 @@ void Model::processNode(aiNode *node, const aiScene *scene)
     }
 }
 
-Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
+void Model::processMesh(aiMesh *mesh, const aiScene *scene)
 {
     // data to fill
     vector<Vertex> vertices;
@@ -228,15 +227,14 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     vector<Materials> materials;
 
     // ----------------------------morph shapeKeysNameID
+    if (!GetshapeKeysNameID)
     {
-        static bool first = true;
         // first mesh storge all the shapekeys
-        if (first)
-            for (unsigned int i = 0; i < mesh->mNumAnimMeshes; ++i)
-            {
-                shapeKeysNameID.insert(make_pair(i, mesh->mAnimMeshes[i]->mName.data));
-            }
-        first = false;
+        for (unsigned int i = 0; i < mesh->mNumAnimMeshes; ++i)
+        {
+            shapeKeysNameID.insert(make_pair(i, mesh->mAnimMeshes[i]->mName.data));
+        }
+        GetshapeKeysNameID = true;
     }
 
     //  ----------------------------morph
@@ -351,9 +349,11 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 
     // return a mesh object created from the extracted mesh data
     if (morphAnims.size())
-        return Mesh(vertices, indices, materials, morphAnims);
+        // automatic expansion of emplace_back will cause copying
+        // copy and destructor will be called. unique_ptr can avoid it
+        m_meshes.emplace_back(std::make_unique<Mesh>(vertices, indices, materials, morphAnims));
     else
-        return Mesh(vertices, indices, materials);
+        m_meshes.emplace_back(std::make_unique<Mesh>(vertices, indices, materials));
 }
 
 void Model::ExtractBoneWeightForVertices(vector<Vertex> &vertices, aiMesh *mesh)

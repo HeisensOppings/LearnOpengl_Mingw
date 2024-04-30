@@ -11,10 +11,10 @@ void ResourceManager::ShaderInit(string name)
 
 void ResourceManager::Clear()
 {
-    for (auto iter : Shaders)
-        glDeleteProgram(iter.second.GetID());
-    for (auto iter : Textures)
-        glDeleteTextures(1, &iter.second.GetTextureID());
+    Shaders.erase(Shaders.begin(), Shaders.end());
+    Textures.erase(Textures.begin(), Textures.end());
+    VAOs.erase(VAOs.begin(), VAOs.end());
+    // Shader::Clear();
 }
 
 Shader &ResourceManager::SetShader(string name, int vertex, int fragment, int geometry)
@@ -80,13 +80,13 @@ VertexArray &ResourceManager::GetVAO(const string name)
 }
 
 vector<string> font_paths = {
-    "./src/fonts/base-split.woff",
-    "./src/fonts/HarmonyOS_Sans_SC_Medium.ttf",
-    "./src/fonts/NotoSansArabic-Medium.ttf",
-    "./src/fonts/NotoSansCanadianAboriginal-Medium.ttf",
-    "./src/fonts/NotoSansCuneiform-Regular.ttf",
-    "./src/fonts/NotoSansSymbols2-Regular.ttf",
-    "./src/fonts/NotoSans-ExtraBold.ttf",
+    std::string(RES_DIR) + "fonts/base-split.woff",
+    std::string(RES_DIR) + "fonts/HarmonyOS_Sans_SC_Medium.ttf",
+    std::string(RES_DIR) + "fonts/NotoSansArabic-Medium.ttf",
+    std::string(RES_DIR) + "fonts/NotoSansCanadianAboriginal-Medium.ttf",
+    std::string(RES_DIR) + "fonts/NotoSansCuneiform-Regular.ttf",
+    std::string(RES_DIR) + "fonts/NotoSansSymbols2-Regular.ttf",
+    std::string(RES_DIR) + "fonts/NotoSans-ExtraBold.ttf",
 };
 
 map<char32_t, Character> TextTexture::Characters;
