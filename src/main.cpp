@@ -13,8 +13,6 @@ Scene *scene = nullptr;
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-        std::cout << "Usage: opengl.exe [-cascaded | -animations]" << std::endl;
 
     if (opengl_init())
         return -1;
@@ -23,13 +21,25 @@ int main(int argc, char *argv[])
 
     camera = new Camera(window);
     ResourceManager::ShaderInit(std::string(RES_DIR) + "shaders.glsl");
-    std::string arg = argv[1];
-    if (arg == "-cascaded")
-        scene = new SceneCascadedShadowMap(camera, App::scr_width, App::scr_height);
-    else if (arg == "-animations")
-        scene = new SceneAnimations(camera, App::scr_width, App::scr_height);
-    else
+
+    if (argc < 2)
+    {
+        std::cout << "Usage: opengl.exe [-cascaded | -animations]" << std::endl;
         scene = new SceneDefault(camera, App::scr_width, App::scr_height);
+    }
+    else
+    {
+        std::string arg = argv[1];
+        if (arg == "-cascaded")
+            scene = new SceneCascadedShadowMap(camera, App::scr_width, App::scr_height);
+        else if (arg == "-animations")
+            scene = new SceneAnimations(camera, App::scr_width, App::scr_height);
+        else
+        {
+            std::cout << "Usage: opengl.exe [-cascaded | -animations]" << std::endl;
+            scene = new SceneDefault(camera, App::scr_width, App::scr_height);
+        }
+    }
 
     lastFrame = glfwGetTime();
     cout << endl
