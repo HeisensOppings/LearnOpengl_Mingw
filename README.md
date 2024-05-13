@@ -13,9 +13,7 @@ mingw32-make.exe -j4
 opengl.exe
 ```
 
-- or use build.bat
-
-terminal in vscode run command **mingw32-make | .\opengl.exe** to build project and run program or use **.\build.bat**
+- or use **build.bat**
 
 - Mouse right-click (Camera | Cursor)
 - Scroll wheel (Movement speed)
