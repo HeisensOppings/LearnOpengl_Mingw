@@ -12,8 +12,7 @@ cd build
 mingw32-make.exe -j4
 opengl.exe
 ```
-
-- or use **build.bat**
+or use **build.bat**
 
 - Mouse right-click (Camera | Cursor)
 - Scroll wheel (Movement speed)
