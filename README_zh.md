@@ -12,10 +12,7 @@ cd build
 mingw32-make.exe -j4
 opengl.exe
 ```
-
-- 或者使用 build.bat
-
-vscode终端 **mingw32-make | .\opengl.exe** 来编译，以及运行，或者直接 **.\build.bat**
+或者使用 build.bat
 
 - 鼠标右键 (摄像机 | 光标)
 - 滚轮(移动速度)
