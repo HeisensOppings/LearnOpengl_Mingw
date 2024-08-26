@@ -3,13 +3,14 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### Environment
-- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) 
+- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) [Ninja](https://github.com/ninja-build/ninja/releases/)
+<small>Put ninja.exe in the bin/ directory of the Cmake installation directory, or add environment variables</small>
 
 ##### Use
 ```sh
-cmake -S ./ -B ./build/ -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -S ./ -B ./build/ -G Ninja -DCMAKE_BUILD_TYPE=Release
 cd build
-mingw32-make.exe -j4
+ninja -j4
 opengl.exe
 ```
 or use **build.bat**

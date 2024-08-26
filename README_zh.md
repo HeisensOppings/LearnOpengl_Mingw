@@ -3,13 +3,14 @@
 [English](README.md) [中文](README_zh.md)
 
 ##### 环境
-- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) 
+- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) [Ninja](https://github.com/ninja-build/ninja/releases/)
+<small>将 ninja.exe 放入 Cmake 安装目录 bin/ 下，或添加环境变量</small>
 
 ##### 使用
 ```sh
-cmake -S ./ -B ./build/ -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -S ./ -B ./build/ -G Ninja -DCMAKE_BUILD_TYPE=Release
 cd build
-mingw32-make.exe -j4
+ninja -j4
 opengl.exe
 ```
 或者使用 build.bat
