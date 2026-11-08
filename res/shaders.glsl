@@ -518,46 +518,6 @@ vec3 kernel_effects(int mode)
 // id --- 4
 #version 420 core
 layout (location = 0) in vec3 aPos;
-// out vec3 TexCoords;
-out vec3 WorldPos;
-uniform mat4 projection;
-uniform mat4 view;
-// uniform mat4 vp;
-void main()
-{
-    // TexCoords = aPos;
-    // vec4 pos = projection * view * vec4(aPos, 1.0);
-    // gl_Position = pos.xyww;
-    WorldPos = aPos;
-    // vec4 clipPos = mat4(mat3(projection * view)) * vec4(WorldPos, 1.0);
-    mat4 rotView = mat4(mat3(view));
-    vec4 clipPos = projection * rotView * vec4(WorldPos, 1.0);
-    gl_Position = clipPos.xyww;
-}
-
-#shader fragment
-// id --- 4
-#version 420 core
-out vec4 FragColor;
-// in vec3 TexCoords;
-in vec3 WorldPos;
-uniform samplerCube skybox;
-uniform float _fresnel;
-void main()
-{    
-    // FragColor = texture(skybox, TexCoords);
-        // vec3 envColor = textureLod(skybox, WorldPos, _fresnel).rgb;
-    vec3 envColor = texture(skybox, WorldPos).rgb;
-    // HDR tonemap and gamma correct
-    envColor = envColor / (envColor + vec3(1.0));
-    envColor = pow(envColor, vec3(1.0/2.2));
-    FragColor = vec4(envColor, 1.0);
-}
-
-#shader vertex
-// id --- 5
-#version 420 core
-layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 3) in mat4 aInstanceMatrix;
 out VS_OUT {
@@ -607,7 +567,7 @@ void main()
 }
 
 #shader fragment
-// id --- 5
+// id --- 4
 #version 420 core
 out vec4 FragColor;
 in vec3 fColor;
@@ -617,7 +577,7 @@ void main()
 }
 
 #shader vertex
-// id --- 6
+// id --- 5
 #version 420 core
 layout (location = 0) in vec3 aPos;
 uniform mat4 lightSpaceMatrix;
@@ -628,7 +588,7 @@ void main()
 }
 
 #shader fragment
-// id --- 6
+// id --- 5
 #version 420 core
 void main()
 {             
@@ -636,7 +596,7 @@ void main()
 }
 
 #shader vertex
-// id --- 7
+// id --- 6
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -648,7 +608,7 @@ void main()
 }
 
 #shader fragment
-// id --- 7
+// id --- 6
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -669,7 +629,7 @@ void main()
 }
 
 #shader vertex
-// id --- 8
+// id --- 7
 #version 420 core
 layout (location = 0) in vec3 aPos;
 uniform mat4 model;
@@ -701,7 +661,7 @@ void main()
 } 
 
 #shader fragment
-// id --- 8
+// id --- 7
 #version 420 core
 in vec4 FragPos;
 uniform vec3 lightPos;
@@ -716,7 +676,7 @@ void main()
 }
 
 #shader vertex
-// id --- 9
+// id --- 8
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -739,7 +699,7 @@ void main()
 }
 
 #shader fragment
-// id --- 9
+// id --- 8
 #version 420 core
 out vec4 FragColor;
 in VS_OUT {
@@ -752,7 +712,7 @@ void main()
 }
 
 #shader vertex
-// id --- 10 bloom blur
+// id --- 9 bloom blur
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -764,7 +724,7 @@ void main()
 }
 
 #shader fragment
-// id --- 10 bloom blur
+// id --- 9 bloom blur
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -795,7 +755,7 @@ void main()
 }
 
 #shader vertex
-// id --- 11 bloom final
+// id --- 10 bloom final
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -807,7 +767,7 @@ void main()
 }
 
 #shader fragment
-// id --- 11 bloom final
+// id --- 10 bloom final
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -827,7 +787,7 @@ void main()
 }
 
 #shader vertex
-// id --- 12
+// id --- 11
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -858,7 +818,7 @@ void main()
 }
 
 #shader fragment
-// id --- 12
+// id --- 11
 #version 420 core
 layout (location = 0) out vec3 gPosition;
 layout (location = 1) out vec3 gNormal;
@@ -888,7 +848,7 @@ void main()
 }
 
 #shader vertex
-// id --- 13
+// id --- 12
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -900,7 +860,7 @@ void main()
 }
 
 #shader fragment
-// id --- 13
+// id --- 12
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -952,7 +912,7 @@ void main()
 }
 
 #shader vertex
-// id --- 14
+// id --- 13
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -966,7 +926,7 @@ void main()
 }
 
 #shader fragment
-// id --- 14
+// id --- 13
 #version 420 core
 layout (location = 0) out vec4 FragColor;
 uniform vec3 lightColor;
@@ -976,7 +936,7 @@ void main()
 }
 
 #shader vertex
-// id --- 15
+// id --- 14
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -988,7 +948,7 @@ void main()
 }
 
 #shader fragment
-// id --- 15
+// id --- 14
 #version 420 core
 out float FragColor;
 in vec2 TexCoords;
@@ -1036,7 +996,7 @@ void main()
 }
 
 #shader fragment
-// id --- 16
+// id --- 15
 #version 420 core
 out float FragColor;
 in vec2 TexCoords;
@@ -1057,7 +1017,7 @@ void main()
 } 
 
 #shader vertex
-// id --- 16
+// id --- 15
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -1080,7 +1040,7 @@ void main()
 }
 
 #shader fragment
-// id --- 17
+// id --- 16
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -1192,7 +1152,7 @@ void main()
 }
 
 #shader fragment
-// id --- 18
+// id --- 17
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -1335,7 +1295,7 @@ void main()
 }
 
 #shader vertex
-// id --- 17
+// id --- 16
 #version 420 core
 layout (location = 0) in vec3 aPos;
 out vec3 localPos;
@@ -1348,30 +1308,7 @@ void main()
 }
 
 #shader fragment
-// id --- 19
-#version 420 core
-out vec4 FragColor;
-in vec3 localPos;
-uniform sampler2D equirectangularMap;
-const vec2 invAtan = vec2(0.1591, 0.3183);
-vec2 SampleSphericalMap(vec3 v)
-{
-    vec2 uv = vec2(atan(v.z, v.x), asin(v.y));
-    uv *= invAtan;
-    uv += 0.5;
-    return uv;
-}
-void main()
-{
-    vec2 uv = SampleSphericalMap(normalize(localPos));
-    vec3 envColor = texture(equirectangularMap, uv).rgb;
-    //    envColor = envColor / (envColor + vec3(1.0));
-    // envColor = pow(envColor, vec3(1.0/2.2));
-    FragColor = vec4(envColor, 1.0);
-}
-
-#shader fragment
-// id --- 20
+// id --- 18
 #version 420 core
 out vec4 FragColor;
 in vec3 localPos;
@@ -1410,7 +1347,7 @@ void main()
 }
 
 #shader fragment
-// id --- 21
+// id --- 19
 #version 420 core
 out vec4 FragColor;
 in vec3 localPos;
@@ -1494,7 +1431,7 @@ void main()
 }
 
 #shader vertex
-// id --- 18
+// id --- 17
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoords;
@@ -1506,7 +1443,7 @@ void main()
 }
 
 #shader fragment
-// id --- 22
+// id --- 20
 #version 420 core
 out vec2 FragColor;
 in vec2 TexCoords;
@@ -1601,73 +1538,7 @@ void main()
 }
 
 #shader vertex
-// id --- 19
-#version 420 core
-layout (location = 0) in vec2 vertex;
-layout (location = 1) in vec4 texcoord;
-out vec4 texCoords;
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat4 mvp;
-void main()
-{
-    // gl_Position = projection * view * model * vec4(vertex, 0.0, 1.0);
-    gl_Position = mvp * vec4(vertex, 0.0, 1.0);
-    // gl_Position = projection * view * model * vec4(vertex.xy, 0.0, 1.0);
-    // gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
-    texCoords = texcoord;
-    // TexCoords = vertex.zw;
-}
-
-#shader fragment
-// id --- 23
-#version 420 core
-in vec4 texCoords;
-out vec4 color;
-uniform sampler2D textTexture;
-// uniform vec3 texColor;
-uniform vec4 Coords;
-uniform float deltaTime;
-uniform float thickness;
-uniform float softness;
-uniform float outline_thickness;
-uniform float outline_softness;
-uniform vec2 shadow_offset;
-void main()
-{
-    // glm::vec4(texture_sub_x / textureWidth, texture_sub_y / textureHeight, slot->bitmap.width / textureWidth, slot->bitmap.rows / textureHeight);
-    // float alpha = texture(text, (TexCoords*Coords.zw + Coords.xy)).r;
-    vec2 TexCoords = texCoords.xy;
-    float alpha = texture(textTexture, TexCoords).r;
-    float offset_alpha = texture(textTexture, (TexCoords + shadow_offset)).r;
-    // ---- 
-    vec3 texColor = vec3(0.666, .0, 1.0);
-    // vec3 texColor = vec3(0.761, 0.165, 0.839);
-    vec3 outline_color = vec3(0.0, 1.0, 0.8);
-    vec3 shadow_color = vec3(.0);
-    vec3 gradients_color = vec3(0.631, 0.863, 0.333);
-    // ----
-    float shadow_alpha = smoothstep(1.0 - thickness - softness, 1.0 - thickness, offset_alpha);
-    float text_alpha = smoothstep(1.0 - thickness - softness, 1.0 - thickness, alpha);
-    // ----
-    float outline = smoothstep(outline_thickness - outline_softness, outline_thickness + outline_softness, alpha);
-    // 0.0 ~ 1.0 ~ 0.0 ...
-    float result = mod((texCoords.z + texCoords.w) * 0.5 + deltaTime, 2.0);
-    result = (result > 1.0 ) ? (2.0 - result) : result;
-    // vec3 text_color = mix(outline_color, mix(gradients_color, texColor, fract(result)), outline);
-    // smooth a little
-    result = fract(result);
-    vec3 text_color = mix(outline_color, mix(gradients_color, texColor, result * result * (3.0 - 2.0 * result) ), outline);
-    // vec3 text_color = mix(outline_color, mix(gradients_color, texColor, (cos((3.1415926 * ( fract(result)))) + 1.0) / 2.0), outline);
-    // vec3 text_color = mix(outline_color, mix(gradients_color,texColor, ((texCoords.z + texCoords.w) / 2.0)), outline); 
-    // ----
-    float overallAlpha = text_alpha + (1 - text_alpha) * shadow_alpha;
-    color = vec4(mix(shadow_color, text_color, text_alpha / overallAlpha), overallAlpha);
-}
-
-#shader vertex
-// id --- 20
+// id --- 18
 #version 420 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal;
@@ -1688,7 +1559,7 @@ void main() {
 }
 
 #shader fragment
-// id --- 24
+// id --- 21
 #version 420 core
 in vec2 TexCoords;
 out vec4 color;
@@ -1701,7 +1572,7 @@ void main()
 }  
 
 #shader vertex
-// id --- 21
+// id --- 19
 layout (location = 0) in vec3 position;
 uniform mat4 mvp;
 void main()
@@ -1710,7 +1581,7 @@ void main()
 }
 
 #shader fragment
-// id --- 25
+// id --- 22
 #version 420 core
 layout (location = 0) out vec4 frag;
 uniform vec3 color;
@@ -1720,7 +1591,7 @@ void main()
 }
 
 #shader fragment
-// id --- 26
+// id --- 23
 #version 420 core
 layout (location = 0) out vec4 accum;
 layout (location = 1) out float reveal;
@@ -1736,7 +1607,7 @@ void main()
 }
 
 #shader vertex
-// id --- 22
+// id --- 20
 #version 420 core
 // shader inputs
 layout (location = 0) in vec3 position;
@@ -1746,7 +1617,7 @@ void main()
 }
 
 #shader fragment
-// id --- 27
+// id --- 24
 #version 420 core
 // shader outputs
 layout (location = 0) out vec4 frag;
@@ -1787,7 +1658,7 @@ void main()
 }
 
 #shader vertex
-// id --- 23
+// id --- 21
 #version 420 core
 // shader inputs
 layout (location = 0) in vec3 position;
@@ -1801,7 +1672,7 @@ void main()
 }
 
 #shader fragment
-// id --- 28
+// id --- 25
 #version 420 core
 // shader inputs
 in vec2 texture_coords;
@@ -1815,7 +1686,7 @@ void main()
 }
 
 #shader vertex
-// id --- 24
+// id --- 22
 #version 420 core
 layout (location = 0) in vec3 position;
 // layout (location = 1) in vec3 aNormal;
@@ -1829,7 +1700,7 @@ void main()
 }
 
 #shader fragment
-// id --- 29
+// id --- 26
 #version 420 core
 layout (location = 0) out vec4 frag;
 in vec2 texCoord;
@@ -1844,7 +1715,7 @@ void main()
 }
 
 #shader fragment
-// id --- 30
+// id --- 27
 #version 420 core
 layout (location = 0) out vec4 accum;
 layout (location = 1) out float reveal;
@@ -1865,7 +1736,7 @@ void main()
 }
 
 #shader vertex
-// id --- 25
+// id --- 23
 #version 420 core
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec3 norm;
@@ -1910,7 +1781,7 @@ void main()
 }
 
 #shader vertex
-// id --- 26 shader shadow
+// id --- 24 shader shadow
 #version 420 core
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
@@ -1932,7 +1803,7 @@ void main()
 }
 
 #shader fragment
-// id --- 31 shader shadow
+// id --- 28 shader shadow
 #version 420 core
 out vec4 FragColor;
 in VS_OUT {
@@ -2045,14 +1916,14 @@ void main()
 }
 
 #shader fragment
-// id --- 32 simpleDepthShader
+// id --- 29 simpleDepthShader
 #version 410 core
 void main()
 {             
 }
 
 #shader fragment
-// id --- 33 debugDepthQuad
+// id --- 30 debugDepthQuad
 #version 420 core
 out vec4 FragColor;
 in vec2 TexCoords;
@@ -2074,7 +1945,7 @@ void main()
 }
 
 #shader vertex
-// id --- 27
+// id --- 25
 #version 420 core
 layout (location = 0) in vec3 aPos;
 uniform mat4 view;
@@ -2085,7 +1956,7 @@ void main()
 }
 
 #shader fragment
-// id --- 34 debugCascadeShader
+// id --- 31 debugCascadeShader
 #version 420 core
 out vec4 FragColor;
 uniform vec4 color;

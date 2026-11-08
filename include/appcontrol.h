@@ -20,13 +20,12 @@ public:
     static unsigned int scr_width, scr_height;
     static glm::mat4 view, projection, vp;
     static float deltaTime;
+    static float elapsedTime;      // seconds since start (replaces glfwGetTime)
+    static unsigned int defaultFBO; // QOpenGLWidget::defaultFramebufferObject()
+    static glm::vec3 background_color; // solid clear colour (environment background removed)
+    static glm::vec3 environment_color; // constant IBL environment radiance
     // light
     static glm::vec3 pointLightPos, pointLightColor;
-    // text
-    static float thickness,
-        softness, outline_thickness, outline_softness;
-    static glm::vec3 text_color;
-    static glm::vec2 text_shadow_offset;
     // pbr ibl
     static glm::vec3 irradiance_color;
     // animation

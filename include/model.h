@@ -1,11 +1,11 @@
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
-#include <glad/glad.h>
+#include "glfuncs.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <stb_image.h>
+#include "imageloader.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/scene.h"
@@ -96,4 +96,4 @@ private:
     void loadMaterialTextures(vector<Materials> &materials, aiMaterial *mat, aiTextureType type, string typeName);
 };
 
-#endif
+#endif

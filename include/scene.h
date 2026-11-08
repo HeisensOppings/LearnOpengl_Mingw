@@ -1,9 +1,7 @@
 #ifndef __SCENE_H__
 #define __SCENE_H__
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
+#include "glfuncs.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -45,15 +43,22 @@ public:
 
     virtual void Update(float dt)
     {
-        glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // solid background (the HDR environment / skybox background was removed)
+        glf()->glClearColor(App::background_color.r, App::background_color.g, App::background_color.b, 1.0f);
+        glf()->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         App::projection = glm::perspective(glm::radians(sceneCamera->m_Fov), (float)sceneWidth / (float)sceneHeight, sceneNearPlane, sceneFarPlane);
         App::view = sceneCamera->GetViewMatrix();
         App::vp = App::projection * App::view;
         App::deltaTime = dt;
     }
-    virtual void processInput([[maybe_unused]] GLFWwindow *window) {}
+    // key is a Qt::Key value, delivered by GLWidget when a key is released
+    virtual void keyReleased([[maybe_unused]] int key) {}
+    void Resize(unsigned int width, unsigned int height)
+    {
+        sceneWidth = width > 0 ? width : 1;
+        sceneHeight = height > 0 ? height : 1;
+    }
     virtual void Render() {}
 };
 
-#endif
+#endif

@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include "glad/glad.h"
+#include "glfuncs.h"
 
 using namespace std;
 
@@ -64,13 +64,13 @@ private:
 public:
     IndexBuffer(const void *data, unsigned int count, const int usage = GL_STATIC_DRAW) : m_Count(count)
     {
-        glGenBuffers(1, &m_IBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Count * sizeof(unsigned int), data, usage);
+        glf()->glGenBuffers(1, &m_IBO);
+        glf()->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+        glf()->glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Count * sizeof(unsigned int), data, usage);
     };
-    ~IndexBuffer() { glDeleteBuffers(1, &m_IBO); }
-    void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO); }
-    void UnBind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
+    ~IndexBuffer() { glf()->glDeleteBuffers(1, &m_IBO); }
+    void Bind() const { glf()->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO); }
+    void UnBind() const { glf()->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); }
     inline unsigned int GetIboID() const { return m_IBO; }
     inline unsigned int GetCount() const { return m_Count; }
 };
@@ -83,13 +83,13 @@ private:
 public:
     VertexBuffer(const void *data, unsigned int size, const int usage = GL_STATIC_DRAW)
     {
-        glGenBuffers(1, &m_VBO);
-        glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-        glBufferData(GL_ARRAY_BUFFER, size, data, usage);
+        glf()->glGenBuffers(1, &m_VBO);
+        glf()->glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+        glf()->glBufferData(GL_ARRAY_BUFFER, size, data, usage);
     }
-    ~VertexBuffer() { glDeleteBuffers(1, &m_VBO); }
-    void Bind() const { glBindBuffer(GL_ARRAY_BUFFER, m_VBO); }
-    void UnBind() const { glBindBuffer(GL_ARRAY_BUFFER, 0); }
+    ~VertexBuffer() { glf()->glDeleteBuffers(1, &m_VBO); }
+    void Bind() const { glf()->glBindBuffer(GL_ARRAY_BUFFER, m_VBO); }
+    void UnBind() const { glf()->glBindBuffer(GL_ARRAY_BUFFER, 0); }
 };
 
 class VertexArray
@@ -105,8 +105,8 @@ public:
         : m_VBO(vbo_data, vbo_size, vbo_usage)
     {
         BufferLayout layout(bufferlayout);
-        glGenVertexArrays(1, &m_VAO);
-        glBindVertexArray(m_VAO);
+        glf()->glGenVertexArrays(1, &m_VAO);
+        glf()->glBindVertexArray(m_VAO);
         m_VBO.Bind();
         if (ibo_data != nullptr)
         {
@@ -118,19 +118,19 @@ public:
         for (unsigned int i = 0; i < elements.size(); ++i)
         {
             const VertexBufferElement element = elements[i];
-            glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (void *)(uintptr_t)(offset * element.GetSizeOfType(element.type)));
+            glf()->glEnableVertexAttribArray(i);
+            glf()->glVertexAttribPointer(i, element.count, element.type, element.normalized, layout.GetStride(), (void *)(uintptr_t)(offset * element.GetSizeOfType(element.type)));
             offset += element.count;
         }
     }
     ~VertexArray()
     {
-        glDeleteVertexArrays(1, &m_VAO);
+        glf()->glDeleteVertexArrays(1, &m_VAO);
         if (m_IBO != nullptr)
             delete m_IBO;
     }
-    void Bind() { glBindVertexArray(m_VAO); }
-    void UnBind() { glDeleteVertexArrays(1, &m_VAO); }
+    void Bind() { glf()->glBindVertexArray(m_VAO); }
+    void UnBind() { glf()->glDeleteVertexArrays(1, &m_VAO); }
     VertexBuffer &GetVertexBuffer() { return m_VBO; }
     IndexBuffer &GetIndexBuffer() { return *m_IBO; }
 };

@@ -3,13 +3,13 @@
 SceneAnimations::SceneAnimations(Camera *camera, unsigned int width, unsigned int height) : Scene(camera, width, height)
 {
     // compile shader for model
-    ResourceManager::SetShader("modelAnim", 25, 24).Bind();
+    ResourceManager::SetShader("modelAnim", 23, 21).Bind();
     ResourceManager::GetShader("modelAnim").SetUniform4m("pvm", App::vp * mat4(1.0));
 
     // load model data by assimp
     ModelImporter::ModelImport(string(RES_DIR) + "model/hutao/hutao_multi2.fbx", &modelHutao, &pAnimations, &pAnimator, ResourceManager::GetShader("modelAnim"));
 
-    // imgui update
+    // UI update
     App::animNames = pAnimations->GetAnimationNames();
     App::duration = pAnimator->GetAnimationDuration();
 }
@@ -24,7 +24,7 @@ SceneAnimations::~SceneAnimations()
 void SceneAnimations::Render()
 {
     glm::mat4 model = glm::mat4(1.0f);
-    glEnable(GL_BLEND);
+    glf()->glEnable(GL_BLEND);
 
     //  --------------------------------------------------- model animation render
     if (App::animNames[App::animIndex] != pAnimator->GetAnimationName())

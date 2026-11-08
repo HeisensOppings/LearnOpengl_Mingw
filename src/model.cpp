@@ -1,6 +1,7 @@
 #include "model.h"
+#include <algorithm>
 
-// Most of the program startup time is spent on stbi_load loading textures.
+// Most of the program startup time is spent decoding textures (QImage).
 // Using threads can speed up startup time a bit.
 #define TEXTURE_THREAD 1
 
@@ -11,7 +12,7 @@ struct TextureData
 {
     int width, height, nrComponents;
     unsigned int textureID;
-    unsigned char *data;
+    ImageData image;
 };
 vector<TextureData> textureData;
 
@@ -35,34 +36,32 @@ void TextureFromData(vector<TextureData> &textureData)
             internalformat = GL_RGBA;
             dataformat = GL_RGBA;
         }
-        glBindTexture(GL_TEXTURE_2D, texture.textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, internalformat, texture.width, texture.height, 0, dataformat, GL_UNSIGNED_BYTE, texture.data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        glf()->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glf()->glBindTexture(GL_TEXTURE_2D, texture.textureID);
+        glf()->glTexImage2D(GL_TEXTURE_2D, 0, internalformat, texture.width, texture.height, 0, dataformat, GL_UNSIGNED_BYTE, texture.image.data());
+        glf()->glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        stbi_image_free(texture.data);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     textureData.erase(textureData.begin(), textureData.end());
 }
 
 void TextureFromFileThread(unsigned int texture_id, string filename)
 {
-    stbi_set_flip_vertically_on_load(false);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data)
+    ImageData image;
+    if (LoadImageFile(filename, image))
     {
+        const int width = image.width, height = image.height, nrComponents = image.channels;
         std::lock_guard<std::mutex> lock(texture_mtx);
-        textureData.push_back({width, height, nrComponents, texture_id, data});
+        textureData.push_back({width, height, nrComponents, texture_id, std::move(image)});
     }
     else
     {
+        std::lock_guard<std::mutex> lock(texture_mtx);
         std::cout << "Texture failed to load at path: " << filename << std::endl;
-        stbi_image_free(data);
     }
 }
 
@@ -75,13 +74,13 @@ unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_
     filename = directory + '/' + filename;
 
     unsigned int textureID;
-    glGenTextures(1, &textureID);
-    stbi_set_flip_vertically_on_load(false);
-
-    int width, height, nrComponents;
-    unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
-    if (data)
+    glf()->glGenTextures(1, &textureID);
+    ImageData image;
+    if (LoadImageFile(filename, image))
     {
+        const int width = image.width, height = image.height, nrComponents = image.channels;
+        const unsigned char *data = image.data();
+        glf()->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         GLenum internalformat = 0;
         GLenum dataformat = 0;
         if (nrComponents == 1)
@@ -99,21 +98,18 @@ unsigned int TextureFromFile(const char *path, const string &directory, [[maybe_
             dataformat = GL_RGBA;
         }
 
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        glf()->glBindTexture(GL_TEXTURE_2D, textureID);
+        glf()->glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, dataformat, GL_UNSIGNED_BYTE, data);
+        glf()->glGenerateMipmap(GL_TEXTURE_2D);
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        stbi_image_free(data);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else
     {
         std::cout << "Texture failed to load at path: " << path << std::endl;
-        stbi_image_free(data);
     }
 
     return textureID;
@@ -180,7 +176,7 @@ void Model::DrawInstance(Shader &shader)
 Model::~Model()
 {
     for (auto &material : m_materials)
-        glDeleteTextures(1, (unsigned int *)&material.id);
+        glf()->glDeleteTextures(1, (unsigned int *)&material.id);
 }
 
 void Model::loadModel(string const &path)
@@ -413,9 +409,11 @@ void Model::loadMaterialTextures(vector<Materials> &materials, aiMaterial *mat, 
 
 #if TEXTURE_THREAD
             unsigned int textureID;
-            glGenTextures(1, &textureID);
+            glf()->glGenTextures(1, &textureID);
             texture.id = textureID;
             string filepath = this->directory + '/' + str.C_Str();
+            // some models store Windows style relative paths ("tex\\a.png"); Qt accepts '/' on every platform
+            std::replace(filepath.begin(), filepath.end(), '\\', '/');
             texture_threads.emplace_back(TextureFromFileThread, textureID, filepath);
 #else
             texture.id = TextureFromFile(str.C_Str(), this->directory);
@@ -427,4 +425,4 @@ void Model::loadMaterialTextures(vector<Materials> &materials, aiMaterial *mat, 
             m_materials.push_back(texture); // store it as texture loaded for entire model, to ensure we won't unnecessary load duplicate textures.
         }
     }
-}
+}

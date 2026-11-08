@@ -22,6 +22,9 @@ void Shader::ShaderInit(const string filepath)
 
     while (std::getline(file, line))
     {
+        // tolerate CRLF files when not reading in Windows text mode
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
         if (line.substr(0, 2) == "//")
         {
             continue;
@@ -107,36 +110,36 @@ Shader::Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, int
     }
     unsigned int vertexShader, fragmentShader, geometryShader = 0;
 
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
+    vertexShader = glf()->glCreateShader(GL_VERTEX_SHADER);
+    glf()->glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glf()->glCompileShader(vertexShader);
     CHECK_SHADER(vertexShader, vertexShader_ID);
 
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
+    fragmentShader = glf()->glCreateShader(GL_FRAGMENT_SHADER);
+    glf()->glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glf()->glCompileShader(fragmentShader);
     CHECK_SHADER(fragmentShader, fragmentShader_ID);
 
     if (geometryShader_ID != -1)
     {
-        geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
-        glShaderSource(geometryShader, 1, &geometryShaderSource, NULL);
-        glCompileShader(geometryShader);
+        geometryShader = glf()->glCreateShader(GL_GEOMETRY_SHADER);
+        glf()->glShaderSource(geometryShader, 1, &geometryShaderSource, NULL);
+        glf()->glCompileShader(geometryShader);
         CHECK_SHADER(geometryShader, geometryShader_ID);
     }
 
-    ProgramID = glCreateProgram();
-    glAttachShader(ProgramID, vertexShader);
-    glAttachShader(ProgramID, fragmentShader);
+    ProgramID = glf()->glCreateProgram();
+    glf()->glAttachShader(ProgramID, vertexShader);
+    glf()->glAttachShader(ProgramID, fragmentShader);
     if (geometryShader_ID != -1)
-        glAttachShader(ProgramID, geometryShader);
-    glLinkProgram(ProgramID);
+        glf()->glAttachShader(ProgramID, geometryShader);
+    glf()->glLinkProgram(ProgramID);
     CHECK_PROGRAM(ProgramID);
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    glf()->glDeleteShader(vertexShader);
+    glf()->glDeleteShader(fragmentShader);
     if (geometryShader_ID != -1)
-        glDeleteShader(geometryShader);
+        glf()->glDeleteShader(geometryShader);
 }
 
 int Shader::GetUniformLocation(const std::string &name)
@@ -144,7 +147,7 @@ int Shader::GetUniformLocation(const std::string &name)
     if (m_UniformLoationCache.find(name) != m_UniformLoationCache.end())
         return m_UniformLoationCache[name];
 
-    int location = glGetUniformLocation(ProgramID, name.c_str());
+    int location = glf()->glGetUniformLocation(ProgramID, name.c_str());
     if (location == -1)
     {
         std::cout << "No active uniform variable with name " << name << " foune" << std::endl;
@@ -156,62 +159,62 @@ int Shader::GetUniformLocation(const std::string &name)
 
 void Shader::SetUniform1b(const std::string &name, bool value)
 {
-    glUniform1i(GetUniformLocation(name), (int)value);
+    glf()->glUniform1i(GetUniformLocation(name), (int)value);
 }
 
 void Shader::SetUniform1i(const std::string &name, int value)
 {
-    glUniform1i(GetUniformLocation(name), value);
+    glf()->glUniform1i(GetUniformLocation(name), value);
 }
 
 void Shader::SetUniform1f(const std::string &name, float f0)
 {
-    glUniform1f(GetUniformLocation(name), f0);
+    glf()->glUniform1f(GetUniformLocation(name), f0);
 }
 
 void Shader::SetUniform2f(const std::string &name, float f0, float f1)
 {
-    glUniform2f(GetUniformLocation(name), f0, f1);
+    glf()->glUniform2f(GetUniformLocation(name), f0, f1);
 }
 
 void Shader::SetUniform2f(const std::string &name, const glm::vec2 &value)
 {
-    glUniform2fv(GetUniformLocation(name), 1, &value[0]);
+    glf()->glUniform2fv(GetUniformLocation(name), 1, &value[0]);
 }
 
 void Shader::SetUniform3f(const std::string &name, float f0, float f1, float f2)
 {
-    glUniform3f(GetUniformLocation(name), f0, f1, f2);
+    glf()->glUniform3f(GetUniformLocation(name), f0, f1, f2);
 }
 
 void Shader::SetUniform3f(const std::string &name, const glm::vec3 &value)
 {
-    glUniform3fv(GetUniformLocation(name), 1, &value[0]);
+    glf()->glUniform3fv(GetUniformLocation(name), 1, &value[0]);
 }
 
 void Shader::SetUniform4f(const std::string &name, float f0, float f1, float f2, float f3)
 {
-    glUniform4f(GetUniformLocation(name), f0, f1, f2, f3);
+    glf()->glUniform4f(GetUniformLocation(name), f0, f1, f2, f3);
 }
 
 void Shader::SetUniform4f(const std::string &name, const glm::vec4 &value)
 {
-    glUniform4fv(GetUniformLocation(name), 1, &value[0]);
+    glf()->glUniform4fv(GetUniformLocation(name), 1, &value[0]);
 }
 
 void Shader::SetUniform2m(const std::string &name, const glm::mat2 &mat)
 {
-    glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+    glf()->glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 void Shader::SetUniform3m(const std::string &name, const glm::mat3 &mat)
 {
-    glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+    glf()->glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 void Shader::SetUniform4m(const std::string &name, const glm::mat4 &mat)
 {
-    glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+    glf()->glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 void Shader::Clear()

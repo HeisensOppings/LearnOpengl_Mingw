@@ -1,43 +1,30 @@
-#### [LearnOpengl](https://learnopengl.com/) with mingw makefile in vscode
+#### [LearnOpengl](https://learnopengl.com/) with Qt6 (qmake)
 
 [English](README.md) [中文](README_zh.md)
 
-##### Environment
-- Windows [Vscode](https://code.visualstudio.com/download) [MinGW](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/)(x86_64-posix-seh) [Cmake](https://cmake.org/download/) [Ninja](https://github.com/ninja-build/ninja/releases/)
-<small>Put ninja.exe in the bin/ directory of the Cmake installation directory, or add environment variables</small>
+##### Environment (Qt6)
+- Qt 6 with the widgets / opengl / openglwidgets modules, qmake
+- Windows: use the Qt **MinGW 64-bit** kit. The bundled `lib/libassimp.dll.a` / `libassimp-5.dll` are MinGW builds and are not ABI compatible with an MSVC kit (build Assimp with MSVC if you need MSVC).
+- Linux: system Assimp (e.g. `libassimp-dev`) or `qmake ASSIMP_PREFIX=/path/to/assimp`
+- OpenGL 4.2 core profile required
 
-##### Use
+##### Usage
 ```sh
-cmake -S ./ -B ./build/ -G Ninja -DCMAKE_BUILD_TYPE=Release
-cd build
-ninja -j4
-opengl.exe
+mkdir build && cd build
+qmake ../LearnOpengl.pro CONFIG+=release
+mingw32-make -j4        # Linux: make -j4
+release\opengl.exe     # Linux: ./opengl
+# scenes: opengl [-cascaded | -animations]
 ```
-or use **build.bat**
+Or open `LearnOpengl.pro` in Qt Creator. On Windows deploy the Qt runtime with windeployqt.
 
-- Mouse right-click (Camera | Cursor)
-- Scroll wheel (Movement speed)
-- w a s d (Movement direction)
-- Left Ctrl key mouse wheel controls camera Fov
-- Focus on the imgui window, the above operation will not work
-
-##### Build GLFW
-
-- [GLFW](https://github.com/glfw/glfw/releases) the GLFW source code package and recompile it to make sure it runs on you own machine
-- Unzip the source code and open CMake
-- Input the source code and build(mkdir) directory
-- Click Configure, Select MinGW Makefiles
-- After Configure, Click BUILD_SHARED_LIBS, Create a dynamic library
-- Click Generate
-- In build directory run cmd $:mingw32-make ../
-- Copy files in build/src/ **glfw3.dll**、**libglfw3dll.a**, and source code/include
-
-##### Configure GLAD
-
-- language - C/C++, API - higher than 3.3, Profile - Core, Generate a loader, Generate, [GLAD](https://glad.dav1d.de/) the zip
-- gcc .\src\glad.c -c -I.\include\
-- ar -rc libglad.a glad.o
-- copy file **libglad.a** and include
+- Click the view to give it keyboard focus; right mouse button toggles camera look / cursor, Esc leaves look mode / closes
+- Mouse wheel: movement speed; W A S D move, Space / Shift up / down
+- Ctrl + wheel in look mode: camera FOV
+- Qt control panel (replaces imgui): camera position/reset, fps, background colour, light, PBR, animation, CSM bias
+- Cascaded scene: N cycles the debug layer, C freezes the light frustums
+- The HDR environment background / skybox was removed: solid background colour, PBR ambient uses a constant-colour IBL
+- GLFW, GLAD, FreeType (and all text rendering), imgui and stb_image were removed
 
 ###### Assimp
 
@@ -76,11 +63,3 @@ map_Bump bump_texture.png
     // aiTextureType_LIGHTMAP          aiTextureType_AMBIENT        map_Ka ao          4
     // aiTextureType_EMISSIVE          aiTextureType_EMISSIVE       map_Ke emissive    5
 ```
-
-###### [imgui](https://github.com/ocornut/imgui)
-
-###### [FreeType](https://github.com/ubawurinna/freetype-windows-binaries)
-- Use CMake to configure the FreeType source code and generate build files.
-- Enter the build directory and mingw32-make to compile and generate the libarary
-- Copy the include of source code
-- build\lib\libfreetype.a in the lib/

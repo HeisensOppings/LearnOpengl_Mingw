@@ -1,7 +1,7 @@
 #ifndef __MESH_H__
 #define __MESH_H__
 
-#include "glad/glad.h"
+#include "glfuncs.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
@@ -58,4 +58,4 @@ private:
     void setupMesh();
 };
 
-#endif
+#endif

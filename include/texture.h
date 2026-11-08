@@ -1,13 +1,11 @@
 #ifndef __TEXTURE_H__
 #define __TEXTURE_H__
 
-#define STBI_WINDOWS_UTF8
-
 #include <iostream>
 #include <vector>
 #include <string>
-#include "stb_image.h"
-#include <glad/glad.h>
+#include "imageloader.h"
+#include "glfuncs.h"
 using namespace std;
 
 class Texture
@@ -25,4 +23,4 @@ public:
 };
 
 unsigned int loadCubemap(vector<string> faces);
-#endif
+#endif

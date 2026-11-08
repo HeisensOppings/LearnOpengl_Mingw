@@ -56,7 +56,7 @@ public:
     Animator(Animations *animations, Model *model);
     ~Animator()
     {
-        glDeleteTextures(1, &boneMatrixTexture);
+        glf()->glDeleteTextures(1, &boneMatrixTexture);
     }
 
     void UpdateAnimation(float dt);

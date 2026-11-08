@@ -1,9 +1,8 @@
 #ifndef __SHADER_H__
 #define __SHADER_H__
 
-#include <glad/glad.h>
+#include "glfuncs.h"
 #include <glm/glm.hpp>
-#include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <iostream>
 #include <fstream>
@@ -18,11 +17,11 @@ using namespace std;
     do                                                                                                        \
     {                                                                                                         \
         GLint success;                                                                                        \
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);                                                   \
+        glf()->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);                                                   \
         if (!success)                                                                                         \
         {                                                                                                     \
             GLchar infoLog[512];                                                                              \
-            glGetShaderInfoLog(shader, 512, NULL, infoLog);                                                   \
+            glf()->glGetShaderInfoLog(shader, 512, NULL, infoLog);                                                   \
             std::cout << "\033[37;41mERROR:: " << #shader << " ID:" << id << " ::COMPILATION_FAILED\033[0m\n" \
                       << infoLog << std::endl;                                                                \
             exit(1);                                                                                          \
@@ -33,11 +32,11 @@ using namespace std;
     do                                                                                         \
     {                                                                                          \
         GLint success;                                                                         \
-        glGetProgramiv(program, GL_LINK_STATUS, &success);                                     \
+        glf()->glGetProgramiv(program, GL_LINK_STATUS, &success);                                     \
         if (!success)                                                                          \
         {                                                                                      \
             GLchar infoLog[512];                                                               \
-            glGetProgramInfoLog(program, 512, NULL, infoLog);                                  \
+            glf()->glGetProgramInfoLog(program, 512, NULL, infoLog);                                  \
             std::cout << "\033[37;41mERROR:: " << #program << " ::COMPILATION_FAILED\033[0m\n" \
                       << infoLog << std::endl;                                                 \
             exit(1);                                                                           \
@@ -59,9 +58,9 @@ public:
     static void ShaderInit(const string filepath);
     Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID, int geometryShader_ID);
     Shader(unsigned int vertexShader_ID, unsigned int fragmentShader_ID) : Shader(vertexShader_ID, fragmentShader_ID, -1) {}
-    ~Shader() { glDeleteProgram(ProgramID); }
-    inline void Bind() { glUseProgram(ProgramID); }
-    void Unbind() const { glUseProgram(0); }
+    ~Shader() { glf()->glDeleteProgram(ProgramID); }
+    inline void Bind() { glf()->glUseProgram(ProgramID); }
+    void Unbind() const { glf()->glUseProgram(0); }
     static void Clear();
     GLuint &GetID() { return ProgramID; }
 

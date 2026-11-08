@@ -199,13 +199,13 @@ Animator::Animator(Animations *animations, Model *model)
     m_FinalBoneMatrices.resize(m_Model->GetBoneInfoMap().size());
 
     // ---------------------------------- sampler2D boneMatrixImage;
-    glGenTextures(1, &boneMatrixTexture);
-    glBindTexture(GL_TEXTURE_2D, boneMatrixTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, m_Model->GetBoneInfoMap().size(), 0, GL_RGBA, GL_FLOAT, NULL);
+    glf()->glGenTextures(1, &boneMatrixTexture);
+    glf()->glBindTexture(GL_TEXTURE_2D, boneMatrixTexture);
+    glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glf()->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glf()->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 4, m_Model->GetBoneInfoMap().size(), 0, GL_RGBA, GL_FLOAT, NULL);
 }
 
 void Animator::UpdateAnimation(float dt)
@@ -238,9 +238,9 @@ void Animator::UpdateAnimation(float dt)
     //     }
     // }
     // "boneMatrixImage", 10 -- GL_TEXTURE10
-    glActiveTexture(GL_TEXTURE10);
-    glBindTexture(GL_TEXTURE_2D, boneMatrixTexture);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, m_FinalBoneMatrices.size(), GL_RGBA, GL_FLOAT, &pixelData[0]);
+    glf()->glActiveTexture(GL_TEXTURE10);
+    glf()->glBindTexture(GL_TEXTURE_2D, boneMatrixTexture);
+    glf()->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, m_FinalBoneMatrices.size(), GL_RGBA, GL_FLOAT, &pixelData[0]);
 }
 
 void Animator::CalculateBoneTransform(const BoneNode *node, glm::mat4 parentTransform)

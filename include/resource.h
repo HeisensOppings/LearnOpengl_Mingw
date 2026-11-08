@@ -8,14 +8,11 @@
 #include <string>
 #include <map>
 
-#include <glad/glad.h>
+#include "glfuncs.h"
 #include "texture.h"
 #include "shader.h"
 #include "vertexarray.h"
 #include "appcontrol.h"
-
-#include "ft2build.h"
-#include FT_FREETYPE_H
 
 using namespace std;
 
@@ -43,25 +40,4 @@ private:
     ResourceManager() {}
 };
 
-extern vector<string> font_paths;
-#define FONT_SIZE 30
-
-struct Character
-{
-    glm::ivec2 Size;      // Size of glyph
-    glm::ivec2 Bearing;   // Offset from baseline to left/top of glyph
-    unsigned int Advance; // Horizontal offset to advance to next glyph
-    glm::vec4 Offset;     // textTexture offset
-};
-
-class TextTexture
-{
-public:
-    static GLuint mtextureID;
-    static GLfloat mtextureWidth, mtextureHeight;
-    static map<char32_t, Character> Characters;
-    static GLuint ChToTexture(u32string u32str);
-    static GLuint GetTetureID() { return mtextureID; }
-};
-
-#endif
+#endif

@@ -1,8 +1,7 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glfuncs.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -53,10 +52,10 @@ public:
     void updateCameraVectors();
     inline void SetSpeed(float speed) { MovementSpeed = speed; }
     static glm::mat4 calculate_lookAt_matrix(glm::vec3 cameraPos, glm::vec3 cameraDir, glm::vec3 cameraUp);
-    void loadCameraPosition(GLFWwindow *window);
-    void saveCameraPosition(GLFWwindow *window);
-
-    Camera(GLFWwindow *window) { loadCameraPosition(window); }
+    // res/config.ini stores the camera state and the window position.
+    // Returns true when a saved window position was read into winX/winY.
+    bool loadCameraPosition(int *winX = nullptr, int *winY = nullptr);
+    void saveCameraPosition(int winX, int winY);
 
     Camera(glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -Z_VALUE), glm::vec3 cameraDir = glm::vec3(0.0f, 0.0f, Z_VALUE), glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f))
         : m_cameraPos(cameraPos),
@@ -91,4 +90,4 @@ public:
     }
 };
 
-#endif
+#endif

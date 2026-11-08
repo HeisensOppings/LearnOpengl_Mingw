@@ -26,7 +26,7 @@ public:
     SceneCascadedShadowMap(Camera *camera, unsigned int width, unsigned int height);
     virtual ~SceneCascadedShadowMap() override;
     virtual void Render() override;
-    virtual void processInput(GLFWwindow *window) override;
+    virtual void keyReleased(int key) override;
 
     void renderScene(Shader &shader);
     void renderQuad();

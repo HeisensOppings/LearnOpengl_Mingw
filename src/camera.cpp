@@ -111,7 +111,7 @@ void Camera::updateCameraVectors()
     // m_cameraDir = glm::normalize(direction);
 }
 
-void Camera::loadCameraPosition(GLFWwindow *window)
+bool Camera::loadCameraPosition(int *winX, int *winY)
 {
     std::ifstream file(string(RES_DIR) + "config.ini");
     if (file.is_open())
@@ -126,29 +126,33 @@ void Camera::loadCameraPosition(GLFWwindow *window)
         file >> pitch;
         file >> SCR_X_POS;
         file >> SCR_Y_POS;
-        glfwSetWindowPos(window, SCR_X_POS, SCR_Y_POS);
+        bool hasWindowPos = !file.fail();
         file.close();
         SetCameraSettings(posX, posY, posZ, dirX, dirY, dirZ, upX, upY, upZ, yaw, pitch, FOV);
+        if (hasWindowPos && winX && winY)
+        {
+            *winX = SCR_X_POS;
+            *winY = SCR_Y_POS;
+        }
+        return hasWindowPos;
     }
-    else
-        SetCameraSettings(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, FOV);
+    SetCameraSettings(0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, FOV);
+    return false;
 }
 
-void Camera::saveCameraPosition(GLFWwindow *window)
+void Camera::saveCameraPosition(int winX, int winY)
 {
     std::ofstream file(string(RES_DIR) + "config.ini");
     if (file.is_open())
     {
-        int SCR_X_POS = 0, SCR_Y_POS = 0;
         file << m_cameraPos.x << " " << m_cameraPos.y << " " << m_cameraPos.z << "\n";
         file << m_cameraDir.x << " " << m_cameraDir.y << " " << m_cameraDir.z << "\n";
         file << m_cameraUp.x << " " << m_cameraUp.y << " " << m_cameraUp.z << "\n";
         file << m_Yaw << "\n";
         file << m_Pitch << "\n";
         // file << m_Fov << "\n";
-        glfwGetWindowPos(window, &SCR_X_POS, &SCR_Y_POS);
-        file << SCR_X_POS << "\n";
-        file << SCR_Y_POS << "\n";
+        file << winX << "\n";
+        file << winY << "\n";
         file.close();
     }
 }
@@ -183,4 +187,4 @@ glm::mat4 Camera::calculate_lookAt_matrix(glm::vec3 position, glm::vec3 target, 
 
     // Return lookAt matrix as combination of translation and rotation matrix
     return rotation * translation; // Remember to read from right to left (first translation then rotation)
-}
+}

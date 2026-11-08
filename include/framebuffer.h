@@ -2,7 +2,7 @@
 #define __FRAMEBUFFER_H__
 
 #include <iostream>
-#include <glad/glad.h>
+#include "glfuncs.h"
 using namespace std;
 
 enum TEXTURE_TYPE_ENUM
@@ -32,4 +32,4 @@ public:
 //     RenderBuffer(GLenum frame_width, GLenum frame_height, vector<)
 // };
 
-#endif
+#endif
